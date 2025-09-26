@@ -1,0 +1,52 @@
+:root{
+  --bg-default: #ffffff;
+  --panel: #f2fefb;
+  --accent: #2f6ff6;
+  --muted: #8b8f94;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.1);
+  --primary-color: #3399FF;
+  --text-noraml: #212529;
+  --gradient-color: #ff6666;
+  --black: #1e1e1e;
+  --primary-200: #99CCFF;
+  --primary-100: #CCE6FF;
+  --primary-300: #66B2FF;
+  --primary-400: #3399FF;
+  --primary-500: #007bff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter, system-ui, Arial, sans-serif;
+  background: var(--bg-default);
+  color:#111;
+}
+#app{
+  /* display:flex; */
+  min-height:100vh;
+  align-items:stretch;
+  /* justify-content:center; */
+  /* padding:18px; */
+}
+.sidebar{
+  width:220px;
+  border-right:1px solid #bfcdd9;
+  padding:14px;
+}
+/* main */
+.main{
+  flex:1;
+  padding:28px;
+}
+
+/* grid */
+.grid{
+  display:flex;
+  flex-wrap:wrap;
+}
+.form-row{margin-bottom:10px}
+.input{padding:8px;border:1px solid #ccc;border-radius:4px;width:220px}
+.btn{padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer}
+.err{color:#c00;font-size:13px;margin-top:6px}
+.title{font-weight:700}

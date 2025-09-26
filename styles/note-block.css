@@ -1,0 +1,76 @@
+:root{
+  --note-bg: #F1F3F5;
+  --note-border: #CED4DA;
+  --note-hover: #E9ECEF;
+  --note-active: #CCE6FF;
+  --text-caption: #495057;
+  --gray-200: #E9ECEF;
+}
+
+.notes-page {
+  /* display: flex; */
+  height: 100vh;
+  background: #fff;
+  color: #fff;
+}
+
+.note-section {
+  margin-bottom: 40px;
+}
+
+.notes-section h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  margin-left: 220px;
+  color: #333;
+}
+
+.notes-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+  gap: 20px;
+  margin-left: 220px;
+}
+
+.note-card {
+  background: var(--note-bg);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: transform 0.2s, background 0.2s;
+  height: 200px;
+  cursor: pointer;
+}
+
+.note-card:hover {
+  /* background: var(--note-active); */
+  background: linear-gradient(90deg, var(--gray-200), var(--note-active));
+  transform: translateY(-2px);
+}
+
+.note-card.favorite {
+  border: 1px solid #4f46e5;
+}
+
+.note-card__icon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 10px;
+}
+
+.note-card__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.note-card__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-caption);
+}

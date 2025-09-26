@@ -1,0 +1,41 @@
+.input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+}
+
+.btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #1f56c9;
+}
+
+.form-login {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input {
+    width: 100%; /* Поля ввода занимают всю ширину формы */
+    padding: 10px; /* Отступы внутри полей ввода */
+    margin: 10px 0; /* Отступы сверху и снизу */
+    border: 1px solid var(--input-border-color); /* Цвет границы */
+    border-radius: 4px; /* Закругленные углы */
+    font-size: 16px; /* Размер шрифта */
+}
+
+.input:focus {
+    border-color: var(--input-focus-border-color); /* Цвет границы при фокусе */
+    outline: none; /* Убираем стандартный контур */
+}
