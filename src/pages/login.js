@@ -4,11 +4,11 @@ import { apiClient } from "../api/apiClient.js";
 
 function validateForm(form) {
   const errors = [];
-  const username = form.querySelector("[name='username']").value.trim();
+  const email = form.querySelector("[name='email']").value.trim();
   const password = form.querySelector("[name='password']").value.trim();
 
-  if (!username) errors.push("Username is required");
-  if (username.length < 3) errors.push("Username must be at least 3 characters");
+  if (!email) errors.push("Email is required");
+  if (email.length < 3) errors.push("Email must be at least 3 characters");
   if (!password) errors.push("Password is required");
   // if (password.length < 6) errors.push("Password must be at least 6 characters");
 
@@ -30,7 +30,7 @@ export function renderLogin() {
     <div class="login-modal">
       <h2>Log in</h2>
       <form class="login-form">
-        <input type="text" name="username" placeholder="Username" class="input" required />
+        <input type="text" name="email" placeholder="Email" class="input" required />
         <input type="password" name="password" placeholder="Password" class="input" required />
         <div class="login-buttons">
           <button type="submit" class="btn">Log in</button>
@@ -49,7 +49,12 @@ export function renderLogin() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(form));
+    const formData = new FormData(form);
+    const data = {
+      email: formData.get("email"),
+      password: formData.get("password"),
+    };
+
     const errors = validateForm(form);
     if (errors.length > 0) {
       alert(errors.join("\n"));

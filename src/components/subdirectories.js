@@ -1,5 +1,4 @@
 import { htmlToElement } from "../templates.js";
-import { mockNotes } from "../mock/notes.js";
 
 const ICONS = {
   deafult_file: new URL('../assets/icon_file.svg', import.meta.url).href,

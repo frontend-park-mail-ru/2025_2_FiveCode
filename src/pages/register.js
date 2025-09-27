@@ -37,8 +37,10 @@ export function renderRegister() {
       const user = await apiClient.register({
         username: data.username,
         email: data.email,
-        password: data.password
+        password: data.password,
+        confirm_password: data.confirmPassword
       });
+      await apiClient.login({ email: data.email, password: data.password });
       window.navigate("/notes");
     } catch (err) {
       alert("Ошибка: " + err.message);

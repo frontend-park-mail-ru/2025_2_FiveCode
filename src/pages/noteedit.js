@@ -1,5 +1,6 @@
 import { htmlToElement } from "../templates.js";
 import { Sidebar } from "../components/sidebar.js";
+import { loadUser } from "../utils/session.js";
 
 let notes = JSON.parse(localStorage.getItem("notes") || "[]");
 
@@ -11,7 +12,8 @@ export function renderNoteEdit({ id }) {
     const page = document.createElement("div");
     page.classList.add("page");
 
-    const sidebar = Sidebar({ user: JSON.parse(localStorage.getItem("mockCurrentUser")) });
+    const user = loadUser();
+    const sidebar = Sidebar({ user: user});
 
     let note = notes.find(n => n.id == id);
     if (!note) {

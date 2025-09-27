@@ -1,6 +1,7 @@
 // локально храним данные пользователя
 export function saveUser(user) {
   localStorage.setItem("user", JSON.stringify(user));
+   window.__APP_SESSION__ = { user };
 }
 
 export function loadUser() {

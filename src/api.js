@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.example.com'; // <-- замените
+const API_BASE = 'http://localhost:8080';
 
 /**
  * Базовая обёртка fetch.

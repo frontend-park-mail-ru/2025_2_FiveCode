@@ -1,11 +1,15 @@
 import { htmlToElement } from '../templates.js';
 import { Sidebar } from '../components/sidebar.js';
 import { NoteCard } from "../components/notecard.js";
-import { mockNotes } from "../mock/notes.js";
+import { apiClient } from '../api/apiClient.js';
+import { loadUser } from '../utils/session.js';
 
 export function renderNotes({ notes = [] } = {}) {
   const page = htmlToElement(`<div class="page page--notes"></div>`);
-  page.appendChild(Sidebar({ user: window.__APP_SESSION__?.user, subdirs: [] }));
+
+  const user = loadUser();
+  page.appendChild(Sidebar({ user: user, subdirs: [] }));
+
   
   const main = document.createElement('div');
   main.classList.add('page__main');
@@ -31,20 +35,28 @@ export function renderNotes({ notes = [] } = {}) {
     list.classList.add('notes-content');
 
     // фильтруем заметки по категории
-    const filteredNotes = mockNotes.filter(note => {
-      if (key === "favorites") return note.favorite;
-      if (key === "recent") return !note.favorite; 
-      return true;
-    });
 
-    // карточки
-    filteredNotes.forEach((note) => {
-      const noteCard = NoteCard(note);
-      noteCard.addEventListener('click', () => {
-        window.location.href = `edit/${note.id}`;
+    apiClient.getNotesForUser(user.id)
+    .then(notes => {
+      notes = Array.isArray(notes) ? notes : [];
+      const filteredNotes = notes.filter(note => {
+        if (key === "favorites") return note.favorite;
+        if (key === "recent") return !note.favorite; 
+        return true;
       });
-      list.appendChild(noteCard);
-    });
+
+      // карточки
+      filteredNotes.forEach((note) => {
+        const noteCard = NoteCard(note);
+        noteCard.addEventListener('click', () => {
+          window.location.href = `edit/${note.id}`;
+        });
+        list.appendChild(noteCard);
+      });
+    })
+    .catch(err => {
+      console.error('Failed to load notes', err);
+    });    
 
     // Добавляем кнопку "новая заметка" только в recent
     if (key === "recent") {
