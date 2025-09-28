@@ -43,6 +43,11 @@ function validateForm(form) {
 }
 
 
+
+/**
+ * Рендерит страницу регистрации пользователя
+ * @returns {HTMLElement} DOM-элемент страницы регистрации
+ */
 export function renderRegister() {
   const el = htmlToElement(`<div class="page"></div>`);
   el.appendChild(Header({ user: null }));

@@ -1,12 +1,13 @@
 import { htmlToElement } from '../templates.js';
 
 /**
- * MainContent of dashboard
+ * Создаёт DOM-элемент приветственного блока
+ * @returns {HTMLElement} DOM-элемент welcome
  */
 export function MainContent() {
   const el = htmlToElement(`
     <div class="welcome" id="welcome">
-        <h1>WELCOME</h1>
+        <h1>Добро Пожаловать</h1>
     </div>
   `);
 

@@ -2,11 +2,12 @@ import { renderLogin } from './pages/login.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderNotes } from './pages/notes.js';
 import { renderRegister } from './pages/register.js';
-import { renderNoteEdit } from './pages/noteedit.js';
+
 
 /**
- * Простая маршрутизация без перезагрузки.
- * Поддерживает pushState и обработку back/forward.
+ * Простая маршрутизация без перезагрузки
+ * Поддерживает pushState и обработку back forward
+ * @param {HTMLElement} rootEl корневой элемент для рендера страниц
  */
 export function initRouter(rootEl){
     const routes = {
@@ -17,10 +18,6 @@ export function initRouter(rootEl){
     };
 
     function renderPath(path){
-        if (path.startsWith("/notes/")) {
-            const id = path.split("/")[2];
-            return rootEl.appendChild(renderNoteEdit({ id }));
-        }
         const view = routes[path] || routes['/'];
         rootEl.innerHTML = '';
         rootEl.appendChild(view({}));

@@ -1,6 +1,10 @@
 import { htmlToElement } from './templates.js';
 
-/** Sidebar компонент */
+/**
+ * Создаёт DOM-элемент боковой панели
+ * @param {Object} user объект пользователя
+ * @returns {HTMLElement} DOM-элемент сайдбара
+ */
 export function Sidebar(user){
   const el = htmlToElement(`
     <div class="sidebar">
@@ -10,7 +14,6 @@ export function Sidebar(user){
       <div style="position:absolute;bottom:16px">Settings</div>
     </div>
   `);
-  // делегируем
   el.addEventListener('click', (e)=>{
     const a = e.target.closest('a[data-link]');
     if (a){ e.preventDefault(); window.navigate(a.getAttribute('href')); }
@@ -18,7 +21,13 @@ export function Sidebar(user){
   return el;
 }
 
-/** NoteCard */
+/**
+ * Создаёт DOM-элемент карточки
+ * @param {Object} params параметры карточки
+ * @param {string} params.title заголовок
+ * @param {string} [params.body] текст
+ * @returns {HTMLElement} DOM-элемент карточки
+ */
 export function NoteCard({title, body}){
   const el = htmlToElement(`<div class="card"><div class="title">${title}</div><div>${body || ''}</div></div>`);
   return el;

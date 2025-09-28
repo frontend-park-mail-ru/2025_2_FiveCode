@@ -34,6 +34,11 @@ function validateForm(form) {
 }
 
 
+
+/**
+ * Рендерит страницу входа пользователя
+ * @returns {HTMLElement} DOM-элемент страницы входа
+ */
 export function renderLogin() {
   const el = htmlToElement(`<div class="page"></div>`);
   el.appendChild(Header({ user: null }));

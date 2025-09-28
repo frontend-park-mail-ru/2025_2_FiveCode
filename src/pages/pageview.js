@@ -1,6 +1,12 @@
 import { htmlToElement } from '../templates.js';
 import { Sidebar } from '../components/sidebar.js';
 
+
+/**
+ * Рендерит страницу просмотра заметки по id
+ * @param {string|number} noteId идентификатор заметки
+ * @returns {HTMLElement} DOM-элемент страницы просмотра
+ */
 export function PageView(noteId) {
   const el = htmlToElement(`<div class="page"></div>`);
   el.appendChild(Sidebar({ user: window.__APP_SESSION__?.user, subdirs: [] }));

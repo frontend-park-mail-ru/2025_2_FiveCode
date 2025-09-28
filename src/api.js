@@ -1,8 +1,8 @@
 const API_BASE = 'http://89.208.210.115:8080';
 
 /**
- * Базовая обёртка fetch.
- * Всегда включает credentials: 'include' для cookie-based сессии.
+ * Базовая обёртка fetch
+ * Всегда включает credentials: 'include' для cookie-based сессии
  * @param {string} path
  * @param {object} options
  */
@@ -10,7 +10,7 @@ export async function apiFetch(path, options = {}){
   const url = (path.startsWith('http')) ? path : API_BASE + path;
   const opts = {
     headers: { 'Content-Type':'application/json' },
-    credentials: 'include', // очень важно для кросс-доменных cookies
+    credentials: 'include',
     ...options
   };
   if (opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
