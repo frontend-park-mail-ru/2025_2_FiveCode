@@ -7,14 +7,28 @@ const ICONS = {
 };
 
 function validateForm(form) {
-  const errors = [];
+  const errors = {};
   const email = form.querySelector("[name='email']").value.trim();
   const password = form.querySelector("[name='password']").value.trim();
 
-  if (!email) errors.push("Email is required");
-  if (email.length < 3) errors.push("Email must be at least 3 characters");
-  if (!password) errors.push("Password is required");
-  // if (password.length < 6) errors.push("Password must be at least 6 characters");
+  if (!email) {
+    errors.email = "Обязательное поле";
+  } else if (email.length < 3) {
+    errors.email = "Email должен быть не короче 3 символов";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = "Некорректный формат email";
+  }
+
+  if (!password) {
+    errors.password = "Обязательное поле";
+  }
+  else if (password.length < 6) {
+    errors.password = "Пароль должен быть не короче 6 символов";
+  } else if (!/^[A-Za-z0-9!@#$%^&*]+$/.test(password)) {
+    errors.password = "Пароль содержит недопустимые символы";
+  } else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    errors.password = "Пароль должен содержать буквы и цифры";
+  }
 
   return errors;
 }
@@ -41,6 +55,7 @@ export function renderLogin() {
         <label class="login-text">Пароль</label>
         <input type="password" name="password" placeholder="введите пароль" class="input" required />
         <span class="error-message" id="passwordError"></span>
+
         <div class="login-buttons">
           <button type="submit" class="btn">Войти</button>
           <button type="button" class="btn register-btn">Создать аккаунт</button>
@@ -55,20 +70,29 @@ export function renderLogin() {
   }, 1000);
 
   const form = loginModal.querySelector(".login-form");
+  const emailErrorEl = loginModal.querySelector("#emailError");
+  const passwordErrorEl = loginModal.querySelector("#passwordError");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    emailErrorEl.textContent = "";
+    passwordErrorEl.textContent = "";
+
+    const errors = validateForm(form);
+
+    if (Object.keys(errors).length > 0) {
+      if (errors.email) emailErrorEl.textContent = errors.email;
+      if (errors.password) passwordErrorEl.textContent = errors.password;
+      return;
+    }
+
     const formData = new FormData(form);
     const data = {
       email: formData.get("email"),
       password: formData.get("password"),
     };
 
-    const errors = validateForm(form);
-    if (errors.length > 0) {
-      alert(errors.join("\n"));
-      return;
-    }
     try { 
       const user = await apiClient.login(data);
       window.navigate("/notes");

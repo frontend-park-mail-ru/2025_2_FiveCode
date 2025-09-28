@@ -46,7 +46,6 @@ body{
   flex-wrap:wrap;
 }
 .form-row{margin-bottom:10px}
-.input{padding:8px;border:1px solid #ccc;border-radius:4px;width:220px}
 .btn{padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer}
 .err{color:#c00;font-size:13px;margin-top:6px}
 .title{font-weight:700}

@@ -21,18 +21,33 @@
   transform: translate(-50%, -50%) scale(1);
 }
 
+
 .login-form,
 .register-form {
   display: flex;
   flex-direction: column;
-  /* gap: 12px; */
+  gap: 12px;
+}
+
+.login-form .input .register-form {
+  margin-bottom: 0;
+}
+
+.login-form .error-message .register-form {
+  margin-top: -15px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  line-height: 1.2;
+  color: red;
+  font-size: 12px;
+  display: block;
 }
 
 .login-form input,
 .register-form input {
   width: 100%;
   padding: 10px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   /* border: var(--primary-color); */
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.2);
@@ -45,6 +60,7 @@
 }
 
 .login-form input.error{
+  margin-top:-15px;
   border-color: red
 }
 
@@ -96,7 +112,6 @@
 .welcome {
     margin-top: 5%;
     display: flex;
-    /* align-items: center; */
     justify-content: center;
     font-size: 40px;
     height: 100vh;
@@ -112,16 +127,31 @@
 
 .icon-login-form {
     display: flex;
-    /* align-items: center; */
     justify-content: center;
     font-size: 36px;
 
 }
 
 .login-text {
-    /* font-size: 20px; */
     margin-bottom: 5px;
     margin-left: 5px;
     font-weight: 600;
 }
 
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin: 0;
+  margin-top: -15px;
+  display: block;
+}
+
+.input {
+    width: 100%;
+    padding: 10px;
+    /* margin: 10px 0; */
+    margin-bottom: 5px;
+    border: 1px solid var(--primary-400);
+    border-radius: 4px;
+    font-size: 16px;
+}
