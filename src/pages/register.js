@@ -2,21 +2,28 @@ import { htmlToElement } from '../templates.js';
 import { Header } from '../components/header.js';
 import { apiClient } from "../api/apiClient.js";
 
+const ICONS = {
+  Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
+};
+
 export function renderRegister() {
   const el = htmlToElement(`<div class="page"></div>`);
   el.appendChild(Header({ user: null }));
 
   const registerModal = htmlToElement(`
     <div class="login-modal show">
-      <h2>Register</h2>
+      <h2 class="icon-login-form"> <img src="${ICONS.Icon}"/ class="login-icon"> Goose</h2>
       <form class="register-form">
-        <input type="text" name="username" placeholder="Username" class="input" required />
-        <input type="email" name="email" placeholder="Email" class="input" required />
-        <input type="password" name="password" placeholder="Password" class="input" required />
-        <input type="password" name="confirmPassword" placeholder="Confirm password" class="input" required />
+        <a class="login-text">Почта</a>
+        <input type="email" name="email" placeholder="введите почту" class="input" required />
+        <a class="login-text">Пароль</a>
+        <input type="password" name="password" placeholder="введите пароль" class="input" required />
+        <a class="login-text">Подтвердите пароль</a>
+        <input type="password" name="confirmPassword" placeholder="введите пароль" class="input" required />
         <div class="login-buttons">
-          <button type="submit" class="btn">Register</button>
-          <button type="button" class="btn login-btn">Back to login</button>
+          <button type="submit" class="btn">Создать аккаунт</button>
+          <a class="login-text"> Уже есть аккаунт? </a>
+          <button type="button" class="btn login-btn">Войти</button>
         </div>
       </form>
     </div>

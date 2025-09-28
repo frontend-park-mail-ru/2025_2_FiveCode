@@ -2,6 +2,10 @@ import { htmlToElement } from '../templates.js';
 import { Header } from '../components/header.js';
 import { apiClient } from "../api/apiClient.js";
 
+const ICONS = {
+  Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
+};
+
 function validateForm(form) {
   const errors = [];
   const email = form.querySelector("[name='email']").value.trim();
@@ -22,19 +26,24 @@ export function renderLogin() {
 
   const welcome = htmlToElement(`
     <div class="welcome">
-      <h1>WELCOME TO NOTION</h1>
+      <h1>WELCOME</h1>
     </div>
   `);
 
   const loginModal = htmlToElement(`
     <div class="login-modal">
-      <h2>Log in</h2>
+      <h2 class="icon-login-form"> <img src="${ICONS.Icon}"/ class="login-icon"> Goose</h2>
       <form class="login-form">
-        <input type="text" name="email" placeholder="Email" class="input" required />
-        <input type="password" name="password" placeholder="Password" class="input" required />
+        <label class="login-text">Почта</label>
+        <input type="text" name="email" placeholder="введите почту" class="input" required />
+        <span class="error-message" id="emailError"></span>
+
+        <label class="login-text">Пароль</label>
+        <input type="password" name="password" placeholder="введите пароль" class="input" required />
+        <span class="error-message" id="passwordError"></span>
         <div class="login-buttons">
-          <button type="submit" class="btn">Log in</button>
-          <button type="button" class="btn register-btn">Register</button>
+          <button type="submit" class="btn">Войти</button>
+          <button type="button" class="btn register-btn">Создать аккаунт</button>
         </div>
       </form>
     </div>
@@ -73,6 +82,6 @@ export function renderLogin() {
   });
   
   el.appendChild(loginModal);
-  el.appendChild(welcome);
+  // el.appendChild(welcome);
   return el;
 }

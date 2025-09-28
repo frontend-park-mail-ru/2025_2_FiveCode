@@ -1,16 +1,16 @@
 .login-modal,
 .register-modal {
-  position: fixed; /* Фиксированное положение */
-    top: 50%; /* Центрируем по вертикали */
-    left: 50%; /* Центрируем по горизонтали */
-    transform: translate(-50%, -50%); /* Сдвигаем для центрирования */
-    width: 400px; /* Ширина модального окна */
-    padding: 20px; /* Отступы внутри модального окна */
-    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
-    border-radius: 15px; /* Закругленные углы */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); /* Тень для эффекта глубины */
-    backdrop-filter: blur(10px); /* Эффект размытия фона */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Полупрозрачная граница */
+  position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 1000;
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
@@ -25,18 +25,18 @@
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  /* gap: 12px; */
 }
 
 .login-form input,
 .register-form input {
   width: 100%;
-    padding: 10px; /* Отступы внутри поля ввода */
-    margin-bottom: 15px; /* Отступ снизу */
-    border: none; /* Убираем стандартную границу */
-    border-radius: 5px; /* Закругленные углы */
-    background: rgba(255, 255, 255, 0.2); /* Полупрозрачный фон для поля ввода */
-    color: var(--text-noraml); /* Цвет текста */
+  padding: 10px;
+  margin-bottom: 20px;
+  /* border: var(--primary-color); */
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-noraml);
 }
 
 .login-form input::placeholder {
@@ -44,11 +44,16 @@
     opacity: 1;
 }
 
+.login-form input.error{
+  border-color: red
+}
+
 .login-buttons,
 .register-buttons {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  /* justify-content: space-between; */
+  flex-direction: column;
+  gap: 16px;
 }
 
 .login-buttons button,
@@ -89,11 +94,34 @@
 }
 
 .welcome {
-    margin-left: 5%;
+    margin-top: 5%;
     display: flex;
     /* align-items: center; */
-    /* justify-content: center; */
-    font-size: 80px;
+    justify-content: center;
+    font-size: 40px;
     height: 100vh;
     
 }
+
+.login-icon {
+    width: 48px;
+    height: 48px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.icon-login-form {
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+    font-size: 36px;
+
+}
+
+.login-text {
+    /* font-size: 20px; */
+    margin-bottom: 5px;
+    margin-left: 5px;
+    font-weight: 600;
+}
+

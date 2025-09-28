@@ -1,5 +1,5 @@
 .header {
-    position: fixed;       /* всегда сверху */
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -9,8 +9,10 @@
     z-index: 1000;
     padding: 10px 20px;
     display: flex;
-    justify-content: center;
+    /* justify-content: center; */
+    justify-content: space-between;
     align-items: center; 
+    box-sizing: border-box;
 }
 
 .header__inner {
@@ -28,7 +30,9 @@
     font-size: 18px;
     color: var(--accent);
     margin: 0;
-    /* padding-left: calc(50% - 316px); */
+    display: flex;
+    align-items: center;
+    /* padding-left: 3%; */
 }
 
 .header__search {
@@ -47,4 +51,12 @@
     padding: 8px 16px;
     border-radius: var(--radius);
     cursor: pointer;
+    margin-left: auto;
+    max-width: 100%;
 }
+
+.header-icon {
+    width: 32px;
+    height: 32px;
+}
+
