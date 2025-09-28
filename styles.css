@@ -34,13 +34,12 @@ body{
   border-right:1px solid #bfcdd9;
   padding:14px;
 }
-/* main */
+
 .main{
   flex:1;
   padding:28px;
 }
 
-/* grid */
 .grid{
   display:flex;
   flex-wrap:wrap;

@@ -7,6 +7,7 @@ const ICONS = {
   search: new URL('../assets/icon_search_active.svg', import.meta.url).href,
   settings: new URL('../assets/icon_settings_active.svg', import.meta.url).href,
   logout: new URL('../assets/icon_logout.svg', import.meta.url).href,
+  account: new URL('../assets/icon_account.svg', import.meta.url).href,
 };
 
 /**
@@ -18,13 +19,14 @@ const ICONS = {
 export function Sidebar({ user, subdirs }) {
     const el = htmlToElement(`
         <aside class="sidebar">
-        <div class="sidebar__user">     <a href="/settings" data-link>${user?.username || 'Guest'}</a></div>
-            <nav class="sidebar__nav">
-                <a href="/" class="sidebar__item" data-link> <img src="${ICONS.home}" class="sidebar__icon" alt="user icon" /> Home</a>
-                <a href="/notes" class="sidebar__item" data-link> <img src="${ICONS.search}" class="sidebar__icon" /> Search</a>
+        <div class="sidebar__item" href="/">
+          <div class="sidebar__user"> <img src="${ICONS.account}" class="sidebar__icon" alt="user icon" /><a data-link>${user?.username || 'Guest'}</a></div>
+        </div>
+          <nav class="sidebar__nav">
+              <a href="/" class="sidebar__item" data-link> <img src="${ICONS.home}" class="sidebar__icon" alt="user icon" /> Home</a>  
             </nav>
         <div class="sidebar__subs"></div>
-            <a href="/settings" class="sidebar__item" data-link> <img src="${ICONS.settings}" class="sidebar__icon" /> Settings</a>
+            
             <a href="/login" class="sidebar__item logout-btn" data-link> <img src="${ICONS.logout}" class="sidebar__icon" /> Log out</a>
         </aside>
     `);

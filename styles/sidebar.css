@@ -13,6 +13,9 @@
 .sidebar__user {
   font-weight: 600;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  
 }
 
 .sidebar__nav {
@@ -36,7 +39,7 @@
   text-align: center;
 }
 
-.sidebar__item img.sidebar__icon {
+.sidebar__item img.sidebar__icon, .sidebar__icon{
   width: 28px;
   height: 28x;
   margin-right: 12px;

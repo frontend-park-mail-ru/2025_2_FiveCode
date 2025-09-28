@@ -12,7 +12,7 @@ function validateForm(form) {
   const password = form.querySelector("[name='password']").value.trim();
   const confirmPassword = form.querySelector("[name='confirmPassword']").value.trim();
 
-  // ====== Email ======
+  
   if (!email) {
     errors.email = "Обязательное поле";
   } else if (email.length < 3) {
@@ -21,7 +21,7 @@ function validateForm(form) {
     errors.email = "Некорректный формат email";
   }
 
-  // ====== Пароль ======
+  
   if (!password) {
     errors.password = "Обязательное поле";
   } else if (password.length < 6) {
@@ -32,7 +32,7 @@ function validateForm(form) {
     errors.password = "Пароль должен содержать буквы и цифры";
   }
 
-  // ====== Подтверждение пароля ======
+  
   if (!confirmPassword) {
     errors.confirmPassword = "Обязательное поле";
   } else if (confirmPassword !== password) {
@@ -98,7 +98,7 @@ export function renderRegister() {
 
     try {
       const user = await apiClient.register({
-        username: data.username,
+        username: data.email,
         email: data.email,
         password: data.password,
         confirm_password: data.confirmPassword
