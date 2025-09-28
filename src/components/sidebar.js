@@ -1,5 +1,5 @@
 import { htmlToElement } from '../templates.js';
-import { Subdirectories } from './Subdirectories.js';
+import { Subdirectories } from './subdirectories.js';
 import { apiClient } from '../api/apiClient.js';
 
 const ICONS = {
