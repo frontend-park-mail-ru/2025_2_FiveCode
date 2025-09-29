@@ -1,3 +1,5 @@
+import { renderDashboard } from '../pages/dashboard.js';
+import { renderLogin } from '../pages/login.js';
 import { htmlToElement } from '../templates.js';
 
 const ICONS = {
@@ -22,8 +24,14 @@ export function Header({ user }) {
     `);
 
     el.querySelector('.header__login').addEventListener('click', () => {
-        window.navigate(user ? '/settings' : '/login');
-    });
-
-  return el;
+        // window.navigate(user ? '/settings' : '/login');
+        if (user) {
+            renderDashboard(app);}
+        else {
+            renderLogin(app);
+        }
+    }
+);
+    app.appendChild(el);
+//   return el;
 }

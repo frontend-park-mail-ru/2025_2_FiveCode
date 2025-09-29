@@ -1,6 +1,9 @@
 import { htmlToElement } from '../templates.js';
 import { Header } from '../components/header.js';
 import { apiClient } from "../api/apiClient.js";
+import { renderNotes } from './notes.js';
+import { renderLogin } from './login.js';
+
 
 const ICONS = {
   Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
@@ -48,9 +51,19 @@ function validateForm(form) {
  * Рендерит страницу регистрации пользователя
  * @returns {HTMLElement} DOM-элемент страницы регистрации
  */
-export function renderRegister() {
+export function renderRegister(app) {
+  app.innerHTML = '';
   const el = htmlToElement(`<div class="page"></div>`);
-  el.appendChild(Header({ user: null }));
+  // el.appendChild(Header({ user: null }));
+
+  let headerEl = Header({ user: null });
+  if (typeof headerEl === "string") {
+    headerEl = htmlToElement(headerEl);
+  }
+
+  if (headerEl) {
+    el.appendChild(headerEl);
+  }
 
   const registerModal = htmlToElement(`
     <div class="login-modal show">
@@ -109,16 +122,19 @@ export function renderRegister() {
         confirm_password: data.confirmPassword
       });
       await apiClient.login({ email: data.email, password: data.password });
-      window.navigate("/notes");
+      renderNotes(app);
+      // window.navigate("/notes");
     } catch (err) {
       alert("Ошибка: " + err.message);
     }
   });
 
   registerModal.querySelector(".login-btn").addEventListener("click", () => {
-    window.navigate("/login");
+    // window.navigate("/login");
+    renderLogin(app);
   });
 
   el.appendChild(registerModal);
-  return el;
+  app.appendChild(el);
+  // return el;
 }

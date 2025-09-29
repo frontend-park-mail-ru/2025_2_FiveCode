@@ -1,4 +1,6 @@
 import { htmlToElement } from './templates.js';
+import { renderLogin } from './pages/login.js';
+import { renderNotes } from './pages/notes.js';
 
 /**
  * Создаёт DOM-элемент боковой панели
@@ -16,7 +18,19 @@ export function Sidebar(user){
   `);
   el.addEventListener('click', (e)=>{
     const a = e.target.closest('a[data-link]');
-    if (a){ e.preventDefault(); window.navigate(a.getAttribute('href')); }
+    if (a){ 
+      e.preventDefault(); 
+      const href = a.getAttribute('href');
+      const app = document.getElementById("app");
+
+      if (href === "/") {
+        renderNotes(app);
+      } else if (href === "/notes") {
+        renderNotes(app);
+      } else if (href === "/login") {
+        renderLogin(app);
+      }
+    }
   });
   return el;
 }
@@ -29,6 +43,9 @@ export function Sidebar(user){
  * @returns {HTMLElement} DOM-элемент карточки
  */
 export function NoteCard({title, body}){
-  const el = htmlToElement(`<div class="card"><div class="title">${title}</div><div>${body || ''}</div></div>`);
+  const el = htmlToElement(`<div class="card">
+      <div class="title">${title}</div>
+      <div>${body || ''}</div>
+    </div>`);
   return el;
 }

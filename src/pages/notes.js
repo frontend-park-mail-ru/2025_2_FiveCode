@@ -10,7 +10,8 @@ import { loadUser } from '../utils/session.js';
  * @param {Array<Object>} [params.notes=[]] - Массив объектов заметок для отображения
  * @returns {HTMLElement} DOM-элемент страницы заметок
  */
-export function renderNotes({ notes = [] } = {}) {
+export function renderNotes(app) {
+  app.innerHTML = '';
   const page = htmlToElement(`<div class="page page--notes"></div>`);
 
   const user = loadUser();
@@ -47,7 +48,8 @@ export function renderNotes({ notes = [] } = {}) {
         filteredNotes.forEach((note) => {
           const noteCard = NoteCard(note);
           noteCard.addEventListener('click', () => {
-            window.location.href = `edit/${note.id}`;
+            // window.location.href = `edit/${note.id}`;
+            console.log(`Note ${note.id} clicked`);
           });
           list.appendChild(noteCard);
         });
@@ -61,7 +63,8 @@ export function renderNotes({ notes = [] } = {}) {
             favorite: false,
           });
           addCard.addEventListener('click', () => {
-            window.location.href = `edit/new`;
+            // window.location.href = `edit/new`;
+            console.log('Create new note clicked');
           });
           list.appendChild(addCard);
         }
@@ -72,5 +75,6 @@ export function renderNotes({ notes = [] } = {}) {
     })
 
   page.appendChild(main);
-  return page;
+  app.appendChild(page);
+  // return page;
 }
