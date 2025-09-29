@@ -13,6 +13,7 @@
     justify-content: space-between;
     align-items: center; 
     box-sizing: border-box;
+    border-color: var(--primary-200);
 }
 
 .header__inner {

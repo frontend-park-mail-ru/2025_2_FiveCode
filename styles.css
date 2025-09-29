@@ -8,9 +8,14 @@
   --primary-color: #3399FF;
   --text-noraml: #212529;
   --gradient-color: #ff6666;
+  --error: #DC3545;
+  --success: #28A745;
   --black: #1e1e1e;
-  --primary-200: #99CCFF;
+  --warning: #FFC107;
+  --info: #17A2B8;
+  --primary-50: #E9F2FF;
   --primary-100: #CCE6FF;
+  --primary-200: #99CCFF;
   --primary-300: #66B2FF;
   --primary-400: #3399FF;
   --primary-500: #007bff;

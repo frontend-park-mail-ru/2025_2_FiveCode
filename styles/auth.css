@@ -85,8 +85,8 @@
 
 .login-buttons button:first-child,
 .register-buttons button:first-child {
-  background: var(--primary-color);
-  color: #fff;
+  background: var(--primary-300);
+  color: var(--text-noraml);
 }
 
 .login-buttons button:first-child:hover,
@@ -96,13 +96,13 @@
 
 .register-btn,
 .login-btn {
-  background: #f98512;
-  color: #fff;
+  background: var(--primary-50);
+  color: var(--text-noraml);
 }
 
 .register-btn:hover,
 .login-btn:hover {
-  background: #ffa041;
+  background: var(--primary-100);
 }
 
 .login-form input::placeholder {
@@ -139,7 +139,7 @@
 }
 
 .error-message {
-  color: red;
+  color: var(--error);
   font-size: 12px;
   margin: 0;
   margin-top: -15px;

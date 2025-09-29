@@ -7,7 +7,8 @@
   padding: 16px;
   border-right: 1px solid var(--primary-color);
   position: fixed;
-  height: 100vh; 
+  height: 100vh;
+  
 }
 
 .sidebar__user {
@@ -15,7 +16,11 @@
   margin-bottom: 16px;
   display: flex;
   align-items: center;
-  
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .sidebar__nav {
@@ -48,7 +53,7 @@
 
 .sidebar__item:hover,
 .subdir__item:hover{
-  background: linear-gradient(90deg, var(--primary-300), var(--primary-500));
+  background: linear-gradient(90deg, var(--primary-200), var(--primary-300));
   color: #fff;
 }
 
@@ -109,7 +114,6 @@
     gap: 10px;
 }
 
-/* для элементов списка */
 .subdirs__item {
     background-color: #f0f0f0; 
     padding: 10px;

@@ -9,7 +9,7 @@ export function Sidebar(user){
   const el = htmlToElement(`
     <div class="sidebar">
       <div style="font-weight:700;margin-bottom:8px">Username</div>
-      <div><a href="/" data-link>Home</a></div>
+      <div><a href="/" data-link>Домой</a></div>
       <div><a href="/notes" data-link>Notes</a></div>
       <div style="position:absolute;bottom:16px">Settings</div>
     </div>

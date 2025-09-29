@@ -20,8 +20,8 @@ export function renderNotes({ notes = [] } = {}) {
   main.classList.add('page__main');
 
   const categories = [
-    { key: "favorites", title: "Favorites" },
-    { key: "recent", title: "Recent" },
+    { key: "favorites", title: "Избранное" },
+    { key: "recent", title: "Заметки" },
   ];
 
   apiClient.getNotesForUser(user.id)
