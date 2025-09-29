@@ -84,7 +84,7 @@ export function renderRegister(app) {
 
         <div class="login-buttons">
           <button type="submit" class="btn">Создать аккаунт</button>
-          <span class="login-text-small" style="margin-bottom: -5px;"> Уже есть аккаунт? <a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
+          <span class="login-text-small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? <a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
           
         </div>
       </form>

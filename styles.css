@@ -59,6 +59,6 @@ body{
   flex-wrap:wrap;
 }
 .form-row{margin-bottom:10px}
-.btn{padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer}
+.btn{padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer; font-size: 16px;}
 .err{color:#c00;font-size:13px;margin-top:6px}
 .title{font-weight:700}
