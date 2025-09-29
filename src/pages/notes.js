@@ -4,6 +4,10 @@ import { NoteCard } from "../components/notecard.js";
 import { apiClient } from '../api/apiClient.js';
 import { loadUser } from '../utils/session.js';
 
+const ICONS = {
+  add_new: new URL('../assets/icon_add_new.svg', import.meta.url).href,
+}
+
 /**
  * Рендерит страницу заметок с секциями избранных и недавних заметок
  * @param {Object} [params] ъ
@@ -57,9 +61,9 @@ export function renderNotes(app) {
         if (key === "recent") {
           const addCard = NoteCard({
             id: 0,
-            title: "+ Create new note",
+            title: "Новая заметка",
             text: "",
-            icon: "./src/assets/icon_file.svg",
+            icon: "./src/assets/icon_add_new.svg",
             favorite: false,
           });
           addCard.addEventListener('click', () => {

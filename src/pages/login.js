@@ -63,14 +63,16 @@ export function renderLogin(app) {
 
   const loginModal = htmlToElement(`
     <div class="login-modal">
-      <h2 class="icon-login-form"> <img src="${ICONS.Icon}"/ class="login-icon"> Goose</h2>
+    
+    <a class="icon-login-form"><img src="${ICONS.Icon}"/ class="login-icon"> </a> 
+      <h2 class="icon-login-form"> Вход</h2>
       <form class="login-form">
         <label class="login-text">Почта</label>
-        <input type="text" name="email" placeholder="введите почту" class="input" required />
+        <input type="text" name="email" placeholder="введите почту" class="input"/>
         <span class="error-message" id="emailError"></span>
 
         <label class="login-text">Пароль</label>
-        <input type="password" name="password" placeholder="введите пароль" class="input" required />
+        <input type="password" name="password" placeholder="введите пароль" class="input"/>
         <span class="error-message" id="passwordError"></span>
 
         <div class="login-buttons">

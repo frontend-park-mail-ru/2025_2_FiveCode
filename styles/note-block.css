@@ -38,23 +38,25 @@
   background: var(--note-bg);
   border-radius: 10px;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  /* box-shadow: 0 2px 6px rgba(0,0,0,0.4); */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   transition: transform 0.2s, background 0.2s;
-  height: 200px;
+  height: 150px;
   cursor: pointer;
+  border: 2px solid var(--gray-400);
 }
 
 .note-card:hover {
   /* background: var(--note-active); */
-  background: linear-gradient(90deg, var(--gray-200), var(--note-active));
+  /* background: linear-gradient(90deg, var(--gray-200), var(--note-active)); */
+  background: var(--note-hover) ;
   transform: translateY(-2px);
 }
 
 .note-card.favorite {
-  border: 1px solid #4f46e5;
+  border: 2px solid var(--gray-400);
 }
 
 .note-card__icon {

@@ -7,8 +7,8 @@ const ICONS = {
   home: new URL('../assets/icon_home_active.svg', import.meta.url).href,
   search: new URL('../assets/icon_search_active.svg', import.meta.url).href,
   settings: new URL('../assets/icon_settings_active.svg', import.meta.url).href,
-  logout: new URL('../assets/icon_logout.svg', import.meta.url).href,
-  account: new URL('../assets/icon_account.svg', import.meta.url).href,
+  logout: new URL('../assets/icon_logout_gray.svg', import.meta.url).href,
+  account: new URL('../assets/icon_account_gray.svg', import.meta.url).href,
 };
 
 /**
@@ -25,11 +25,11 @@ export function Sidebar({ user, subdirs }) {
         <div class="sidebar__user"> <img src="${ICONS.account}" class="sidebar__icon" alt="user icon" /><a data-link>${user?.username || 'Guest'}</a></div>
       </div>
         <nav class="sidebar__nav">
-            <a href="/" class="sidebar__item" data-link> <img src="${ICONS.home}" class="sidebar__icon" alt="user icon" /> Home</a>  
+            <a href="/" class="sidebar__item" data-link> <img src="${ICONS.home}" class="sidebar__icon" alt="user icon" /> Домой</a>  
           </nav>
       <div class="sidebar__subs"></div>
           
-          <a href="/login" class="sidebar__item logout-btn" data-link> <img src="${ICONS.logout}" class="sidebar__icon" /> Log out</a>
+          <a href="/login" class="sidebar__item logout-btn" data-link> <img src="${ICONS.logout}" class="sidebar__icon" /> Выйти</a>
       </aside>
   `);
 

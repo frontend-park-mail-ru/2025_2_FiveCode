@@ -1,6 +1,6 @@
 .sidebar {
   width: 220px;
-  background: var(--panel);
+  background: var(--gray-200);
   display: flex;
   flex-direction: column;
   padding-left: 0%;
@@ -45,15 +45,16 @@
 }
 
 .sidebar__item img.sidebar__icon, .sidebar__icon{
-  width: 28px;
-  height: 28x;
+  width: 24px;
+  height: 24x;
   margin-right: 12px;
   opacity: 0.8;
 }
 
 .sidebar__item:hover,
 .subdir__item:hover{
-  background: linear-gradient(90deg, var(--primary-200), var(--primary-300));
+  /* background: linear-gradient(90deg, var(--primary-200), var(--primary-300)); */
+  background: var(--primary-300);
   color: #fff;
 }
 
