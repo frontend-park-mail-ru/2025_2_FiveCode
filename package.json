@@ -1,0 +1,20 @@
+{
+  "name": "notion-proto-frontend",
+  "version": "1.0.0",
+  "description": "Прототип фронтенда Notion (SPA без React, на чистом JS + шаблонизаторы)",
+  "scripts": {
+    "dev": "live-server --host=0.0.0.0 --port=8030 --entry-file=index.html",
+    "lint": "eslint src --ext .js",
+    "format": "prettier --write ."
+  },
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "live-server": "^1.2.2",
+    "prettier": "^3.0.0"
+  },
+  "main": "index.js",
+  "keywords": []
+}
