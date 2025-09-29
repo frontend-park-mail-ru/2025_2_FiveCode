@@ -13,11 +13,9 @@
 }
 
 body {
-    /* margin: 0; */
     font-family: Inter, system-ui, Arial;
     background: var(--bg-default);
     color: var(--primary-color);
-    /* display: flex; */
     justify-content: center;
     align-items: center; 
 }

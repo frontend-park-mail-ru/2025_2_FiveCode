@@ -40,7 +40,6 @@
   font-size: 16px;
   font-weight: 5000;
   transition: background 0.2s, color 0.2s;
-  /* justify-content: center; */
   text-align: center;
 }
 
@@ -53,7 +52,6 @@
 
 .sidebar__item:hover,
 .subdir__item:hover{
-  /* background: linear-gradient(90deg, var(--primary-200), var(--primary-300)); */
   background: var(--primary-300);
   color: #fff;
 }
@@ -76,7 +74,6 @@
 .subdirs {
     background-color: #ffffff;
     border-radius: 8px; 
-    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);  */
     padding: 10px; 
     margin-bottom: 20px;
 }

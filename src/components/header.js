@@ -24,7 +24,6 @@ export function Header({ user }) {
     `);
 
     el.querySelector('.header__login').addEventListener('click', () => {
-        // window.navigate(user ? '/settings' : '/login');
         if (user) {
             renderDashboard(app);}
         else {
@@ -33,5 +32,4 @@ export function Header({ user }) {
     }
 );
     app.appendChild(el);
-//   return el;
 }

@@ -13,7 +13,7 @@ export function Subdirectories({items = []}) {
     const container = document.createElement("div");
     container.classList.add("folders");
 
-    // группируем заметки по папкам
+    // группировка заметок по папкам
     const folders = items.reduce((acc, note) => {
         if (!acc[note.folder]) acc[note.folder] = [];
         acc[note.folder].push(note);
@@ -34,7 +34,6 @@ export function Subdirectories({items = []}) {
     const listEl = folderEl.querySelector(".folder-list");
     const arrow = folderEl.querySelector(".folder-arrow");
 
-    // добавляем заметки в список
     notes.forEach((item) => {
       const li = htmlToElement(`
         <li class="subdir-item">
@@ -53,7 +52,7 @@ export function Subdirectories({items = []}) {
   folderEl.querySelector(".folder-header").addEventListener("click", () => {
     collapsed = !collapsed;
     listEl.style.display = collapsed ? "none" : "block";
-    arrow.classList.toggle("rotated", !collapsed); // вниз при раскрытии
+    arrow.classList.toggle("rotated", !collapsed);
   });
 
     container.appendChild(folderEl);
@@ -62,13 +61,3 @@ export function Subdirectories({items = []}) {
   return container;
 
 }
-//     items.forEach((item) => {
-//     const li = htmlToElement(`
-      
-//     `);
-
-//     container.appendChild(li);
-//   });
-
-//   return container;
-// }

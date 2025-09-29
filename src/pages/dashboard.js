@@ -19,7 +19,6 @@ export function renderDashboard(app) {
   const main = MainContent({});
 
   page.appendChild(header);
-  // page.appendChild(welcome);
   page.appendChild(main);
 
   app.appendChild(page);

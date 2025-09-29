@@ -39,9 +39,7 @@ export function Sidebar({ user, subdirs }) {
   .then(notes => {
     notes = Array.isArray(notes) ? notes : [];
     subs.appendChild(Subdirectories({items: notes}));
-    // mockNotes.forEach((note) => {
-    //   subs.appendChild(NoteCard(note));
-    // });
+
   })
   .catch(err => {
     console.error('Failed to load notes', err);
@@ -52,15 +50,12 @@ export function Sidebar({ user, subdirs }) {
     if (link) {
       e.preventDefault();
       renderLogin(app);
-      // window.navigate(link.getAttribute('href'));
     }
   });
   
-  // Logout
   el.querySelector(".logout-btn").addEventListener("click", async () => {
       await apiClient.logout();
       renderLogin(app);
-      // window.navigate("/login");
   });
 
   return el;

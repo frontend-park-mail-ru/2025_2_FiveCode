@@ -44,7 +44,6 @@ function validateForm(form) {
 export function renderLogin(app) {
   app.innerHTML = '';
   const el = htmlToElement(`<div class="page"></div>`);
-  // el.appendChild(Header({ user: null }));
 
   let headerEl = Header({ user: null });
   if (typeof headerEl === "string") {
@@ -119,7 +118,6 @@ export function renderLogin(app) {
 
     try { 
       const user = await apiClient.login(data);
-      // window.navigate("/notes");
       renderNotes(app);
     } catch (err) {
       loginErrorEl.textContent = "Логин или пароль неверный";      
@@ -127,12 +125,9 @@ export function renderLogin(app) {
   });
 
   loginModal.querySelector(".register-btn").addEventListener("click", () => {
-    // window.navigate("/register");
     renderRegister(app);
   });
   
   el.appendChild(loginModal);
   app.appendChild(el);
-  // el.appendChild(welcome);
-  // return el;
 }

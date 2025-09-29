@@ -1,12 +1,10 @@
 import { apiClient } from "./api/apiClient.js";
-// import { initRouter } from "./router.js";
 import { saveUser } from "./utils/session.js";
 import { renderLogin } from "./pages/login.js";
 import {renderNotes} from "./pages/notes.js";
 
 window.addEventListener("DOMContentLoaded", async () => {
   const app = document.getElementById("app");
-  // initRouter(app);
   
   try {
     const user = await apiClient.me();

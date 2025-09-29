@@ -54,7 +54,6 @@ function validateForm(form) {
 export function renderRegister(app) {
   app.innerHTML = '';
   const el = htmlToElement(`<div class="page"></div>`);
-  // el.appendChild(Header({ user: null }));
 
   let headerEl = Header({ user: null });
   if (typeof headerEl === "string") {
@@ -99,7 +98,6 @@ export function renderRegister(app) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // очищаем старые ошибки
     emailErrorEl.textContent = "";
     passwordErrorEl.textContent = "";
     confirmPasswordErrorEl.textContent = "";
@@ -124,18 +122,12 @@ export function renderRegister(app) {
       });
       await apiClient.login({ email: data.email, password: data.password });
       renderNotes(app);
-      // window.navigate("/notes");
     } catch (err) {
       alert("Ошибка: " + err.message);
     }
   });
 
-  // registerModal.querySelector(".login-btn").addEventListener("click", () => {
-  //   // window.navigate("/login");
-  //   renderLogin(app);
-  // });
 
   el.appendChild(registerModal);
   app.appendChild(el);
-  // return el;
 }
