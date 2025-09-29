@@ -75,10 +75,12 @@ export function renderLogin(app) {
         <input type="password" name="password" placeholder="введите пароль" class="input"/>
         <span class="error-message" id="passwordError"></span>
 
+        <span class="error-message" id="loginError"></span>
         <div class="login-buttons">
           <button type="submit" class="btn">Войти</button>
           <button type="button" class="btn register-btn">Создать аккаунт</button>
         </div>
+        
       </form>
     </div>
   `);
@@ -91,12 +93,14 @@ export function renderLogin(app) {
   const form = loginModal.querySelector(".login-form");
   const emailErrorEl = loginModal.querySelector("#emailError");
   const passwordErrorEl = loginModal.querySelector("#passwordError");
+  const loginErrorEl = loginModal.querySelector("#loginError");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     emailErrorEl.textContent = "";
     passwordErrorEl.textContent = "";
+    loginErrorEl.textContent = "";
 
     const errors = validateForm(form);
 
@@ -117,7 +121,7 @@ export function renderLogin(app) {
       // window.navigate("/notes");
       renderNotes(app);
     } catch (err) {
-      alert("Ошибка: " + err.message);
+      loginErrorEl.textContent = "Логин или пароль неверный";      
     }
   });
 
