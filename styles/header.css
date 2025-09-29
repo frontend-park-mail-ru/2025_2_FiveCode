@@ -4,8 +4,8 @@
     left: 0;
     right: 0;
     width: 100%;
-    background: var(--panel);
-    box-shadow: var(--shadow);
+    background: var(--gray-0);
+    /* box-shadow: var(--shadow); */
     z-index: 1000;
     padding: 10px 20px;
     display: flex;
@@ -13,7 +13,7 @@
     justify-content: space-between;
     align-items: center; 
     box-sizing: border-box;
-    border-color: var(--primary-200);
+    border: 2px solid var(--primary-200);
 }
 
 .header__inner {

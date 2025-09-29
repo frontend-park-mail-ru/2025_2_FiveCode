@@ -137,6 +137,14 @@
     margin-bottom: 5px;
     margin-left: 5px;
     font-weight: 600;
+    color: var(--text-noraml);
+}
+
+.login-text-small {
+    margin-bottom: 2px;
+    font-weight: 500;
+    font: 16px;
+    color: var(--text-noraml);
 }
 
 .error-message {

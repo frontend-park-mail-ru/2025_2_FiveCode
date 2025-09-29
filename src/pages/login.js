@@ -76,6 +76,7 @@ export function renderLogin(app) {
         <span class="error-message" id="passwordError"></span>
 
         <span class="error-message" id="loginError"></span>
+        <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)" href="/">Восстановить доступ </a></span>
         <div class="login-buttons">
           <button type="submit" class="btn">Войти</button>
           <button type="button" class="btn register-btn">Создать аккаунт</button>

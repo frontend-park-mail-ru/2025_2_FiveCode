@@ -67,7 +67,8 @@ export function renderRegister(app) {
 
   const registerModal = htmlToElement(`
     <div class="login-modal show">
-      <h2 class="icon-login-form"> <img src="${ICONS.Icon}"/ class="login-icon"> Goose</h2>
+    <a class="icon-login-form"> <img src="${ICONS.Icon}"/ class="login-icon"> </a>
+      <h2 class="icon-login-form"> Регистрация</h2>
       <form class="register-form">
         <label class="login-text">Почта</label>
         <input type="text" name="email" placeholder="введите почту" class="input" required />
@@ -83,8 +84,8 @@ export function renderRegister(app) {
 
         <div class="login-buttons">
           <button type="submit" class="btn">Создать аккаунт</button>
-          <a class="login-text"> Уже есть аккаунт? </a>
-          <button type="button" class="btn login-btn">Войти</button>
+          <span class="login-text-small" style="margin-bottom: -5px;"> Уже есть аккаунт? <a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
+          
         </div>
       </form>
     </div>
@@ -129,10 +130,10 @@ export function renderRegister(app) {
     }
   });
 
-  registerModal.querySelector(".login-btn").addEventListener("click", () => {
-    // window.navigate("/login");
-    renderLogin(app);
-  });
+  // registerModal.querySelector(".login-btn").addEventListener("click", () => {
+  //   // window.navigate("/login");
+  //   renderLogin(app);
+  // });
 
   el.appendChild(registerModal);
   app.appendChild(el);
