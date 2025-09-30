@@ -68,14 +68,14 @@ export function renderLogin(app) {
       <form class="login-form">
         <label class="login-text">Почта</label>
         <input type="text" name="email" placeholder="введите почту" class="input"/>
-        <span class="error-message" id="emailError"></span>
+        <span class="error-message" id="emailError">&nbsp;</span>
 
         <label class="login-text">Пароль</label>
         <input type="password" name="password" placeholder="введите пароль" class="input"/>
-        <span class="error-message" id="passwordError"></span>
+        <span class="error-message" id="passwordError">&nbsp;</span>
 
-        <span class="error-message" id="loginError"></span>
-        <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)" href="/">Восстановить доступ </a></span>
+        <span class="error-message" id="loginError">&nbsp;</span>
+        <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)">Восстановить доступ </a></span>
         <div class="login-buttons">
           <button type="submit" class="btn">Войти</button>
           <button type="button" class="btn register-btn">Создать аккаунт</button>
@@ -98,15 +98,23 @@ export function renderLogin(app) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    emailErrorEl.textContent = "";
-    passwordErrorEl.textContent = "";
-    loginErrorEl.textContent = "";
+    emailErrorEl.textContent = "&nbsp;";
+    passwordErrorEl.textContent = "&nbsp;";
+    loginErrorEl.textContent = "&nbsp;";
 
     const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
-      if (errors.email) emailErrorEl.textContent = errors.email;
-      if (errors.password) passwordErrorEl.textContent = errors.password;
+      if (errors.email) {
+        emailErrorEl.textContent = errors.email;
+        emailErrorEl.classList.add('visible');
+
+      }
+      if (errors.password) {
+        passwordErrorEl.textContent = errors.password;
+        passwordErrorEl.classList.add('visible');
+
+      }
       return;
     }
 

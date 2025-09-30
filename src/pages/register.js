@@ -71,20 +71,19 @@ export function renderRegister(app) {
       <form class="register-form">
         <label class="login-text">Почта</label>
         <input type="text" name="email" placeholder="введите почту" class="input" required />
-        <span class="error-message" id="emailError"></span>
+        <span class="error-message" id="emailError">&nbsp;</span>
 
         <label class="login-text">Пароль</label>
         <input type="password" name="password" placeholder="введите пароль" class="input" required />
-        <span class="error-message" id="passwordError"></span>
+        <span class="error-message" id="passwordError">&nbsp;</span>
 
         <label class="login-text">Подтвердите пароль</label>
         <input type="password" name="confirmPassword" placeholder="введите пароль" class="input" required />
-        <span class="error-message" id="confirmPasswordError"></span>
+        <span class="error-message" id="confirmPasswordError">&nbsp;</span>
 
         <div class="login-buttons">
           <button type="submit" class="btn">Создать аккаунт</button>
-          <span class="login-text-small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? <a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
-          
+          <span class="login-text-small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? &nbsp;<a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
         </div>
       </form>
     </div>
@@ -98,16 +97,25 @@ export function renderRegister(app) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    emailErrorEl.textContent = "";
-    passwordErrorEl.textContent = "";
-    confirmPasswordErrorEl.textContent = "";
+    emailErrorEl.textContent = "&nbsp;";
+    passwordErrorEl.textContent = "&nbsp;";
+    confirmPasswordErrorEl.textContent = "&nbsp;";
 
     const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
-      if (errors.email) emailErrorEl.textContent = errors.email;
-      if (errors.password) passwordErrorEl.textContent = errors.password;
-      if (errors.confirmPassword) confirmPasswordErrorEl.textContent = errors.confirmPassword;
+      if (errors.email) {
+        emailErrorEl.textContent = errors.email;
+        emailErrorEl.classList.add('visible');
+      }
+      if (errors.password) {
+        passwordErrorEl.textContent = errors.password;
+        passwordErrorEl.classList.add('visible');
+      }
+      if (errors.confirmPassword){
+        confirmPasswordErrorEl.textContent = errors.confirmPassword;
+        confirmPasswordErrorEl.classList.add('visible');
+      }
       return;
     }
 

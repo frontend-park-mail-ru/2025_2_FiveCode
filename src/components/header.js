@@ -19,17 +19,17 @@ export function Header({ user }) {
         <header class="header">
         <div class="header__logo"> <img src="${ICONS.Icon}"/ class="header-icon"> <a href="/"> Goose </a> </div>
         
-        <button class="header__login">${user?.username || 'Войти'}</button>
+        
         </header>
     `);
 
-    el.querySelector('.header__login').addEventListener('click', () => {
-        if (user) {
-            renderDashboard(app);}
-        else {
-            renderLogin(app);
-        }
-    }
-);
+    // el.querySelector('.header__login').addEventListener('click', () => {
+    //     if (user) {
+    //         renderDashboard(app);}
+    //     else {
+    //         renderLogin(app);
+    //     }
+    //     }
+    // );
     app.appendChild(el);
 }
