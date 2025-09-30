@@ -22,7 +22,7 @@ export function Sidebar({ user, subdirs }) {
   const el = htmlToElement(`
       <aside class="sidebar">
       <div class="sidebar__item" href="/">
-        <div class="sidebar__user"> <img src="${ICONS.account}" class="sidebar__icon" alt="user icon" /><a data-link>${user?.username || 'Guest'}</a></div>
+        <div class="sidebar__user"> <img src="${ICONS.account}" class="sidebar__icon" alt="user icon" /><a data-link>${user?.email || 'Guest'}</a></div>
       </div>
         <nav class="sidebar__nav">
             <a href="/" class="sidebar__item" data-link> <img src="${ICONS.home}" class="sidebar__icon" alt="user icon" /> Домой</a>  

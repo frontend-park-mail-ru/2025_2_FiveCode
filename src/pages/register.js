@@ -115,7 +115,6 @@ export function renderRegister(app) {
 
     try {
       const user = await apiClient.register({
-        username: data.email,
         email: data.email,
         password: data.password,
         confirm_password: data.confirmPassword

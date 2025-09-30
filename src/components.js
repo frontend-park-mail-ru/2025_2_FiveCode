@@ -10,7 +10,7 @@ import { renderNotes } from './pages/notes.js';
 export function Sidebar(user){
   const el = htmlToElement(`
     <div class="sidebar">
-      <div style="font-weight:700;margin-bottom:8px">Username</div>
+      <div style="font-weight:700;margin-bottom:8px">Email</div>
       <div><a href="/" data-link>Домой</a></div>
       <div><a href="/notes" data-link>Notes</a></div>
       <div style="position:absolute;bottom:16px">Settings</div>

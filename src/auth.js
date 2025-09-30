@@ -2,7 +2,7 @@ import { apiFetch } from './api.js';
 
 /**
  * Запрос на логин. Бекенд должен установить HttpOnly cookie.
- * @param {{username: string, password: string}} creds
+ * @param {{email: string, password: string}} creds
  */
 export async function login(creds){
   return apiFetch('/api/login', { method: 'POST', body: creds });
@@ -10,7 +10,7 @@ export async function login(creds){
 
 /**
  * Регистрация
- * @param {{username:string,password:string}} data
+ * @param {{email:string,password:string}} data
  */
 export async function register(data){
   return apiFetch('/api/register', { method: 'POST', body: data });
