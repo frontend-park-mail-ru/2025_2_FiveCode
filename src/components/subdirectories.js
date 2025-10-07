@@ -47,13 +47,41 @@ export function Subdirectories({items = []}) {
     });
 
     // обработчик сворачивания/разворачивания
-    const toggleBtn = folderEl.querySelector(".folder-toggle");
-    let collapsed = false;
-  folderEl.querySelector(".folder-header").addEventListener("click", () => {
-    collapsed = !collapsed;
+  //   const toggleBtn = folderEl.querySelector(".folder-toggle");
+  //   let collapsed = false;
+  // folderEl.querySelector(".folder-header").addEventListener("click", () => {
+  //   collapsed = !collapsed;
+  //   listEl.style.display = collapsed ? "none" : "block";
+  //   arrow.classList.toggle("rotated", !collapsed);
+  // });
+  // начальное состояние — свернуто
+    let collapsed = true;
+    // применить начальное отображение и класс стрелки
     listEl.style.display = collapsed ? "none" : "block";
     arrow.classList.toggle("rotated", !collapsed);
-  });
+
+    const header = folderEl.querySelector(".folder-header");
+    header.setAttribute("role", "button");
+    header.setAttribute("tabindex", "0");
+    header.setAttribute("aria-expanded", String(!collapsed));
+
+    const updateState = () => {
+      listEl.style.display = collapsed ? "none" : "block";
+      arrow.classList.toggle("rotated", !collapsed);
+      header.setAttribute("aria-expanded", String(!collapsed));
+    };
+
+    header.addEventListener("click", () => {
+      collapsed = !collapsed;
+      updateState();
+    });
+    header.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        collapsed = !collapsed;
+        updateState();
+      }
+    });
 
     container.appendChild(folderEl);
   });
