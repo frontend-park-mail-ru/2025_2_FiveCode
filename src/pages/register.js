@@ -7,6 +7,8 @@ import { renderLogin } from './login.js';
 
 const ICONS = {
   Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
+  eye: new URL('../assets/icon_eye.svg', import.meta.url).href,
+  eyeOff: new URL('../assets/icon_eye_off.svg', import.meta.url).href,
 };
 
 function validateForm(form) {
@@ -69,16 +71,41 @@ export function renderRegister(app) {
     <a class="icon-login-form"> <img src="${ICONS.Icon}"/ class="login-icon"> </a>
       <h2 class="icon-login-form"> Регистрация</h2>
       <form class="register-form">
-        <label class="login-text">Почта</label>
-        <input type="text" name="email" placeholder="введите почту" class="input" required />
+
+        <label class="login-text">Почта<span class="validation-icon">?
+            <div class="tooltip">
+              Формат email: <br>
+              • латинские буквы и цифры<br>
+              • символ "@" и домен (например: test@mail.com)
+            </div>
+          </span>
+        <div class="input-wrapper">
+          <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
+        </div></label>
         <span class="error-message" id="emailError">&nbsp;</span>
 
-        <label class="login-text">Пароль</label>
-        <input type="password" name="password" placeholder="введите пароль" class="input" required />
+        <label class="login-text">Пароль<span class="validation-icon">?
+            <div class="tooltip">
+              Пароль должен содержать:<br>
+              • минимум 6 символов<br>
+              • хотя бы одну цифру<br>
+              • хотя бы одну букву<br>
+              • спецсимволы (!@#$%^&*)
+            </div>
+          </span></label>
+        <div class="input-wrapper">
+          <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
+          <span class="toggle-password" id="togglePassword"><img src="${ICONS.eye}"></span>
+        </div>
+        </span>
+
         <span class="error-message" id="passwordError">&nbsp;</span>
 
         <label class="login-text">Подтвердите пароль</label>
-        <input type="password" name="confirmPassword" placeholder="введите пароль" class="input" required />
+        <div class="input-wrapper">
+          <input type="password" name="confirmPassword" id="confirmPassword" placeholder="введите пароль" class="input" required />
+          <span class="toggle-password" id="toggleConfirmPassword"><img src="${ICONS.eye}"></span>
+        </div>
         <span class="error-message" id="confirmPasswordError">&nbsp;</span>
 
         <div class="login-buttons">
@@ -94,12 +121,60 @@ export function renderRegister(app) {
   const passwordErrorEl = registerModal.querySelector("#passwordError");
   const confirmPasswordErrorEl = registerModal.querySelector("#confirmPasswordError");
 
+  const togglePasswordEl = registerModal.querySelector("#togglePassword");
+  const toggleIconEl = registerModal.querySelector("#togglePassword img");
+  const passwordInputEl = registerModal.querySelector("#password");
+  
+  if (togglePasswordEl && toggleIconEl && passwordInputEl) {
+    togglePasswordEl.setAttribute("role", "button");
+    togglePasswordEl.setAttribute("tabindex", "0");
+    togglePasswordEl.setAttribute("aria-pressed", "false");
+
+    togglePasswordEl.addEventListener("click", () => {
+      const type = passwordInputEl.getAttribute("type") === "password" ? "text" : "password";
+      passwordInputEl.setAttribute("type", type);
+      toggleIconEl.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+      togglePasswordEl.setAttribute("aria-pressed", type === "text" ? "true" : "false");
+    });
+
+    togglePasswordEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        togglePasswordEl.click();
+      }
+    });
+  }
+  
+  const toggleConfirmEl = registerModal.querySelector("#toggleConfirmPassword");
+  const toggleConfirmIconEl = registerModal.querySelector("#toggleConfirmPassword img");
+  const confirmPasswordInputEl = registerModal.querySelector("#confirmPassword");
+
+  if (toggleConfirmEl && toggleConfirmIconEl && confirmPasswordInputEl) {
+    toggleConfirmEl.setAttribute("role", "button");
+    toggleConfirmEl.setAttribute("tabindex", "0");
+    toggleConfirmEl.setAttribute("aria-pressed", "false");
+
+    toggleConfirmEl.addEventListener("click", () => {
+      const type = confirmPasswordInputEl.getAttribute("type") === "password" ? "text" : "password";
+      confirmPasswordInputEl.setAttribute("type", type);
+      toggleConfirmIconEl.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+      toggleConfirmEl.setAttribute("aria-pressed", type === "text" ? "true" : "false");
+    });
+
+    toggleConfirmEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleConfirmEl.click();
+      }
+    });
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    emailErrorEl.textContent = "&nbsp;";
-    passwordErrorEl.textContent = "&nbsp;";
-    confirmPasswordErrorEl.textContent = "&nbsp;";
+    emailErrorEl.textContent = "\u00A0";
+    passwordErrorEl.textContent = "\u00A0";
+    confirmPasswordErrorEl.textContent = "\u00A0";
 
     const errors = validateForm(form);
 
@@ -120,6 +195,15 @@ export function renderRegister(app) {
     }
 
     const data = Object.fromEntries(new FormData(form));
+    // переключение видимости пароля
+    // const togglePassword = loginModal.querySelector("#togglePassword");
+    // const toggleIcon = loginModal.querySelector("#togglePassword img");
+    // togglePassword.addEventListener("click", () => {
+    //   const passwordInput = loginModal.querySelector("#password");
+    //   const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+    //   passwordInput.setAttribute("type", type);
+    //   toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+    // });
 
     try {
       const user = await apiClient.register({

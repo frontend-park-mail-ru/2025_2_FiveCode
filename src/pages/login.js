@@ -6,6 +6,8 @@ import { renderRegister } from './register.js';
 
 const ICONS = {
   Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
+  eye: new URL('../assets/icon_eye.svg', import.meta.url).href,
+  eyeOff: new URL('../assets/icon_eye_off.svg', import.meta.url).href,
 };
 
 function validateForm(form) {
@@ -66,15 +68,39 @@ export function renderLogin(app) {
     <a class="icon-login-form"><img src="${ICONS.Icon}"/ class="login-icon"> </a> 
       <h2 class="icon-login-form"> Вход</h2>
       <form class="login-form">
-        <label class="login-text">Почта</label>
-        <input type="text" name="email" placeholder="введите почту" class="input"/>
+
+        <label class="login-text">Почта<span class="validation-icon">?
+            <div class="tooltip">
+              Формат email: <br>
+              • латинские буквы и цифры<br>
+              • символ "@" и домен (например: test@mail.com)
+            </div>
+          </span>
+        <div class="input-wrapper">
+          <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
+          
+        </div></label>
         <span class="error-message" id="emailError">&nbsp;</span>
 
-        <label class="login-text">Пароль</label>
-        <input type="password" name="password" placeholder="введите пароль" class="input"/>
-        <span class="error-message" id="passwordError">&nbsp;</span>
+        <label class="login-text">Пароль<span class="validation-icon">?
+            <div class="tooltip">
+              Пароль должен содержать:<br>
+              • минимум 6 символов<br>
+              • хотя бы одну цифру<br>
+              • хотя бы одну букву<br>
+              • спецсимволы (!@#$%^&*)
+            </div>
+          </span></label>
+        <div class="input-wrapper">
+          <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
+          <span class="toggle-password" id="togglePassword"><img src="${ICONS.eye}"></span>
+          
+        </div>
+        </span>
 
+        <span class="error-message" id="passwordError">&nbsp;</span>
         <span class="error-message" id="loginError">&nbsp;</span>
+        
         <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)">Восстановить доступ </a></span>
         <div class="login-buttons">
           <button type="submit" class="btn">Войти</button>
@@ -98,9 +124,9 @@ export function renderLogin(app) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    emailErrorEl.textContent = "&nbsp;";
-    passwordErrorEl.textContent = "&nbsp;";
-    loginErrorEl.textContent = "&nbsp;";
+    emailErrorEl.textContent = "\u00A0";
+    passwordErrorEl.textContent = "\u00A0";
+    loginErrorEl.textContent = "\u00A0";
 
     const errors = validateForm(form);
 
@@ -130,6 +156,16 @@ export function renderLogin(app) {
     } catch (err) {
       loginErrorEl.textContent = "Логин или пароль неверный";      
     }
+  });
+
+  // переключение видимости пароля
+  const togglePassword = loginModal.querySelector("#togglePassword");
+  const toggleIcon = loginModal.querySelector("#togglePassword img");
+  togglePassword.addEventListener("click", () => {
+    const passwordInput = loginModal.querySelector("#password");
+    const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+    passwordInput.setAttribute("type", type);
+    toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
   });
 
   loginModal.querySelector(".register-btn").addEventListener("click", () => {

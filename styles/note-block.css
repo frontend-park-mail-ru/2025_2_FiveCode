@@ -44,7 +44,7 @@
   transition: transform 0.2s, background 0.2s;
   height: 150px;
   cursor: pointer;
-  border: 2px solid var(--gray-400);
+  border: 1px solid var(--gray-400);
 }
 
 .note-card:hover {
@@ -53,7 +53,7 @@
 }
 
 .note-card.favorite {
-  border: 2px solid var(--gray-400);
+  border: 1px solid var(--gray-400);
 }
 
 .note-card__icon {
