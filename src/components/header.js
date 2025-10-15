@@ -3,7 +3,7 @@ import { renderLogin } from '../pages/login.js';
 import { htmlToElement } from '../templates.js';
 
 const ICONS = {
-  Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
+  Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
 };
 
 

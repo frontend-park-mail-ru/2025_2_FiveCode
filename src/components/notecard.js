@@ -1,7 +1,7 @@
 import { htmlToElement } from "../templates.js";
 
 const ICONS = {
-  deafult_file: new URL('../assets/icon_file.svg', import.meta.url).href
+  deafult_file: new URL('../static/svg/icon_file.svg', import.meta.url).href
 };
 
 /**

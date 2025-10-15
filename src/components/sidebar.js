@@ -4,11 +4,11 @@ import { apiClient } from '../api/apiClient.js';
 import { renderLogin } from '../pages/login.js';
 
 const ICONS = {
-  home: new URL('../assets/icon_home_active.svg', import.meta.url).href,
-  search: new URL('../assets/icon_search_active.svg', import.meta.url).href,
-  settings: new URL('../assets/icon_settings_active.svg', import.meta.url).href,
-  logout: new URL('../assets/icon_logout_gray.svg', import.meta.url).href,
-  account: new URL('../assets/icon_account_gray.svg', import.meta.url).href,
+  home: new URL('../static/svg/icon_home_active.svg', import.meta.url).href,
+  search: new URL('../static/svg/icon_search_active.svg', import.meta.url).href,
+  settings: new URL('../static/svg/icon_settings_active.svg', import.meta.url).href,
+  logout: new URL('../static/svg/icon_logout_gray.svg', import.meta.url).href,
+  account: new URL('../static/svg/icon_account_gray.svg', import.meta.url).href,
 };
 
 /**
