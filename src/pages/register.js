@@ -6,7 +6,7 @@ import { renderLogin } from './login.js';
 
 
 const ICONS = {
-  Icon: new URL('../assets/icon_goose.svg', import.meta.url).href,
+  Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
 };
 
 function validateForm(form) {

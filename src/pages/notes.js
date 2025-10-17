@@ -5,7 +5,7 @@ import { apiClient } from '../api/apiClient.js';
 import { loadUser } from '../utils/session.js';
 
 const ICONS = {
-  add_new: new URL('../assets/icon_add_new.svg', import.meta.url).href,
+  add_new: new URL('../static/svg/icon_add_new.svg', import.meta.url).href,
 }
 
 /**
