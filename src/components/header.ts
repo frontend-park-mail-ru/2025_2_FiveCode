@@ -30,24 +30,15 @@ export function Header({ user, app }: HeaderProps) : HTMLElement {
             <img src="<%= iconUrl %>" class="header-icon">
             <a href="/">Goose</a>
         </div>
-        <button class="header__login"><%= loginText %></button>
         </header>
     `;
     const html = ejs.render(template, {
     iconUrl: ICONS.Icon,
-    loginText: user?.username || 'Войти',
     });
     
     const el = document.createElement('div');
     el.innerHTML = html;
     
-    el.querySelector('.header__login')!.addEventListener('click', () => {
-        if (user) {
-            renderDashboard(app);}
-        else {
-            renderLogin(app);
-        }
-        });
-    // app.appendChild(el);
+    
     return el.firstElementChild as HTMLElement;
 }

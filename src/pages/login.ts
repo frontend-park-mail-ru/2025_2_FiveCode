@@ -6,6 +6,8 @@ import { renderRegister } from './register';
 
 const ICONS = {
   Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
+  eye: new URL('../static/svg/icon_eye.svg', import.meta.url).href,
+  eyeOff: new URL('../static/svg/icon_eye_off.svg', import.meta.url).href,
 };
 
 interface ValidationErrors {
@@ -65,30 +67,45 @@ export function renderLogin(app: HTMLElement) : void {
     pageEl.appendChild(headerEl);
   }
 
-  const welcomeEl = document.createElement('div');
-  welcomeEl.innerHTML = `
-    <div class="welcome">
-      <h1>WELCOME</h1>
-    </div>
-  `;
-  pageEl.appendChild(welcomeEl.firstElementChild as HTMLElement);
-
   const loginModalTemplate = `
     <div class="login-modal">
     
-    <a class="icon-login-form"><img src="<%= icon %>"/ class="login-icon"> </a> 
+    <a class="icon-login-form"><img src="<%= icon %>" class="login-icon"> </a> 
       <h2 class="icon-login-form"> Вход</h2>
       <form class="login-form">
-        <label class="login-text">Почта</label>
-        <input type="text" name="email" placeholder="введите почту" class="input"/>
-        <span class="error-message" id="emailError"></span>
 
-        <label class="login-text">Пароль</label>
-        <input type="password" name="password" placeholder="введите пароль" class="input"/>
-        <span class="error-message" id="passwordError"></span>
+        <label class="login-text">Почта<span class="validation-icon">?
+            <div class="tooltip">
+              Формат email: <br>
+              • латинские буквы и цифры<br>
+              • символ "@" и домен (например: test@mail.com)
+            </div>
+          </span>
+        <div class="input-wrapper">
+          <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
+          
+        </div></label>
+        <span class="error-message" id="emailError">&nbsp;</span>
 
-        <span class="error-message" id="loginError"></span>
-        <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)" href="/">Восстановить доступ </a></span>
+        <label class="login-text">Пароль<span class="validation-icon">?
+            <div class="tooltip">
+              Пароль должен содержать:<br>
+              • минимум 6 символов<br>
+              • хотя бы одну цифру<br>
+              • хотя бы одну букву<br>
+              • спецсимволы (!@#$%^&*)
+            </div>
+          </span></label>
+        <div class="input-wrapper">
+          <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
+          <span class="toggle-password" id="togglePassword"><img src="<%= eye %>"></span>
+        </div>
+        </span>
+
+        <span class="error-message" id="passwordError">&nbsp;</span>
+        <span class="error-message" id="loginError">&nbsp;</span>
+        
+        <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)">Восстановить доступ </a></span>
         <div class="login-buttons">
           <button type="submit" class="btn">Войти</button>
           <button type="button" class="btn register-btn">Создать аккаунт</button>
@@ -98,7 +115,7 @@ export function renderLogin(app: HTMLElement) : void {
     </div>
   `;
   
-  const loginModalHtml = ejs.render(loginModalTemplate, { icon: ICONS.Icon });
+  const loginModalHtml = ejs.render(loginModalTemplate, { icon: ICONS.Icon, eye: ICONS.eye });
   const loginModalEl = document.createElement('div');
   loginModalEl.innerHTML = loginModalHtml;
   const loginModal = loginModalEl.firstElementChild as HTMLElement;
@@ -123,8 +140,16 @@ export function renderLogin(app: HTMLElement) : void {
     const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
-      if (errors.email) emailErrorEl.textContent = errors.email;
-      if (errors.password) passwordErrorEl.textContent = errors.password;
+      if (errors.email) {
+        emailErrorEl.textContent = errors.email;
+        emailErrorEl.classList.add('visible');
+
+      }
+      if (errors.password) {
+        passwordErrorEl.textContent = errors.password;
+        passwordErrorEl.classList.add('visible');
+
+      }
       return;
     }
 
@@ -143,6 +168,29 @@ export function renderLogin(app: HTMLElement) : void {
       loginErrorEl.textContent = "Логин или пароль неверный";      
     }
   });
+
+  // переключение видимости пароля
+  // const togglePassword = loginModal.querySelector<HTMLSpanElement>("#togglePassword");
+  // const toggleIcon = loginModal.querySelector<HTMLImageElement>("#togglePassword img");
+  // togglePassword.addEventListener("click", () => {
+  //   const passwordInput = loginModal.querySelector<HTMLInputElement>("#password");
+  //   const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+  //   passwordInput.setAttribute("type", type);
+  //   toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+  // });
+
+  const togglePassword = loginModal.querySelector<HTMLSpanElement>("#togglePassword");
+  const toggleIcon = loginModal.querySelector<HTMLImageElement>("#togglePassword img");
+  const passwordInput = loginModal.querySelector<HTMLInputElement>("#password");
+
+  if (togglePassword && toggleIcon && passwordInput) {
+    togglePassword.addEventListener("click", () => {
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+      toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+    });
+  }
+
   loginModal.querySelector(".register-btn")?.addEventListener("click", () => {
   renderRegister(app);
 });

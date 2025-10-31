@@ -18,6 +18,8 @@ interface ValidationErrors {
 
 const ICONS = {
   Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
+  eye: new URL('../static/svg/icon_eye.svg', import.meta.url).href,
+  eyeOff: new URL('../static/svg/icon_eye_off.svg', import.meta.url).href,
 };
 
 function validateForm(form: HTMLFormElement): ValidationErrors {
@@ -83,31 +85,55 @@ export function renderRegister(app: HTMLElement): void {
 
   
   const registerModalTemplate = `
-    <div class="login-modal show">
+  <div class="login-modal show">
     <a class="icon-login-form"> <img src="<%= icon %>"/ class="login-icon"> </a>
       <h2 class="icon-login-form"> Регистрация</h2>
       <form class="register-form">
-        <label class="login-text">Почта</label>
-        <input type="text" name="email" placeholder="введите почту" class="input" required />
-        <span class="error-message" id="emailError"></span>
 
-        <label class="login-text">Пароль</label>
-        <input type="password" name="password" placeholder="введите пароль" class="input" required />
-        <span class="error-message" id="passwordError"></span>
+        <label class="login-text">Почта<span class="validation-icon">?
+            <div class="tooltip">
+              Формат email: <br>
+              • латинские буквы и цифры<br>
+              • символ "@" и домен (например: test@mail.com)
+            </div>
+          </span>
+        <div class="input-wrapper">
+          <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
+        </div></label>
+        <span class="error-message" id="emailError">&nbsp;</span>
+
+        <label class="login-text">Пароль<span class="validation-icon">?
+            <div class="tooltip">
+              Пароль должен содержать:<br>
+              • минимум 6 символов<br>
+              • хотя бы одну цифру<br>
+              • хотя бы одну букву<br>
+              • спецсимволы (!@#$%^&*)
+            </div>
+          </span></label>
+        <div class="input-wrapper">
+          <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
+          <span class="toggle-password" id="togglePassword"><img src="<%= eye %>"></span>
+        </div>
+        </span>
+
+        <span class="error-message" id="passwordError">&nbsp;</span>
 
         <label class="login-text">Подтвердите пароль</label>
-        <input type="password" name="confirmPassword" placeholder="введите пароль" class="input" required />
-        <span class="error-message" id="confirmPasswordError"></span>
+        <div class="input-wrapper">
+          <input type="password" name="confirmPassword" id="confirmPassword" placeholder="введите пароль" class="input" required />
+          <span class="toggle-password" id="toggleConfirmPassword"><img src="<%= eye %>"></span>
+        </div>
+        <span class="error-message" id="confirmPasswordError">&nbsp;</span>
 
         <div class="login-buttons">
           <button type="submit" class="btn">Создать аккаунт</button>
-          <span class="login-text-small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? <a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
-          
+          <span class="login-text-small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? &nbsp;<a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
         </div>
       </form>
     </div>
   `;
-  const registerModalHtml = ejs.render(registerModalTemplate, { icon: ICONS.Icon });
+  const registerModalHtml = ejs.render(registerModalTemplate, { icon: ICONS.Icon, eye: ICONS.eye });
   const registerModalEl = document.createElement('div');
   registerModalEl.innerHTML = registerModalHtml;
   const registerModal = registerModalEl.firstElementChild as HTMLElement;
@@ -121,20 +147,30 @@ export function renderRegister(app: HTMLElement): void {
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    emailErrorEl!.textContent = "";
-    passwordErrorEl!.textContent = "";
-    confirmPasswordErrorEl!.textContent = "";
+    emailErrorEl!.textContent = "\u00A0";
+    passwordErrorEl!.textContent = "\u00A0";
+    confirmPasswordErrorEl!.textContent = "\u00A0";
 
     const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
-      if (errors.email) emailErrorEl!.textContent = errors.email;
-      if (errors.password) passwordErrorEl!.textContent = errors.password;
-      if (errors.confirmPassword) confirmPasswordErrorEl!.textContent = errors.confirmPassword;
+      if (errors.email) {
+        emailErrorEl.textContent = errors.email;
+        emailErrorEl.classList.add('visible');
+      }
+      if (errors.password) {
+        passwordErrorEl.textContent = errors.password;
+        passwordErrorEl.classList.add('visible');
+      }
+      if (errors.confirmPassword){
+        confirmPasswordErrorEl.textContent = errors.confirmPassword;
+        confirmPasswordErrorEl.classList.add('visible');
+      }
       return;
     }
 
     const data = Object.fromEntries(new FormData(form));
+
 
     try {
       const user = await apiClient.register({
@@ -159,6 +195,29 @@ export function renderRegister(app: HTMLElement): void {
         alert("Неизвестная ошибка");
     }
   });
+
+  const togglePassword = registerModal.querySelector<HTMLSpanElement>("#togglePassword");
+  const toggleIcon = registerModal.querySelector<HTMLImageElement>("#togglePassword img");
+  const passwordInput = registerModal.querySelector<HTMLInputElement>("#password");
+
+  if (togglePassword && toggleIcon && passwordInput) {
+    togglePassword.addEventListener("click", () => {
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+      toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+    });
+  }
+
+  const confirmPasswordInput = registerModal.querySelector<HTMLInputElement>("#confirmPassword");
+  const toggleConfirmPassword = registerModal.querySelector<HTMLSpanElement>("#toggleConfirmPassword");
+  const toggleIconConfirm = registerModal.querySelector<HTMLImageElement>("#toggleConfirmPassword img");
+  if (toggleConfirmPassword && toggleIconConfirm && confirmPasswordInput) {
+    toggleConfirmPassword.addEventListener("click", () => {
+      const type = confirmPasswordInput.getAttribute("type") === "password" ? "text" : "password";
+      confirmPasswordInput.setAttribute("type", type);
+      toggleIconConfirm.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+    });
+  }
 
   page.appendChild(registerModal);
   app.appendChild(page);

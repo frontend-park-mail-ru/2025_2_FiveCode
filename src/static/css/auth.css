@@ -7,7 +7,7 @@
     width: 400px;
     padding: 20px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
+    border-radius: 10px;
     /* box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); */
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -143,7 +143,7 @@
 .login-text-small {
     margin-bottom: 2px;
     font-weight: 400;
-    font: 16px;
+    font: 4px;
     color: var(--text-noraml);
 }
 
@@ -151,8 +151,17 @@
   color: var(--error);
   font-size: 12px;
   margin: 0;
+  /* display: none; */
+  opacity: 0;
   margin-top: -15px;
-  display: block;
+  transition: opacity 0.8s ease;
+  /* display: block; */
+  visibility: hidden;
+}
+
+.error-message.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .input {
@@ -162,4 +171,49 @@
     border: 1px solid var(--primary-400);
     border-radius: 4px;
     font-size: 16px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 16px;
+}
+
+.validation-icon {
+  margin-left: 8px;
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 10px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  width: 220px;
+  background: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 10;
+  top: -5px;
+  left: 110%;
+  transition: opacity 0.3s;
+  font-size: 12px;
+}
+
+.validation-icon:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
 }
