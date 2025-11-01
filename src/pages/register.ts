@@ -40,7 +40,7 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
   
   if (!password) {
     errors.password = "Обязательное поле";
-  } else if (password.length < 6) {
+  } else if (password.length < 8) {
     errors.password = "Пароль должен быть не короче 6 символов";
   } else if (!/^[A-Za-z0-9!@#$%^&*]+$/.test(password)) {
     errors.password = "Пароль содержит недопустимые символы";

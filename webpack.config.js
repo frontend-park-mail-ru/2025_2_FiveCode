@@ -61,6 +61,7 @@ export default {
     port: 8081,
     historyApiFallback: true,
     hot: true,
+    allowedHosts: "all",
   },
   mode: "development",
   plugins: [

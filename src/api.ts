@@ -1,4 +1,4 @@
-const API_BASE = 'http://89.208.210.115:8080';
+const API_BASE = 'http://localhost:8080';
 
 interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
   path?: string;
