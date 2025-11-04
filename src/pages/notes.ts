@@ -70,11 +70,12 @@ export function renderNotes(app : HTMLElement) : void {
 
         filteredNotes.forEach((note : NoteParam) => {
           const noteCard = NoteCard(note);
-          noteCard.addEventListener('click', () => {
-            // window.location.href = `edit/${note.id}`;
-            console.log(`Note ${note.id} clicked`);
-          });
-          list.appendChild(noteCard);
+          const link = document.createElement('a');
+          link.href = `/note/${note.id}`;
+          link.setAttribute('data-link', '');
+          link.className = 'note-card-link';
+          link.appendChild(noteCard);
+          list.appendChild(link);
         });
 
         if (key === "recent") {
@@ -82,14 +83,15 @@ export function renderNotes(app : HTMLElement) : void {
             id: 0,
             title: "Новая заметка",
             text: "",
-            icon: "./src/assets/icon_add_new.svg",
+            icon: ICONS.add_new,
             favorite: false,
           });
-          addCard.addEventListener('click', () => {
-            // window.location.href = `edit/new`;
-            console.log('Create new note clicked');
-          });
-          list.appendChild(addCard);
+          const addLink = document.createElement('a');
+          addLink.href = `/note/new`;
+          addLink.setAttribute('data-link', '');
+          addLink.className = 'note-card-link';
+          addLink.appendChild(addCard);
+          list.appendChild(addLink);
         }
 
         section.appendChild(list);

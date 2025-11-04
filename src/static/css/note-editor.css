@@ -1,0 +1,28 @@
+.note-editor__main {
+    flex: 1;
+    padding: 66px 412px;
+    color: var(--primary-color);
+}
+
+.wysiwyg-root{
+    display: grid;
+    outline: none;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--background-secondary);
+    padding: 20px;
+    gap: 16px;
+}
+
+.w-editor{
+    min-height: 200px;
+    outline: none;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--background-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--primary-300);
+}

@@ -1,8 +1,11 @@
 import ejs from 'ejs';
 
 const ICONS = {
-  deafult_file: new URL('../static/svg/icon_file.svg', import.meta.url).href,
+  default_file: new URL('../static/svg/icon_dot.svg', import.meta.url).href,
   icon_triangle: new URL('../static/svg/icon_triangle.svg', import.meta.url).href,
+  icon_favorite: new URL('../static/svg/icon_favorite.svg', import.meta.url).href,
+  icon_shared: new URL('../static/svg/icon_shared.svg', import.meta.url).href,
+  icon_folder: new URL('../static/svg/icon_folder.svg', import.meta.url).href,
 };
 
 interface Note{
@@ -26,20 +29,59 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
     const container = document.createElement("div");
     container.classList.add("folders");
 
-    // группировка заметок по папкам
-    const folders = items.reduce((acc: Record<string, Note[]>, note: Note) => {
-        if (acc[note.folder]) acc[note.folder] = [];
-        acc[note.folder]?.push(note);
+    const SYSTEM_FOLDERS = {
+        FAVORITES: 'Избранное',
+        SHARED: 'Совместный доступ'
+    } as const;
+    type FolderMap = { [key: string]: Note[] };
+
+    const folders: FolderMap = Object.values(SYSTEM_FOLDERS).reduce((acc, folderName) => {
+        acc[folderName] = [];
         return acc;
-    }, {});
+    }, {} as FolderMap);
+
+    items.forEach((note: Note) => {
+        if (note.favorite) {
+            folders[SYSTEM_FOLDERS.FAVORITES]?.push({...note});
+        }
+                const folder = note.folder;
+        if (!folders[folder]) {
+            folders[folder] = [];
+        }
+        folders[folder]?.push(note);
+    });
+    const folderIcons = new Map<string, string>();
+    
+    const orderedFolders: FolderMap = {};
+    
+    [SYSTEM_FOLDERS.FAVORITES, SYSTEM_FOLDERS.SHARED].forEach(key => {
+        orderedFolders[key] = folders[key] || [];
+        folderIcons.set(key, 
+            key === SYSTEM_FOLDERS.FAVORITES ? ICONS.icon_favorite :
+            key === SYSTEM_FOLDERS.SHARED ? ICONS.icon_shared :
+            ICONS.icon_folder
+        );
+        delete folders[key];
+    });
+    
+    Object.keys(folders).sort().forEach(key => {
+        orderedFolders[key] = folders[key] || [];
+        folderIcons.set(key, ICONS.icon_folder);
+    });
 
     const folderTemplate = `
       <div class="folder">
         <div class="folder-header">
           <img src="<%= icon_triangle %>" alt="triangle" class="folder-arrow" />
-          <span class="folder-title"><%= foldername %></span>
+          
+          <span class="folder-title"><%= folderName %></span>
         </div>
         <ul class="folder-list"></ul>
+        <% if (folderName !== 'Избранное') { %>
+          <div href="/note/new" class="add-note-button" data-folder="<%= folderName %>" data-link="">
+            + Добавить новую заметку
+          </div>
+        <% } %>
       </div>
     `;
 
@@ -52,10 +94,11 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
       </li>
       `;
     
-    Object.entries(folders).forEach(([folderName, notes]) => {
+    Object.entries(orderedFolders).forEach(([folderName, notes]) => {
       const folderHtml = ejs.render(folderTemplate, {
-      iconTriangle: ICONS.icon_triangle,
+      icon_triangle: ICONS.icon_triangle,
       folderName,
+      icon_folder: folderIcons.get(folderName) || ICONS.icon_folder,
       });
       const folderEl = document.createElement('div');
       folderEl.innerHTML = folderHtml;
@@ -65,19 +108,27 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
       const arrow = folderElement.querySelector(".folder-arrow") as HTMLElement;
       const header = folderElement.querySelector(".folder-header") as HTMLElement;
       // состояние свернутости/развернутости
-      let collapsed = true;
+      
+      let collapsed = false;
+      listEl.style.display = collapsed ? "none" : "block";
+      arrow.classList.toggle("rotated", !collapsed);
+
+      header.setAttribute("role", "button");
+      header.setAttribute("tabindex", "0");
+      header.setAttribute("aria-expanded", String(!collapsed));
+
       const updateState = () => {
         listEl.style.display = collapsed ? "none" : "block";
         arrow.classList.toggle("rotated", !collapsed);
         header.setAttribute("aria-expanded", String(!collapsed));
       };
       
-      // Папки заметок
+      
       notes.forEach((item: Note) => {
       const noteItemHtml = ejs.render(noteItemTemplate, {
         icon: item.icon,
         title: item.title,
-        defaultIcon: ICONS.deafult_file,
+        defaultIcon: ICONS.default_file,
       });
       const noteItemEl = document.createElement('div');
       noteItemEl.innerHTML = noteItemHtml;
@@ -96,6 +147,17 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
         updateState();
         }
       });
+
+      const addButton = folderElement.querySelector('.add-note-button');
+      if (addButton) {
+        addButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          import('../router').then(({ default: router }) => {
+            router.navigate('note/new');
+          });
+        });
+      }
+
       container.appendChild(folderElement);
     });
 

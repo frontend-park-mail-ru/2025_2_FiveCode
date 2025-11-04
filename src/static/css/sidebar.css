@@ -1,5 +1,5 @@
 .sidebar {
-  width: 220px;
+  width:292px;
   background: var(--gray-200);
   display: flex;
   flex-direction: column;
@@ -13,7 +13,6 @@
 
 .sidebar__user {
   font-weight: 600;
-  margin-bottom: 16px;
   display: flex;
   align-items: center;
   white-space: nowrap;
@@ -21,6 +20,8 @@
   text-overflow: ellipsis;
   max-width: 100%;
   box-sizing: border-box;
+  font-size: 20px;
+  gap: 6px;
 }
 
 .sidebar__nav {
@@ -28,32 +29,84 @@
   flex-direction: column;
   gap: 8px;
   margin-bottom: 24px;
+  margin-top: 30px;
 }
 
 .sidebar__item {
   display: flex;
   align-items: center;
-  padding: 10px 14px;
+  /* padding: 10px 14px; */
+  padding: 5px 5px;
   border-radius: 8px;
   color: var(--text-normal);
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 5000;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
   transition: background 0.2s, color 0.2s;
   text-align: center;
 }
 
 .sidebar__item img.sidebar__icon, .sidebar__icon{
-  width: 24px;
-  height: 24x;
+  width: 32px;
+  height: 32x;
   margin-right: 12px;
   opacity: 0.8;
 }
 
+.sidebar__usericon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.sidebar__user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar__username {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__user-email {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dots {
+  position: absolute;
+  border: none;
+  background: transparent;
+  padding: 12px;
+  right: 20px;
+  margin: -12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+
+.user-dots img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .sidebar__item:hover,
 .subdir__item:hover{
-  background: var(--primary-300);
-  color: #fff;
+  background: var(--primary-100);
+  /* color: #fff; */
 }
 
 .sidebar__item.active {
@@ -82,7 +135,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 0px;
 }
 
 .subdirs__header span {
@@ -134,35 +187,44 @@
 
 .subdir-item {
   margin: 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .subdir-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 4px 7%;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .subdir-header:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--primary-100);
 }
 
 .subdir-icon {
-  width: 18px;
-  height: 18px;
+  width: 6px;
+  height: 6px;
 }
 
+
 .folder {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .folder-header {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
   cursor: pointer;
   user-select: none;
 }
@@ -182,5 +244,118 @@
 
 .folder-arrow.rotated {
   transform: rotate(90deg);
-    transition: transform 0.2s ease;
+  transition: transform 0.2s ease;
+}
+
+.add-note-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin: 8px 8px 4px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.add-note-button:hover {
+  background-color: var(--primary-100);
+  color: var(--text-primary);
+}
+
+.add-note-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    margin: -4px 8px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 14px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.add-note-button:hover {
+    background-color: var(--primary-100);
+    color: var(--text-primary);
+}
+
+.sidebar__user-dots {
+  position: absolute;
+  right: 20px;
+  padding: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+    padding-right: 20px;
+
+}
+
+.sidebar__dots-icon {
+  /* right: 0;  */
+  position: absolute; 
+  /* padding-right: 20px; */
+  /* cursor: pointer; */
+  
+}
+
+.sidebar__dropdown {
+  
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  padding: 10px;
+  width: 200px;
+  display: none; /* скрыто по умолчанию */
+  flex-direction: column;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+
+.sidebar__dropdown.show {
+  display: flex;
+}
+
+.sidebar__dropdown-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 8px;
+}
+
+.sidebar__dropdown-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.sidebar__dropdown-name {
+  font-weight: 600;
+}
+
+.sidebar__dropdown-email {
+  font-size: 12px;
+  color: gray;
+}
+
+.sidebar__dropdown-btn {
+  padding: 8px;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sidebar__dropdown-btn:hover {
+  background: rgba(0,0,0,0.05);
 }

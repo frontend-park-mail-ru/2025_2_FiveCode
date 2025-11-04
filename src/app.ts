@@ -2,6 +2,7 @@ import { apiClient } from "./api/apiClient";
 import { saveUser } from "./utils/session";
 import { renderLogin } from "./pages/login";
 import { renderNotes } from "./pages/notes";
+import { renderNotePage } from "./pages/notepage";
 import router from './router';
 import "../styles.css";
 import "./static/css/auth.css";
@@ -9,6 +10,7 @@ import "./static/css/globals.css";
 import "./static/css/header.css";
 import "./static/css/note-block.css";
 import "./static/css/sidebar.css";
+import "./static/css/note-editor.css";
 
 
 interface User{
@@ -32,10 +34,8 @@ async function initializeApp(): Promise<void> {
 
     if (user) {
       saveUser(user);
-      // use router to navigate to notes route
       router.navigate('notes');
     } else {
-      // navigate to login route
       router.navigate('login');
     }
   } catch (error) {
@@ -48,8 +48,6 @@ async function initializeApp(): Promise<void> {
     router.navigate('login');
   }
 
-  // Global link interception for SPA navigation.
-  // Intercepts links with `data-link` or hrefs that start with '/'.
   document.body.addEventListener('click', (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -57,21 +55,18 @@ async function initializeApp(): Promise<void> {
     if (!anchor) return;
 
     const href = anchor.getAttribute('href') || '';
-    // external links (http/https/mailto) should not be intercepted
     if (/^https?:\/\//.test(href) || href.startsWith('mailto:') || anchor.hasAttribute('data-external')) {
       return;
     }
 
     e.preventDefault();
-
-    // Normalize path: remove leading slash and hash/query
+    //непонятное проклятье из интернета
     const path = href.replace(/^\//, '').replace(/[#?].*$/, '');
     router.navigate(path);
   });
 }
 
 window.addEventListener("DOMContentLoaded", initializeApp);
-
 
 // window.addEventListener("DOMContentLoaded", async () => {
 //   const app = document.getElementById("app") as HTMLElement;

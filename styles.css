@@ -9,6 +9,7 @@
   --text-noraml: #212529;
   --gradient-color: #ff6666;
   --error: #DC3545;
+  --danger-500: #DC3545;
   --success: #28A745;
   --black: #1e1e1e;
   --warning: #FFC107;
@@ -27,6 +28,7 @@
   --gray-400: #CED4DA; 
   --gray-600: #868E96;
   --gray-800: #343A40;
+  --text-primary: #212529;
 
 }
 *{box-sizing:border-box}

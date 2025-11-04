@@ -68,4 +68,27 @@ export const apiClient = {
     if (!userId) throw new Error('userId required');
     return apiFetch(`/api/user/${userId}/notes`, { method: 'GET' });
   },
+  
+  /**
+   * Получить заметку по id
+   */
+  async getNote(noteId: string | number) : Promise<any> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/note/${noteId}`, { method: 'GET' });
+  },
+
+  /**
+   * Обновить заметку
+   */
+  async updateNote(noteId: string | number, data: any) : Promise<any> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/note/${noteId}`, { method: 'PUT', body: data });
+  },
+
+  /**
+   * Создать заметку
+   */
+  async createNote(data: any) : Promise<any> {
+    return apiFetch(`/api/note`, { method: 'POST', body: data });
+  },
 };

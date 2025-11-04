@@ -1,6 +1,7 @@
 import ejs from 'ejs';
 import { Header } from '../components/header';
 import { apiClient } from "../api/apiClient";
+import router from '../router';
 import { renderNotes } from './notes';
 import { renderLogin } from './login';
 
@@ -186,8 +187,8 @@ export function renderRegister(app: HTMLElement): void {
         throw new Error('Email и пароль обязательны');
       }
 
-      await apiClient.login({ email, password });
-      renderNotes(app);
+  await apiClient.login({ email, password });
+  router.navigate('notes');
     } catch (err) {
       if (err instanceof Error)
         alert("Ошибка: " + err.message);

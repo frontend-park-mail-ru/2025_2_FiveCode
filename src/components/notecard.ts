@@ -24,12 +24,6 @@ interface NoteCardParams{
 export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLElement {
   const template = `
     <div class="note-card <%= favorite ? 'favorite' : '' %>">
-      <img
-        src="<%= icon %>"
-        class="note-card__icon"
-        alt="icon"
-        onerror="this.onerror=null; this.src='<%= defaultIcon %>';"
-      />
       <h3 class="note-card__title"><%= title %></h3>
       <p class="note-card__text"><%= text %></p>
     </div>

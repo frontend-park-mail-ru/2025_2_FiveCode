@@ -3,6 +3,7 @@ import { Header } from '../components/header';
 import { apiClient } from "../api/apiClient";
 import { renderNotes } from './notes';
 import { renderRegister } from './register';
+import router from '../router';
 
 const ICONS = {
   Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
@@ -163,7 +164,7 @@ export function renderLogin(app: HTMLElement) : void {
 
     try { 
       const user = await apiClient.login(data);
-      renderNotes(app);
+      router.navigate('notes');
     } catch (err) {
       loginErrorEl.textContent = "Логин или пароль неверный";      
     }
@@ -192,8 +193,8 @@ export function renderLogin(app: HTMLElement) : void {
   }
 
   loginModal.querySelector(".register-btn")?.addEventListener("click", () => {
-  renderRegister(app);
-});
+    router.navigate('register');
+  });
 
   
   pageEl.appendChild(loginModal);

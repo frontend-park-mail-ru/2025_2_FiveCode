@@ -2,6 +2,7 @@ import { renderLogin } from './pages/login';
 import { renderRegister } from './pages/register';
 import { renderDashboard } from './pages/dashboard';
 import { renderNotes } from './pages/notes';
+import { renderNoteEditor } from './pages/notepage';
 
 interface Route {
   path: RegExp;
@@ -92,6 +93,8 @@ const router = new Router({ mode: 'history', root: '/' });
 router
   .add(/^login$/, () => renderLogin(document.getElementById('app')!))
   .add(/^register$/, () => renderRegister(document.getElementById('app')!))
-  .add(/^notes$/, () => renderNotes(document.getElementById('app')!));
+  .add(/^notes$/, () => renderNotes(document.getElementById('app')!))
+  .add(/^note\/(\d+)$/, (id: string) => renderNoteEditor(document.getElementById('app')!, Number(id)))
+  .add(/^note\/new$/, () => renderNoteEditor(document.getElementById('app')!, 'new'));
 
 export default router;
