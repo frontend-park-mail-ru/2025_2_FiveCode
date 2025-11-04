@@ -16,12 +16,6 @@ interface NoteParam {
   favorite: boolean;
 }
 
-/**
- * Рендерит страницу заметок с секциями избранных и недавних заметок
- * @param {Object} [params] ъ
- * @param {Array<Object>} [params.notes=[]] - Массив объектов заметок для отображения
- * @returns {HTMLElement} DOM-элемент страницы заметок
- */
 export function renderNotes(app : HTMLElement) : void {
   app.innerHTML = '';
   const pageEl = document.createElement('div');
@@ -40,19 +34,10 @@ export function renderNotes(app : HTMLElement) : void {
     { key: "recent", title: "Заметки" },
   ];
 
-  apiClient.getNotesForUser(user.id)
+  apiClient.getNotesForUser()
     .then(allNotes => {
       allNotes = Array.isArray(allNotes) ? allNotes : [];
       categories.forEach(({ key, title }) => {
-        // const section = document.createElement('div');
-        // section.classList.add('notes-section');
-
-        // const h2 = document.createElement('h2');
-        // h2.textContent = title;
-        // section.appendChild(h2);
-
-        // const list = document.createElement('div');
-        // list.classList.add('notes-content');
         const sectionHtml = ejs.render(`<div class="notes-section">
             <h2><%= title %></h2>
             <div class="notes-content"></div>
@@ -101,5 +86,4 @@ export function renderNotes(app : HTMLElement) : void {
 
   page.appendChild(main);
   app.appendChild(page);
-  // return page;
 }

@@ -6,12 +6,11 @@
   padding-left: 0%;
   padding: 16px;
   border-right: 1px solid var(--primary-color);
-  position: fixed;
   height: 100vh;
-  
 }
 
 .sidebar__user {
+  position: relative;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -35,7 +34,6 @@
 .sidebar__item {
   display: flex;
   align-items: center;
-  /* padding: 10px 14px; */
   padding: 5px 5px;
   border-radius: 8px;
   color: var(--text-normal);
@@ -85,15 +83,16 @@
 }
 
 .user-dots {
-  position: absolute;
   border: none;
   background: transparent;
-  padding: 12px;
-  right: 20px;
-  margin: -12px;
+  padding: 8px;
+  margin-left: auto;
   cursor: pointer;
   border-radius: 6px;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 
@@ -106,7 +105,6 @@
 .sidebar__item:hover,
 .subdir__item:hover{
   background: var(--primary-100);
-  /* color: #fff; */
 }
 
 .sidebar__item.active {
@@ -297,15 +295,10 @@
 }
 
 .sidebar__dots-icon {
-  /* right: 0;  */
   position: absolute; 
-  /* padding-right: 20px; */
-  /* cursor: pointer; */
-  
 }
 
 .sidebar__dropdown {
-  
   top: 100%;
   right: 0;
   margin-top: 4px;
@@ -314,7 +307,7 @@
   border-radius: 10px;
   padding: 10px;
   width: 200px;
-  display: none; /* скрыто по умолчанию */
+  display: none;
   flex-direction: column;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   z-index: 100;

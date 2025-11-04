@@ -1,11 +1,6 @@
-import { apiFetch } from "../api";
+import { apiFetch, API_BASE } from "../api";
 import { login, register, logout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
-
-interface UserCredentials {
-  email: string;
-  password: string;
-}
 
 interface User {
   id?: number;
@@ -14,79 +9,61 @@ interface User {
   email?: string;
 }
 
-/**
- * Клиент для работы с API приложения
- * @namespace apiClient
- */
 export const apiClient = {
-  /**
-   * Авторизация пользователя
-   * @param {User} creds данные для входа
-   * @returns {Promise<User>} объект пользователя
-   */
-  async login(creds: User): Promise<User> {
+  async login(creds : User) : Promise<User> {
     const user = await login(creds);
     saveUser(user);
     return user;
   },
 
-  /**
-   * Регистрация пользователя
-   * @param {Object} data данные для регистрации
-   * @returns {Promise<Object>} объект пользователя
-   */
-  async register(data: Object): Promise<User> {
+  async register(data : Object) : Promise<User> {
     const user = await register(data);
     return user;
   },
 
-  /**
-   * Выход пользователя
-   * @returns {Promise<void>}
-   */
-  async logout(): Promise<void> {
+  async logout() : Promise<void> {
     await logout();
     clearUser();
   },
 
-  /**
-   * Получить текущую сессию пользователя
-   * @returns {Promise<User|null>} объект пользователя или null
-   */
-  async me(): Promise<User | null> {
+  async me() : Promise<User|null> {
     return await checkSession();
   },
 
-  /**
-   * Получить заметки пользователя по id
-   * @param {string|number} userId id пользователя
-   * @returns {Promise<Array>} массив заметок
-   */
-  async getNotesForUser(userId: string | number): Promise<Array<any>> {
-    if (!userId) throw new Error("userId required");
-    return apiFetch(`/api/notes`, { method: "GET" });
+  async getNotesForUser() : Promise<Array<any>> {
+    return apiFetch(`/api/notes`, { method: 'GET' });
+  },
+  
+  async getNote(noteId: string | number) : Promise<any> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/notes/${noteId}`, { method: 'GET' });
   },
 
-  /**
-   * Получить заметку по id
-   */
-  async getNote(noteId: string | number): Promise<any> {
-    if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, { method: "GET" });
+  async updateNote(noteId: string | number, data: { title: string }) : Promise<any> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/notes/${noteId}`, { method: 'PUT', body: JSON.stringify(data) });
   },
 
-  /**
-   * Обновить заметку
-   */
-  async updateNote(noteId: string | number, data: any): Promise<any> {
-    if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, { method: "PUT", body: data });
+  async createNote() : Promise<any> {
+    return apiFetch(`/api/notes`, { method: 'POST' });
   },
 
-  /**
-   * Создать заметку
-   */
-  async createNote(data: any): Promise<any> {
-    return apiFetch(`/api/notes`, { method: "POST", body: data });
-  },
+  async uploadImage(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const url = `${API_BASE}/api/files/upload`;
+    const res = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      throw new Error(`Upload failed: ${res.statusText} - ${errorBody}`);
+    }
+
+    return res.json();
+  }
 };

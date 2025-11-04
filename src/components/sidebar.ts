@@ -28,18 +28,11 @@ interface SidebarParams {
 }
 
 
-/**
- * Sidebar компонент
- * @param {Object} params
- * @param {Object} params.user - текущий пользователь
- * @returns {HTMLElement}
- */
 export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
-    console.log('Sidebar user:', user);
     const app = document.getElementById("app");
     const template = `
         <aside class="sidebar">
-        <div class="sidebar__item" href="/">
+        <div class="sidebar__user" href="/">
             <div class="sidebar__user">
                 <img src="<%= account %>" class="sidebar__usericon" alt="user icon" />
                 <div class="sidebar__user-info">
@@ -68,7 +61,6 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
-  // Обработчик клика по трем точкам
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
     const dotsButton = event.currentTarget as HTMLElement;
@@ -78,7 +70,6 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
       return;
     }
 
-    // Создает новое меню, если его еще нет. Иногда создает два, хз почему
     if (!userMenuComponent) {
       userMenuComponent = UserMenu({
         user,
@@ -103,7 +94,6 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
         router.navigate('login');
       });
     } else {
-      // показывает меню по расположению курсору
       userMenuComponent.style.display = 'block';
       userMenuComponent.style.top = `${rect.bottom + 8}px`;
       userMenuComponent.style.left = `${rect.left < 220 ? 230 : rect.left}px`;
@@ -121,7 +111,7 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
 
   el.querySelector('.user-dots')?.addEventListener('click', handleDotsClick);
   const subs = el.querySelector('.sidebar__subs') as HTMLElement;
-  apiClient.getNotesForUser(user?.id!)
+  apiClient.getNotesForUser()
       .then(notes => {
       notes = Array.isArray(notes) ? notes : [];
       const subdirComponent = Subdirectories({ items: notes });

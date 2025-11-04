@@ -1,8 +1,5 @@
 import { apiClient } from "./api/apiClient";
 import { saveUser } from "./utils/session";
-import { renderLogin } from "./pages/login";
-import { renderNotes } from "./pages/notes";
-import { renderNotePage } from "./pages/notepage";
 import router from './router';
 import "../styles.css";
 import "./static/css/auth.css";
@@ -11,6 +8,7 @@ import "./static/css/header.css";
 import "./static/css/note-block.css";
 import "./static/css/sidebar.css";
 import "./static/css/note-editor.css";
+import "./static/css/modal.css";
 
 
 interface User{
@@ -60,27 +58,9 @@ async function initializeApp(): Promise<void> {
     }
 
     e.preventDefault();
-    //непонятное проклятье из интернета
     const path = href.replace(/^\//, '').replace(/[#?].*$/, '');
     router.navigate(path);
   });
 }
 
 window.addEventListener("DOMContentLoaded", initializeApp);
-
-// window.addEventListener("DOMContentLoaded", async () => {
-//   const app = document.getElementById("app") as HTMLElement;
-  
-//   try {
-//     const user : User | null = await apiClient.me();
-//     if (user) {
-//       saveUser(user);
-//       renderNotes(app);
-//     } else {
-//       renderLogin(app);
-//     }
-//   } catch (error) {
-//     console.error("Auth check failed:", error);
-//     renderLogin(app);
-//   }
-// });
