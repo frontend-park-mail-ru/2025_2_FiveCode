@@ -14,7 +14,6 @@ const ICONS = {
     dots: new URL('../static/svg/icon_dots.svg', import.meta.url).href,
 };
 
-
 interface User{
     id?: number;
     username?: string;
@@ -24,12 +23,10 @@ interface User{
 
 interface SidebarParams {
     user: User | null;
-    subdirs?: any;
+    notes?: any[];
 }
 
-
-export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
-    const app = document.getElementById("app");
+export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
     const template = `
         <aside class="sidebar">
         <div class="sidebar__user" href="/">
@@ -37,7 +34,6 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
                 <img src="<%= account %>" class="sidebar__usericon" alt="user icon" />
                 <div class="sidebar__user-info">
                     <div class="sidebar__username"><%= user?.email?.split('@')[0] || 'Имя' %></div>
-                    
                 </div>
                 <button class="user-dots" aria-label="Открыть меню пользователя">
                     <img src="<%= dots %>" alt="menu" />
@@ -49,13 +45,12 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
             <a class="sidebar__item" data-link> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>  
         </nav>
         <div class="sidebar__subs"></div>
-        <a class="sidebar__item logout-btn" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-        <a class="sidebar__item logout-btn" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
-          
+        <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
+        <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
       </aside>
     `;
 
-  const html = ejs.render(template, {user, account: ICONS.account, home: ICONS.home, logout: ICONS.logout, trash: ICONS.trash, settings: ICONS.settings, search: ICONS.search , dots: ICONS.dots });
+  const html = ejs.render(template, {user, account: ICONS.account, home: ICONS.home, trash: ICONS.trash, settings: ICONS.settings, search: ICONS.search , dots: ICONS.dots });
   const container = document.createElement('div');
   container.innerHTML = html;
   const el = container.firstElementChild as HTMLElement;
@@ -75,10 +70,7 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
         user,
         userIcon: ICONS.account,
         isVisible: true,
-        position: {
-          top: rect.bottom + 8,
-          left: rect.left < 220 ? 230 : rect.left
-        },
+        position: { top: rect.bottom + 8, left: rect.left < 220 ? 230 : rect.left },
         settingsIcon: ICONS.settings,
         logoutIcon: ICONS.logout,
       });
@@ -111,49 +103,24 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
 
   el.querySelector('.user-dots')?.addEventListener('click', handleDotsClick);
   const subs = el.querySelector('.sidebar__subs') as HTMLElement;
-  apiClient.getNotesForUser()
-      .then(notes => {
-      notes = Array.isArray(notes) ? notes : [];
-      const subdirComponent = Subdirectories({ items: notes });
+
+  const renderSubdirectories = (notesData: any[]) => {
+      subs.innerHTML = '';
+      const subdirComponent = Subdirectories({ items: notesData });
       subs.appendChild(subdirComponent);
-    })
+  }
+
+  if (notes) {
+      renderSubdirectories(notes);
+  } else {
+    apiClient.getNotesForUser()
+      .then(fetchedNotes => {
+        renderSubdirectories(Array.isArray(fetchedNotes) ? fetchedNotes : []);
+      })
       .catch(err => {
-      console.error('Failed to load notes', err);
-  });
-  el.addEventListener('click', e => {
-      const link = (e.target as HTMLElement).closest('a[data-link]');
-      if (link) {
-          e.preventDefault();
-          const href = (link as HTMLAnchorElement).getAttribute('href') || '';
-          const path = href.replace(/^\//, '').replace(/[#?].*$/, '');
-          router.navigate(path);
-      }
-  });
-
-    document.addEventListener("click", (e: MouseEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-
-    const dots = target.closest(".sidebar__user-dots") as HTMLElement | null;
-    const menu = document.querySelector(".sidebar__dropdown") as HTMLElement | null;
-
-    if (!menu) return;
-
-    if (dots) {
-        menu.classList.toggle("show");
-        return;
-    }
-
-    if (!target.closest(".sidebar__dropdown")) {
-        menu.classList.remove("show");
-    }
+        console.error('Failed to load notes for sidebar', err);
     });
+  }
 
-  
-  el.querySelector(".logout-btn")?.addEventListener("click", async (ev) => {
-      ev.preventDefault();
-      await apiClient.logout();
-      router.navigate('login');
-  });
   return el;
 }

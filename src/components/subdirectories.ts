@@ -21,10 +21,6 @@ interface SubdirectoriesParams {
   items: Note[];
 }
 
-/**
- * Список заметок (без вложенности)
- * @param {Array} items - массив заметок
- */
 export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement {
     const container = document.createElement("div");
     container.classList.add("folders");
@@ -87,11 +83,11 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
 
     const noteItemTemplate  = `
         <li class="subdir-item">
-        <div class="subdir-header">
-          <img src="<%= icon %>" alt="icon" class="subdir-icon" onerror="this.onerror=null; this.src='<%= defaultIcon %>';" />
-          <span class="subdir-title"><%= title %></span>
-        </div>
-      </li>
+            <a href="/note/<%= id %>" class="subdir-header" data-link>
+              <img src="<%= icon %>" alt="icon" class="subdir-icon" onerror="this.onerror=null; this.src='<%= defaultIcon %>';" />
+              <span class="subdir-title"><%= title %></span>
+            </a>
+        </li>
       `;
     
     Object.entries(orderedFolders).forEach(([folderName, notes]) => {
@@ -107,7 +103,6 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
       const listEl = folderElement.querySelector(".folder-list") as HTMLElement;
       const arrow = folderElement.querySelector(".folder-arrow") as HTMLElement;
       const header = folderElement.querySelector(".folder-header") as HTMLElement;
-      // состояние свернутости/развернутости
       
       let collapsed = false;
       listEl.style.display = collapsed ? "none" : "block";
@@ -125,26 +120,27 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
       
       
       notes.forEach((item: Note) => {
-      const noteItemHtml = ejs.render(noteItemTemplate, {
-        icon: item.icon,
-        title: item.title,
-        defaultIcon: ICONS.default_file,
-      });
-      const noteItemEl = document.createElement('div');
-      noteItemEl.innerHTML = noteItemHtml;
-      listEl.appendChild(noteItemEl.firstElementChild as HTMLElement);
+        const noteItemHtml = ejs.render(noteItemTemplate, {
+            id: item.id,
+            icon: item.icon,
+            title: item.title,
+            defaultIcon: ICONS.default_file,
+        });
+        const noteItemEl = document.createElement('div');
+        noteItemEl.innerHTML = noteItemHtml;
+        listEl.appendChild(noteItemEl.firstElementChild as HTMLElement);
       });
 
       header.addEventListener("click", () => {
-      collapsed = !collapsed;
-      updateState();
+        collapsed = !collapsed;
+        updateState();
       });
 
       header.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        collapsed = !collapsed;
-        updateState();
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            collapsed = !collapsed;
+            updateState();
         }
       });
 
@@ -162,5 +158,4 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
     });
 
   return container;
-
 }

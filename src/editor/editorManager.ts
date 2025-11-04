@@ -11,27 +11,28 @@ interface EditorManagerConfig {
 export interface EditorManager {
   render: () => void;
   getBlocks: () => Block[];
-  focusBlock: (blockId: string) => void;
+  focusBlock: (blockId: string | number) => void;
 }
 
 export function createEditorManager({ container, toolbar, addBlockMenu, initialBlocks }: EditorManagerConfig): EditorManager {
   let blocks: Block[] = [...initialBlocks];
   const mainContainer = container.closest<HTMLElement>('.note-editor__main');
 
-  const updateBlockContent = (id: string, newContent: string) => {
-    const block = blocks.find(b => b.id === id);
+  const updateBlockContent = (id: string | number, newContent: string) => {
+    const block = blocks.find(b => b.id.toString() === id.toString());
     if (block) {
       block.content = newContent;
     }
   };
 
-  const addNewBlock = async (currentBlockId: string, type: Block['type']) => {
+  const addNewBlock = async (currentBlockId: string | number, type: Block['type']) => {
     let newBlock: Block | null = null;
-    const baseBlock = { id: Date.now().toString(), type, content: '' };
+    const baseBlock = { id: `local-${Date.now()}`, type, content: '' };
 
     switch(type) {
       case 'code':
-        newBlock = { ...baseBlock, id: baseBlock.id, language: 'javascript' } as CodeBlock;
+        const codeData = { language: 'javascript', content: '' };
+        newBlock = { ...baseBlock, id: baseBlock.id, content: JSON.stringify(codeData) };
         break;
       case 'image':
         const url = await createImageModal();
@@ -46,10 +47,12 @@ export function createEditorManager({ container, toolbar, addBlockMenu, initialB
     }
     
     if (newBlock) {
-      const currentIndex = blocks.findIndex(b => b.id === currentBlockId);
-      blocks.splice(currentIndex + 1, 0, newBlock);
-      render();
-      focusBlock(newBlock.id);
+      const currentIndex = blocks.findIndex(b => b.id.toString() === currentBlockId.toString());
+      if (currentIndex > -1) {
+        blocks.splice(currentIndex + 1, 0, newBlock);
+        render();
+        focusBlock(newBlock.id);
+      }
     }
   };
 
@@ -68,7 +71,7 @@ export function createEditorManager({ container, toolbar, addBlockMenu, initialB
     }
   };
 
-  const focusBlock = (blockId: string) => {
+  const focusBlock = (blockId: string | number) => {
     const blockToFocus = container.querySelector(`[data-block-id="${blockId}"] .block`);
     if (blockToFocus) {
       (blockToFocus as HTMLElement).focus();
@@ -120,7 +123,7 @@ export function createEditorManager({ container, toolbar, addBlockMenu, initialB
     if (!parentBlockElement || !parentContainerElement || !parentContainerElement.dataset.blockId) return;
 
     const originalBlockId = parentContainerElement.dataset.blockId;
-    let originalBlockIndex = blocks.findIndex(b => b.id === originalBlockId);
+    let originalBlockIndex = blocks.findIndex(b => b.id.toString() === originalBlockId);
     const originalBlock = blocks[originalBlockIndex];
     if (originalBlockIndex === -1 || !originalBlock) return;
 
@@ -133,16 +136,16 @@ export function createEditorManager({ container, toolbar, addBlockMenu, initialB
     const beforeContent = parts[0];
     const afterContent = parts[1];
     
-    const newCodeBlock: CodeBlock = {
-      id: Date.now().toString(),
+    const codeData = { language: 'text', content: selectedText };
+    const newCodeBlock: Block = {
+      id: `local-${Date.now()}`,
       type: 'code',
-      content: selectedText,
-      language: 'text'
+      content: JSON.stringify(codeData)
     };
     const newBlocks: Block[] = [];
 
     if (beforeContent) {
-      const beforeBlock: Block = { ...originalBlock, id: originalBlock.id, content: beforeContent };
+      const beforeBlock: Block = { ...originalBlock, id: originalBlock.id, content: beforeContent, type: 'text' };
       newBlocks.push(beforeBlock);
     } else {
         blocks.splice(originalBlockIndex, 1);
@@ -153,7 +156,7 @@ export function createEditorManager({ container, toolbar, addBlockMenu, initialB
 
     if (afterContent) {
       newBlocks.push({
-        id: (Date.now() + 1).toString(),
+        id: `local-${Date.now() + 1}`,
         type: 'text',
         content: afterContent
       });

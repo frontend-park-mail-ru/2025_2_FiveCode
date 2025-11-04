@@ -1,6 +1,7 @@
 import { apiFetch, API_BASE } from "../api";
 import { login, register, logout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
+import { Block } from "../components/block";
 
 interface User {
   id?: number;
@@ -46,6 +47,34 @@ export const apiClient = {
 
   async createNote() : Promise<any> {
     return apiFetch(`/api/notes`, { method: 'POST' });
+  },
+
+  async deleteNote(noteId: string | number) : Promise<void> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/notes/${noteId}`, { method: 'DELETE' });
+  },
+
+  async toggleFavorite(noteId: string | number, isFavorite: boolean): Promise<void> {
+    console.log(`(Заглушка) Заметка ${noteId}, избранное: ${isFavorite}. Эндпоинт на бэкенде отсутствует.`);
+    return Promise.resolve();
+  },
+
+  async getBlocksForNote(noteId: string | number): Promise<{ blocks: Block[] }> {
+    return apiFetch(`/api/notes/${noteId}/blocks`, { method: 'GET' });
+  },
+
+  async createBlock(noteId: string | number, data: { before_block_id?: string | number }): Promise<Block> {
+    return apiFetch(`/api/notes/${noteId}/blocks`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateBlock(blockId: string | number, data: { text: string; formats: any[] }): Promise<Block> {
+    return apiFetch(`/api/blocks/${blockId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
   },
 
   async uploadImage(file: File): Promise<any> {
