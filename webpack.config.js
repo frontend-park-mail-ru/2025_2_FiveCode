@@ -1,6 +1,7 @@
 // webpack.config.js
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module"; // <-- добавляем это!
@@ -55,9 +56,15 @@ export default {
   },
 },
   devServer: {
-    static: {
-      directory: path.join(__dirname, "public"),
-    },
+    static: [
+      {
+        directory: path.join(__dirname, "public"),
+      },
+      {
+        directory: path.join(__dirname),
+        publicPath: "/",
+      },
+    ],
     port: 8081,
     historyApiFallback: true,
     hot: true,
@@ -73,5 +80,10 @@ export default {
       template: "index.html", // можешь указать .html или .ejs
       filename: "index.html",
     }),
+  new CopyWebpackPlugin({
+    patterns: [
+      { from: "sw.js", to: "sw.js" },
+    ],
+  }),
   ],
 };
