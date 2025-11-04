@@ -2,19 +2,17 @@ import { apiFetch } from "../api";
 import { login, register, logout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
 
-
 interface UserCredentials {
   email: string;
   password: string;
 }
 
-interface User{
+interface User {
   id?: number;
   username?: string;
   password?: string;
   email?: string;
 }
-
 
 /**
  * Клиент для работы с API приложения
@@ -26,7 +24,7 @@ export const apiClient = {
    * @param {User} creds данные для входа
    * @returns {Promise<User>} объект пользователя
    */
-  async login(creds : User) : Promise<User> {
+  async login(creds: User): Promise<User> {
     const user = await login(creds);
     saveUser(user);
     return user;
@@ -37,7 +35,7 @@ export const apiClient = {
    * @param {Object} data данные для регистрации
    * @returns {Promise<Object>} объект пользователя
    */
-  async register(data : Object) : Promise<User> {
+  async register(data: Object): Promise<User> {
     const user = await register(data);
     return user;
   },
@@ -46,7 +44,7 @@ export const apiClient = {
    * Выход пользователя
    * @returns {Promise<void>}
    */
-  async logout() : Promise<void> {
+  async logout(): Promise<void> {
     await logout();
     clearUser();
   },
@@ -55,7 +53,7 @@ export const apiClient = {
    * Получить текущую сессию пользователя
    * @returns {Promise<User|null>} объект пользователя или null
    */
-  async me() : Promise<User|null> {
+  async me(): Promise<User | null> {
     return await checkSession();
   },
 
@@ -64,31 +62,31 @@ export const apiClient = {
    * @param {string|number} userId id пользователя
    * @returns {Promise<Array>} массив заметок
    */
-  async getNotesForUser(userId : string | number) : Promise<Array<any>> {
-    if (!userId) throw new Error('userId required');
-    return apiFetch(`/api/user/${userId}/notes`, { method: 'GET' });
+  async getNotesForUser(userId: string | number): Promise<Array<any>> {
+    if (!userId) throw new Error("userId required");
+    return apiFetch(`/api/notes`, { method: "GET" });
   },
-  
+
   /**
    * Получить заметку по id
    */
-  async getNote(noteId: string | number) : Promise<any> {
-    if (!noteId) throw new Error('noteId required');
-    return apiFetch(`/api/note/${noteId}`, { method: 'GET' });
+  async getNote(noteId: string | number): Promise<any> {
+    if (!noteId) throw new Error("noteId required");
+    return apiFetch(`/api/notes/${noteId}`, { method: "GET" });
   },
 
   /**
    * Обновить заметку
    */
-  async updateNote(noteId: string | number, data: any) : Promise<any> {
-    if (!noteId) throw new Error('noteId required');
-    return apiFetch(`/api/note/${noteId}`, { method: 'PUT', body: data });
+  async updateNote(noteId: string | number, data: any): Promise<any> {
+    if (!noteId) throw new Error("noteId required");
+    return apiFetch(`/api/notes/${noteId}`, { method: "PUT", body: data });
   },
 
   /**
    * Создать заметку
    */
-  async createNote(data: any) : Promise<any> {
-    return apiFetch(`/api/note`, { method: 'POST', body: data });
+  async createNote(data: any): Promise<any> {
+    return apiFetch(`/api/notes`, { method: "POST", body: data });
   },
 };

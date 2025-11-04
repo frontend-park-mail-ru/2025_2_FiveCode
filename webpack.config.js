@@ -1,17 +1,17 @@
-// webpack.config.js
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createRequire } from "module"; // <-- добавляем это!
+import { createRequire } from "module";
+import { config } from "./project.config.js";
 
-const require = createRequire(import.meta.url); // <-- создаём require вручную
+const require = createRequire(import.meta.url);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  entry: "./src/app.ts", // точка входа
+  entry: "./src/app.ts",
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
@@ -44,34 +44,37 @@ export default {
     ],
   },
   resolve: {
-  extensions: [".ts", ".js"],
-  fallback: {
-    path: false,
-    fs: require.resolve("browserify-fs"),
-    buffer: require.resolve("buffer/"),
-    stream: require.resolve("stream-browserify"),
-    util: require.resolve("util/"),
-    process: require.resolve("process/browser"),
+    extensions: [".ts", ".js"],
+    fallback: {
+      path: false,
+      fs: require.resolve("browserify-fs"),
+      buffer: require.resolve("buffer/"),
+      stream: require.resolve("stream-browserify"),
+      util: require.resolve("util/"),
+      process: require.resolve("process/browser"),
+    },
   },
-},
   devServer: {
     static: {
       directory: path.join(__dirname, "public"),
     },
-    port: 8081,
+    port: config.DEV_SERVER_PORT,
     historyApiFallback: true,
     hot: true,
     allowedHosts: "all",
   },
   mode: "development",
   plugins: [
-  new webpack.ProvidePlugin({
-    process: "process/browser",
-    Buffer: ["buffer", "Buffer"],
-  }),
-  new HtmlWebpackPlugin({
-      template: "index.html", // можешь указать .html или .ejs
+    new webpack.ProvidePlugin({
+      process: "process/browser",
+      Buffer: ["buffer", "Buffer"],
+    }),
+    new HtmlWebpackPlugin({
+      template: "index.html",
       filename: "index.html",
+    }),
+    new webpack.DefinePlugin({
+      "process.env.API_BASE_URL": JSON.stringify(config.API_BASE_URL),
     }),
   ],
 };
