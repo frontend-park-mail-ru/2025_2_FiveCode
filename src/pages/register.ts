@@ -2,8 +2,7 @@ import ejs from 'ejs';
 import { Header } from '../components/header';
 import { apiClient } from "../api/apiClient";
 import router from '../router';
-import { renderNotes } from './notes';
-import { renderLogin } from './login';
+import { renderAppLayout } from '../layout';
 
 interface RegisterData {
   email: string;
@@ -59,12 +58,6 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
   return errors;
 }
 
-
-
-/**
- * Рендерит страницу регистрации пользователя
- * @returns {HTMLElement} DOM-элемент страницы регистрации
- */
 export function renderRegister(app: HTMLElement): void {
   app.innerHTML = '';
   const pageEl = document.createElement('div');
@@ -172,9 +165,8 @@ export function renderRegister(app: HTMLElement): void {
 
     const data = Object.fromEntries(new FormData(form));
 
-
     try {
-      const user = await apiClient.register({
+      await apiClient.register({
         username: data.email,
         email: data.email,
         password: data.password,
@@ -187,8 +179,9 @@ export function renderRegister(app: HTMLElement): void {
         throw new Error('Email и пароль обязательны');
       }
 
-  await apiClient.login({ email, password });
-  router.navigate('notes');
+      await apiClient.login({ email, password });
+      await renderAppLayout(app);
+      router.navigate('notes');
     } catch (err) {
       if (err instanceof Error)
         alert("Ошибка: " + err.message);

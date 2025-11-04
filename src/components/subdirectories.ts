@@ -1,19 +1,18 @@
-import ejs from 'ejs';
+import ejs from "ejs";
 
 const ICONS = {
-  default_file: new URL('../static/svg/icon_dot.svg', import.meta.url).href,
-  icon_triangle: new URL('../static/svg/icon_triangle.svg', import.meta.url).href,
-  icon_favorite: new URL('../static/svg/icon_favorite.svg', import.meta.url).href,
-  icon_shared: new URL('../static/svg/icon_shared.svg', import.meta.url).href,
-  icon_folder: new URL('../static/svg/icon_folder.svg', import.meta.url).href,
+  default_file: new URL("../static/svg/icon_dot.svg", import.meta.url).href,
+  icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
+    .href,
+  icon_favorite: new URL("../static/svg/icon_favorite.svg", import.meta.url)
+    .href,
+  icon_folder: new URL("../static/svg/icon_folder.svg", import.meta.url).href,
 };
 
-interface Note{
+interface Note {
   id: number;
   title: string;
   icon: string;
-  text: string;
-  folder: string; 
   favorite: boolean;
 }
 
@@ -21,67 +20,46 @@ interface SubdirectoriesParams {
   items: Note[];
 }
 
-export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement {
-    const container = document.createElement("div");
-    container.classList.add("folders");
+export function Subdirectories({
+  items = [],
+}: SubdirectoriesParams): HTMLElement {
+  const container = document.createElement("div");
+  container.classList.add("folders");
 
-    const SYSTEM_FOLDERS = {
-        FAVORITES: 'Избранное',
-        SHARED: 'Совместный доступ'
-    } as const;
-    type FolderMap = { [key: string]: Note[] };
+  type FolderMap = { [key: string]: Note[] };
 
-    const folders: FolderMap = Object.values(SYSTEM_FOLDERS).reduce((acc, folderName) => {
-        acc[folderName] = [];
-        return acc;
-    }, {} as FolderMap);
+  const folders: FolderMap = {
+    Избранное: [],
+    Заметки: [],
+  };
 
-    items.forEach((note: Note) => {
-        if (note.favorite) {
-            folders[SYSTEM_FOLDERS.FAVORITES]?.push({...note});
-        }
-                const folder = note.folder;
-        if (!folders[folder]) {
-            folders[folder] = [];
-        }
-        folders[folder]?.push(note);
-    });
-    const folderIcons = new Map<string, string>();
-    
-    const orderedFolders: FolderMap = {};
-    
-    [SYSTEM_FOLDERS.FAVORITES, SYSTEM_FOLDERS.SHARED].forEach(key => {
-        orderedFolders[key] = folders[key] || [];
-        folderIcons.set(key, 
-            key === SYSTEM_FOLDERS.FAVORITES ? ICONS.icon_favorite :
-            key === SYSTEM_FOLDERS.SHARED ? ICONS.icon_shared :
-            ICONS.icon_folder
-        );
-        delete folders[key];
-    });
-    
-    Object.keys(folders).sort().forEach(key => {
-        orderedFolders[key] = folders[key] || [];
-        folderIcons.set(key, ICONS.icon_folder);
-    });
+  items.forEach((note: Note) => {
+    if (note.favorite && folders["Избранное"]) {
+      folders["Избранное"].push(note);
+    } else if (folders["Заметки"]) {
+      folders["Заметки"].push(note);
+    }
+  });
 
-    const folderTemplate = `
+  const folderTemplate = `
       <div class="folder">
         <div class="folder-header">
           <img src="<%= icon_triangle %>" alt="triangle" class="folder-arrow" />
-          
+          <% if (folderIcon) { %>
+            <img src="<%= folderIcon %>" alt="icon" class="folder-icon" />
+          <% } %>
           <span class="folder-title"><%= folderName %></span>
         </div>
         <ul class="folder-list"></ul>
-        <% if (folderName !== 'Избранное') { %>
-          <div href="/note/new" class="add-note-button" data-folder="<%= folderName %>" data-link="">
+        <% if (folderName === 'Заметки') { %>
+          <div class="add-note-button">
             + Добавить новую заметку
           </div>
         <% } %>
       </div>
     `;
 
-    const noteItemTemplate  = `
+  const noteItemTemplate = `
         <li class="subdir-item">
             <a href="/note/<%= id %>" class="subdir-header" data-link>
               <img src="<%= icon %>" alt="icon" class="subdir-icon" onerror="this.onerror=null; this.src='<%= defaultIcon %>';" />
@@ -89,73 +67,69 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
             </a>
         </li>
       `;
-    
-    Object.entries(orderedFolders).forEach(([folderName, notes]) => {
-      const folderHtml = ejs.render(folderTemplate, {
+
+  Object.entries(folders).forEach(([folderName, notes]) => {
+    let folderIcon = "";
+    if (folderName === "Избранное") {
+      folderIcon = ICONS.icon_favorite;
+    } else if (folderName === "Заметки") {
+      folderIcon = ICONS.icon_folder;
+    }
+
+    if (folderName === "Избранное" && notes.length === 0) {
+      return;
+    }
+
+    const folderHtml = ejs.render(folderTemplate, {
       icon_triangle: ICONS.icon_triangle,
       folderName,
-      icon_folder: folderIcons.get(folderName) || ICONS.icon_folder,
-      });
-      const folderEl = document.createElement('div');
-      folderEl.innerHTML = folderHtml;
-      const folderElement = folderEl.firstElementChild as HTMLElement;
-      
-      const listEl = folderElement.querySelector(".folder-list") as HTMLElement;
-      const arrow = folderElement.querySelector(".folder-arrow") as HTMLElement;
-      const header = folderElement.querySelector(".folder-header") as HTMLElement;
-      
-      let collapsed = false;
+      folderIcon,
+    });
+    const folderEl = document.createElement("div");
+    folderEl.innerHTML = folderHtml;
+    const folderElement = folderEl.firstElementChild as HTMLElement;
+
+    const listEl = folderElement.querySelector(".folder-list") as HTMLElement;
+    const arrow = folderElement.querySelector(".folder-arrow") as HTMLElement;
+    const header = folderElement.querySelector(".folder-header") as HTMLElement;
+
+    let collapsed = false;
+    listEl.style.display = collapsed ? "none" : "block";
+    arrow.classList.toggle("rotated", !collapsed);
+    header.setAttribute("aria-expanded", String(!collapsed));
+
+    const updateState = () => {
       listEl.style.display = collapsed ? "none" : "block";
       arrow.classList.toggle("rotated", !collapsed);
-
-      header.setAttribute("role", "button");
-      header.setAttribute("tabindex", "0");
       header.setAttribute("aria-expanded", String(!collapsed));
+    };
 
-      const updateState = () => {
-        listEl.style.display = collapsed ? "none" : "block";
-        arrow.classList.toggle("rotated", !collapsed);
-        header.setAttribute("aria-expanded", String(!collapsed));
-      };
-      
-      
-      notes.forEach((item: Note) => {
-        const noteItemHtml = ejs.render(noteItemTemplate, {
-            id: item.id,
-            icon: item.icon,
-            title: item.title,
-            defaultIcon: ICONS.default_file,
-        });
-        const noteItemEl = document.createElement('div');
-        noteItemEl.innerHTML = noteItemHtml;
-        listEl.appendChild(noteItemEl.firstElementChild as HTMLElement);
+    notes.forEach((item: Note) => {
+      const noteItemHtml = ejs.render(noteItemTemplate, {
+        id: item.id,
+        icon: item.icon,
+        title: item.title,
+        defaultIcon: ICONS.default_file,
       });
-
-      header.addEventListener("click", () => {
-        collapsed = !collapsed;
-        updateState();
-      });
-
-      header.addEventListener("keydown", (e: KeyboardEvent) => {
-        if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            collapsed = !collapsed;
-            updateState();
-        }
-      });
-
-      const addButton = folderElement.querySelector('.add-note-button');
-      if (addButton) {
-        addButton.addEventListener('click', (e) => {
-          e.preventDefault();
-          import('../router').then(({ default: router }) => {
-            router.navigate('note/new');
-          });
-        });
-      }
-
-      container.appendChild(folderElement);
+      const noteItemEl = document.createElement("div");
+      noteItemEl.innerHTML = noteItemHtml;
+      listEl.appendChild(noteItemEl.firstElementChild as HTMLElement);
     });
+
+    header.addEventListener("click", () => {
+      collapsed = !collapsed;
+      updateState();
+    });
+
+    const addButton = folderElement.querySelector(".add-note-button");
+    if (addButton) {
+      addButton.addEventListener("click", (e) => {
+        e.preventDefault();
+      });
+    }
+
+    container.appendChild(folderElement);
+  });
 
   return container;
 }
