@@ -86,12 +86,12 @@ export function renderRegister(app: HTMLElement): void {
 
   
   const registerModalTemplate = `
-  <div class="login-modal show">
-    <a class="icon-login-form"> <img src="<%= icon %>"/ class="login-icon"> </a>
-      <h2 class="icon-login-form"> Регистрация</h2>
-      <form class="register-form">
+  <div class="modal modal--show">
+    <a class="modal__icon-container"> <img src="<%= icon %>"/ class="modal__icon"> </a>
+      <h2 class="modal__icon-container"> Регистрация</h2>
+      <form class="modal__form">
 
-        <label class="login-text">Почта<span class="validation-icon">?
+        <label class="modal__text">Почта<span class="validation-icon">?
             <div class="tooltip">
               Формат email: <br>
               • латинские буквы и цифры<br>
@@ -103,7 +103,7 @@ export function renderRegister(app: HTMLElement): void {
         </div></label>
         <span class="error-message" id="emailError">&nbsp;</span>
 
-        <label class="login-text">Пароль<span class="validation-icon">?
+        <label class="modal__text">Пароль<span class="validation-icon">?
             <div class="tooltip">
               Пароль должен содержать:<br>
               • минимум 6 символов<br>
@@ -120,16 +120,16 @@ export function renderRegister(app: HTMLElement): void {
 
         <span class="error-message" id="passwordError">&nbsp;</span>
 
-        <label class="login-text">Подтвердите пароль</label>
+        <label class="modal__text">Подтвердите пароль</label>
         <div class="input-wrapper">
           <input type="password" name="confirmPassword" id="confirmPassword" placeholder="введите пароль" class="input" required />
           <span class="toggle-password" id="toggleConfirmPassword"><img src="<%= eye %>"></span>
         </div>
         <span class="error-message" id="confirmPasswordError">&nbsp;</span>
 
-        <div class="login-buttons">
+        <div class="modal__buttons">
           <button type="submit" class="btn">Создать аккаунт</button>
-          <span class="login-text-small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? &nbsp;<a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
+          <span class="modal__text--small" style="margin-bottom: -5px; display:flex; justify-content: center;"> Уже есть аккаунт? &nbsp;<a style="color: var(--primary-500)" href="/login"> Войти </a> </span>
         </div>
       </form>
     </div>
@@ -140,7 +140,7 @@ export function renderRegister(app: HTMLElement): void {
   const registerModal = registerModalEl.firstElementChild as HTMLElement;
 
 
-  const form = registerModal.querySelector<HTMLFormElement>(".register-form")!;
+  const form = registerModal.querySelector<HTMLFormElement>(".modal__form")!;
   const emailErrorEl = registerModal.querySelector("#emailError")!;
   const passwordErrorEl = registerModal.querySelector("#passwordError")!;
   const confirmPasswordErrorEl = registerModal.querySelector("#confirmPasswordError")!;
@@ -157,15 +157,15 @@ export function renderRegister(app: HTMLElement): void {
     if (Object.keys(errors).length > 0) {
       if (errors.email) {
         emailErrorEl.textContent = errors.email;
-        emailErrorEl.classList.add('visible');
+        emailErrorEl.classList.add('error-message--visible');
       }
       if (errors.password) {
         passwordErrorEl.textContent = errors.password;
-        passwordErrorEl.classList.add('visible');
+        passwordErrorEl.classList.add('error-message--visible');
       }
       if (errors.confirmPassword){
         confirmPasswordErrorEl.textContent = errors.confirmPassword;
-        confirmPasswordErrorEl.classList.add('visible');
+        confirmPasswordErrorEl.classList.add('error-message--visible');
       }
       return;
     }

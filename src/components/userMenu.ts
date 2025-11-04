@@ -28,9 +28,9 @@ export function UserMenu({ user, userIcon, isVisible = false, position, settings
                 </div>
             </div>
             <div class="user-menu__actions">
-                <button class="user-menu__btn settings-btn" style="border: 1px var(--primary-300) solid;">
+                <button class="user-menu__btn user-menu__btn--settings" style="border: 1px var(--primary-300) solid;">
                     <img src="<%= settingsIcon %>" style="width: 20px; height: 20px;"> Настройки</button>
-                <button class="user-menu__btn logout-btn" style="border: 1px var(--danger-500) solid;">
+                <button class="user-menu__btn user-menu__btn--logout" style="border: 1px var(--danger-500) solid;">
                     <img src="<%= logoutIcon %>" style="width: 20px; height: 20px;"> Выйти</button>
             </div>
         </div>

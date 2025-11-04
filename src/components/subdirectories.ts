@@ -71,12 +71,12 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
 
     const folderTemplate = `
       <div class="folder">
-        <div class="folder-header">
-          <img src="<%= icon_triangle %>" alt="triangle" class="folder-arrow" />
+        <div class="folder__header">
+          <img src="<%= icon_triangle %>" alt="triangle" class="folder__arrow" />
           
-          <span class="folder-title"><%= folderName %></span>
+          <span class="folder__title"><%= folderName %></span>
         </div>
-        <ul class="folder-list"></ul>
+        <ul class="folder__list"></ul>
         <% if (folderName !== 'Избранное') { %>
           <div href="/note/new" class="add-note-button" data-folder="<%= folderName %>" data-link="">
             + Добавить новую заметку
@@ -86,10 +86,10 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
     `;
 
     const noteItemTemplate  = `
-        <li class="subdir-item">
-        <div class="subdir-header">
-          <img src="<%= icon %>" alt="icon" class="subdir-icon" onerror="this.onerror=null; this.src='<%= defaultIcon %>';" />
-          <span class="subdir-title"><%= title %></span>
+        <li class="subdir__item">
+        <div class="subdir__header">
+          <img src="<%= icon %>" alt="icon" class="subdir__icon" onerror="this.onerror=null; this.src='<%= defaultIcon %>';" />
+          <span class="subdir__title"><%= title %></span>
         </div>
       </li>
       `;
@@ -104,14 +104,14 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
       folderEl.innerHTML = folderHtml;
       const folderElement = folderEl.firstElementChild as HTMLElement;
       
-      const listEl = folderElement.querySelector(".folder-list") as HTMLElement;
-      const arrow = folderElement.querySelector(".folder-arrow") as HTMLElement;
-      const header = folderElement.querySelector(".folder-header") as HTMLElement;
+      const listEl = folderElement.querySelector(".folder__list") as HTMLElement;
+      const arrow = folderElement.querySelector(".folder__arrow") as HTMLElement;
+      const header = folderElement.querySelector(".folder__header") as HTMLElement;
       // состояние свернутости/развернутости
       
       let collapsed = false;
       listEl.style.display = collapsed ? "none" : "block";
-      arrow.classList.toggle("rotated", !collapsed);
+      arrow.classList.toggle("folder__arrow--rotated", !collapsed);
 
       header.setAttribute("role", "button");
       header.setAttribute("tabindex", "0");
@@ -119,7 +119,7 @@ export function Subdirectories({items = []} : SubdirectoriesParams): HTMLElement
 
       const updateState = () => {
         listEl.style.display = collapsed ? "none" : "block";
-        arrow.classList.toggle("rotated", !collapsed);
+        arrow.classList.toggle("folder__arrow--rotated", !collapsed);
         header.setAttribute("aria-expanded", String(!collapsed));
       };
       

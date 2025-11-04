@@ -1,40 +1,34 @@
-.login-modal,
-.register-modal {
+.modal {
   position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    /* box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); */
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 1000;
-    border: 3px solid var(--primary-300);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 3px solid var(--primary-300);
+  z-index: 1000;
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.login-modal.show,
-.register-modal.show {
+.modal--show {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
 
-
-.login-form,
-.register-form {
+.modal__form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.login-form .input .register-form {
+.modal__form .input {
   margin-bottom: 0;
 }
 
-.login-form .error-message .register-form {
+.modal__form .error-message {
   margin-top: -15px;
   margin-bottom: 0;
   padding-bottom: 0;
@@ -44,8 +38,7 @@
   display: block;
 }
 
-.login-form input,
-.register-form input {
+.modal__form input {
   width: 100%;
   padding: 10px;
   border-radius: 5px;
@@ -54,25 +47,23 @@
   color: var(--text-noraml);
 }
 
-.login-form input::placeholder {
-    color: #000;
-    opacity: 1;
+.modal__form input::placeholder {
+  color: #000;
+  opacity: 1;
 }
 
-.login-form input.error{
-  margin-top:-15px;
+.modal__form input.input--error {
+  margin-top: -15px;
   border-color: var(--error);
 }
 
-.login-buttons,
-.register-buttons {
+.modal__buttons {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.login-buttons button,
-.register-buttons button {
+.modal__buttons button {
   flex: 1;
   padding: 10px;
   border: none;
@@ -82,95 +73,86 @@
   transition: background 0.3s;
 }
 
-.login-buttons button:first-child,
-.register-buttons button:first-child {
+.modal__buttons button:first-child {
   background: var(--primary-300);
   color: var(--text-noraml);
 }
 
-.login-buttons button:first-child:hover,
-.register-buttons button:first-child:hover {
+.modal__buttons button:first-child:hover {
   background: var(--primary-400);
 }
 
-.register-btn,
-.login-btn {
+.modal__btn--secondary {
   background: var(--primary-50);
   color: var(--text-noraml);
 }
 
-.register-btn:hover,
-.login-btn:hover {
+.modal__btn--secondary:hover {
   background: var(--primary-100);
 }
 
-.login-form input::placeholder {
+.modal__form input::placeholder {
   color: rgba(73, 80, 87, 0.7);
 }
 
 .welcome {
-    margin-top: 5%;
-    display: flex;
-    justify-content: center;
-    font-size: 40px;
-    height: 100vh;
-    
+  margin-top: 5%;
+  display: flex;
+  justify-content: center;
+  font-size: 40px;
+  height: 100vh;
 }
 
-.login-icon {
-    width: 64px;
-    height: 64px;
-    vertical-align: middle;
-    
-    margin-right: 8px;
+.modal__icon {
+  width: 64px;
+  height: 64px;
+  vertical-align: middle;
+  margin-right: 8px;
 }
 
-.icon-login-form {
-    display: flex;
-    justify-content: center;
-    font-size: 36px;
-
+.modal__icon-container {
+  display: flex;
+  justify-content: center;
+  font-size: 36px;
 }
 
-.login-text {
-    margin-bottom: 5px;
-    margin-left: 5px;
-    font-weight: 600;
-    font-size: 18px;
-    color: var(--text-noraml);
+.modal__text {
+  margin-bottom: 5px;
+  margin-left: 5px;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text-noraml);
 }
 
-.login-text-small {
-    margin-bottom: 2px;
-    font-weight: 400;
-    font: 4px;
-    color: var(--text-noraml);
+.modal__text--small {
+  margin-bottom: 2px;
+  font-weight: 400;
+  font-size: 4px;
+  color: var(--text-noraml);
 }
 
 .error-message {
   color: var(--error);
   font-size: 12px;
   margin: 0;
-  /* display: none; */
   opacity: 0;
   margin-top: -15px;
   transition: opacity 0.8s ease;
-  /* display: block; */
   visibility: hidden;
 }
 
-.error-message.visible {
-    opacity: 1;
-    visibility: visible;
+.error-message--visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 .input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 5px;
-    border: 1px solid var(--primary-400);
-    border-radius: 4px;
-    font-size: 16px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid var(--primary-400);
+  border-radius: 4px;
+  font-size: 16px;
 }
 
 .input-wrapper {

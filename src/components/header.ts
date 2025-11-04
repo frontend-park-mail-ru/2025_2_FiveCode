@@ -27,7 +27,7 @@ export function Header({ user, app }: HeaderProps) : HTMLElement {
     const template = `
         <header class="header">
         <div class="header__logo">
-            <img src="<%= iconUrl %>" class="header-icon">
+            <img src="<%= iconUrl %>" class="header__icon">
             <a href="/">Goose</a>
         </div>
         </header>

@@ -46,7 +46,7 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
                     <div class="sidebar__username"><%= user?.email?.split('@')[0] || 'Имя' %></div>
                     
                 </div>
-                <button class="user-dots" aria-label="Открыть меню пользователя">
+                <button class="sidebar__user-dots" aria-label="Открыть меню пользователя">
                     <img src="<%= dots %>" alt="menu" />
                 </button>
             </div>
@@ -56,8 +56,8 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
             <a class="sidebar__item" data-link> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>  
         </nav>
         <div class="sidebar__subs"></div>
-        <a class="sidebar__item logout-btn" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-        <a class="sidebar__item logout-btn" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
+        <a class="sidebar__item sidebar__item--logout" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
+        <a class="sidebar__item sidebar__item--logout" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
           
       </aside>
     `;
@@ -92,12 +92,12 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
         logoutIcon: ICONS.logout,
       });
       document.body.appendChild(userMenuComponent);
-      userMenuComponent.querySelector('.settings-btn')?.addEventListener('click', () => {
+      userMenuComponent.querySelector('.user-menu__btn--settings')?.addEventListener('click', () => {
         userMenuComponent!.style.display = 'none';
         router.navigate('settings');
       });
 
-      userMenuComponent.querySelector('.logout-btn')?.addEventListener('click', async () => {
+      userMenuComponent.querySelector('.user-menu__btn--logout')?.addEventListener('click', async () => {
         userMenuComponent!.style.display = 'none';
         await apiClient.logout();
         router.navigate('login');
@@ -114,12 +114,12 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
     if (userMenuComponent && 
         event.target instanceof Node && 
         !userMenuComponent.contains(event.target) &&
-        !(event.target as HTMLElement).closest('.user-dots')) {
+        !(event.target as HTMLElement).closest('.sidebar__user-dots')) {
       userMenuComponent.style.display = 'none';
     }
   });
 
-  el.querySelector('.user-dots')?.addEventListener('click', handleDotsClick);
+  el.querySelector('.sidebar__user-dots')?.addEventListener('click', handleDotsClick);
   const subs = el.querySelector('.sidebar__subs') as HTMLElement;
   apiClient.getNotesForUser(user?.id!)
       .then(notes => {
@@ -150,20 +150,22 @@ export function Sidebar({ user, subdirs} : SidebarParams): HTMLElement {
     if (!menu) return;
 
     if (dots) {
-        menu.classList.toggle("show");
+        menu.classList.toggle("sidebar__dropdown--show");
         return;
     }
 
     if (!target.closest(".sidebar__dropdown")) {
-        menu.classList.remove("show");
+        menu.classList.remove("sidebar__dropdown--show");
     }
     });
 
   
-  el.querySelector(".logout-btn")?.addEventListener("click", async (ev) => {
+  el.querySelectorAll(".sidebar__item--logout").forEach(btn => {
+    btn.addEventListener("click", async (ev) => {
       ev.preventDefault();
       await apiClient.logout();
       router.navigate('login');
+    });
   });
   return el;
 }

@@ -40,45 +40,45 @@ export async function renderNoteEditor(app: HTMLElement, noteId: number | string
     <div class="note-editor__main">
       <input class="note-editor__title" placeholder="Заголовок заметки" value="<%= title %>" />
 
-      <div id="wysiwyg-root" class="wysiwyg-root">
-        <div class="wysiwyg-toolbar" role="toolbar" aria-label="Editor toolbar">
-          <button class="w-btn" data-cmd="undo" title="Undo">↶</button>
-          <button class="w-btn" data-cmd="redo" title="Redo">↷</button>
-          <span class="w-sep"></span>
-          <button class="w-btn" data-cmd="bold" title="Bold"><strong>B</strong></button>
-          <button class="w-btn" data-cmd="italic" title="Italic"><em>I</em></button>
-          <button class="w-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-          <select class="w-select" data-action="heading" title="Heading">
+      <div id="wysiwyg-root" class="wysiwyg">
+        <div class="wysiwyg__toolbar" role="toolbar" aria-label="Editor toolbar">
+          <button class="wysiwyg__btn" data-cmd="undo" title="Undo">↶</button>
+          <button class="wysiwyg__btn" data-cmd="redo" title="Redo">↷</button>
+          <span class="wysiwyg__sep"></span>
+          <button class="wysiwyg__btn" data-cmd="bold" title="Bold"><strong>B</strong></button>
+          <button class="wysiwyg__btn" data-cmd="italic" title="Italic"><em>I</em></button>
+          <button class="wysiwyg__btn" data-cmd="underline" title="Underline"><u>U</u></button>
+          <select class="wysiwyg__select" data-action="heading" title="Heading">
             <option value="p">Paragraph</option>
             <option value="h1">Heading 1</option>
             <option value="h2">Heading 2</option>
           </select>
-          <button class="w-btn" data-cmd="insertUnorderedList" title="Bulleted">•</button>
-          <button class="w-btn" data-cmd="insertOrderedList" title="Numbered">1.</button>
-          <button class="w-btn" data-action="link" title="Insert link">URL</button>
-          <button class="w-btn" data-action="image" title="Insert image">Image</button>
-          <span class="w-spacer"></span>
-          <button class="w-btn" data-action="html" title="Toggle HTML view">HTML</button>
+          <button class="wysiwyg__btn" data-cmd="insertUnorderedList" title="Bulleted">•</button>
+          <button class="wysiwyg__btn" data-cmd="insertOrderedList" title="Numbered">1.</button>
+          <button class="wysiwyg__btn" data-action="link" title="Insert link">URL</button>
+          <button class="wysiwyg__btn" data-action="image" title="Insert image">Image</button>
+          <span class="wysiwyg__spacer"></span>
+          <button class="wysiwyg__btn" data-action="html" title="Toggle HTML view">HTML</button>
         </div>
 
-        <div id="wysiwyg-editor" class="w-editor" contenteditable="true" spellcheck="true" aria-label="Визуальный редактор">
+        <div id="wysiwyg-editor" class="wysiwyg__editor" contenteditable="true" spellcheck="true" aria-label="Визуальный редактор">
           <p><%= content %></p>
         </div>
 
-        <div class="w-footer">
-          <div class="w-status">Готов</div>
-          <div class="w-actions">
-            <button class="w-btn" data-action="export">Export</button>
-            <button class="w-btn" data-action="clear">Clear</button>
+        <div class="wysiwyg__footer">
+          <div class="wysiwyg__status">Готов</div>
+          <div class="wysiwyg__actions">
+            <button class="wysiwyg__btn" data-action="export">Export</button>
+            <button class="wysiwyg__btn" data-action="clear">Clear</button>
           </div>
         </div>
 
-        <div class="w-modal" data-modal="prompt" aria-hidden="true">
-          <div class="w-modal-inner">
-            <input class="w-input" type="text" placeholder="Введите URL" />
-            <div class="w-modal-actions">
-              <button class="w-btn" data-modal-ok>OK</button>
-              <button class="w-btn" data-modal-cancel>Cancel</button>
+        <div class="wysiwyg__modal" data-modal="prompt" aria-hidden="true">
+          <div class="wysiwyg__modal-inner">
+            <input class="wysiwyg__input" type="text" placeholder="Введите URL" />
+            <div class="wysiwyg__modal-actions">
+              <button class="wysiwyg__btn" data-modal-ok>OK</button>
+              <button class="wysiwyg__btn" data-modal-cancel>Cancel</button>
             </div>
           </div>
         </div>
