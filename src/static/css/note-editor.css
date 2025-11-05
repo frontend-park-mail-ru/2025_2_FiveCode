@@ -20,6 +20,13 @@
     gap: 12px;
 }
 
+.save-status {
+    margin-right: auto;
+    color: #8a8a8a;
+    font-size: 14px;
+    transition: opacity 0.3s;
+}
+
 .note-editor__header-btn {
     background: none;
     border: none;
@@ -163,8 +170,7 @@
 
 .note-editor__buttons {
     margin-top: 20px;
-    display: flex;
-    gap: 12px;
+    display: none;
 }
 
 .formatting-toolbar {

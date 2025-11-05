@@ -26,6 +26,22 @@ interface SidebarParams {
   notes?: any[];
 }
 
+const handleTitleUpdate = (event: Event) => {
+  const customEvent = event as CustomEvent;
+  const { noteId, newTitle } = customEvent.detail;
+  if (!noteId || typeof newTitle === "undefined") return;
+
+  const noteLinkTitle = document.querySelector(
+    `.sidebar a[href="/note/${noteId}"] .subdir-title`
+  );
+  if (noteLinkTitle) {
+    noteLinkTitle.textContent = newTitle;
+  }
+};
+
+document.removeEventListener("noteTitleUpdated", handleTitleUpdate);
+document.addEventListener("noteTitleUpdated", handleTitleUpdate);
+
 export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
   const template = `
         <aside class="sidebar">
@@ -62,6 +78,21 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
+  const handleCreateNewNote = async (event: Event) => {
+    event.preventDefault();
+    const button = event.currentTarget as HTMLElement;
+    button.textContent = "Создание...";
+    try {
+      const newNote = await apiClient.createNote();
+      document.dispatchEvent(new CustomEvent("notesUpdated"));
+      router.navigate(`note/${newNote.id}`);
+    } catch (error) {
+      console.error("Failed to create new note", error);
+      alert("Не удалось создать заметку.");
+      button.textContent = "+ Добавить новую заметку";
+    }
+  };
+
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
     const dotsButton = event.currentTarget as HTMLElement;
@@ -84,7 +115,6 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
         logoutIcon: ICONS.logout,
       });
       document.body.appendChild(userMenuComponent);
-
       userMenuComponent
         .querySelector(".user-menu__btn--settings")
         ?.addEventListener("click", () => {
@@ -125,8 +155,17 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
   const subs = el.querySelector(".sidebar__subs") as HTMLElement;
 
   const renderSubdirectories = (notesData: any[]) => {
+    const mappedNotes = (Array.isArray(notesData) ? notesData : []).map(
+      (n) => ({ ...n, favorite: n.is_favorite })
+    );
     subs.innerHTML = "";
-    const subdirComponent = Subdirectories({ items: notesData });
+    const subdirComponent = Subdirectories({ items: mappedNotes });
+
+    const addNoteButtons = subdirComponent.querySelectorAll(".add-note-button");
+    addNoteButtons.forEach((button) => {
+      button.addEventListener("click", handleCreateNewNote as EventListener);
+    });
+
     subs.appendChild(subdirComponent);
   };
 
@@ -134,9 +173,9 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
     apiClient
       .getNotesForUser()
       .then(renderSubdirectories)
-      .catch((err) =>
-        console.error("Failed to refresh notes for sidebar", err)
-      );
+      .catch((err) => {
+        console.error("Failed to refresh notes for sidebar", err);
+      });
   };
 
   document.removeEventListener("notesUpdated", refreshNotes);

@@ -1,5 +1,3 @@
-import { Sidebar } from "../components/sidebar";
-import { loadUser } from "../utils/session";
 import { Block } from "../components/block";
 import { createEditorManager } from "../editor/editorManager";
 import router from "../router";
@@ -10,17 +8,10 @@ const ICONS = {
   star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
 };
 
-export async function renderNoteEditor(
-  app: HTMLElement,
-  noteId: number | string
-): Promise<void> {
-  app.innerHTML = '<div class="page page--note-editor"></div>';
-  const pageEl = app.querySelector(".page--note-editor") as HTMLElement;
+export async function renderNoteEditor(noteId: number | string): Promise<void> {
+  const mainEl = document.getElementById("main-content");
+  if (!mainEl) return;
 
-  const user = loadUser();
-  pageEl.appendChild(Sidebar({ user }));
-
-  const mainEl = document.createElement("div");
   mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
     <div class="note-editor__header">
@@ -55,8 +46,6 @@ export async function renderNoteEditor(
     <div class="block-editor">Загрузка блоков...</div>
   `;
 
-  pageEl.appendChild(mainEl);
-
   const titleInput = mainEl.querySelector<HTMLInputElement>(
     ".note-editor__title"
   )!;
@@ -72,39 +61,57 @@ export async function renderNoteEditor(
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
 
   let initialBlocks: Block[] = [];
-  let initialTitle = "Новая заметка";
+  let initialTitle = "Загрузка...";
   let isFavorite = false;
 
-  if (String(noteId) !== "new") {
-    try {
-      const note = await apiClient.getNote(noteId as number);
-      const blocksData = await apiClient.getBlocksForNote(noteId as number);
-      initialTitle = note.title;
-      isFavorite = note.is_favorite || false;
-      const backendBlocks = blocksData?.blocks || [];
-      initialBlocks = backendBlocks.map((block: any) => ({
-        id: block.id,
-        type: block.type,
-        content: block.text || "",
-        language: block.language || "text",
-      }));
+  try {
+    const note = await apiClient.getNote(noteId as number);
+    const blocksData = await apiClient.getBlocksForNote(noteId as number);
+    initialTitle = note.title;
+    isFavorite = note.is_favorite || false;
+    const backendBlocks = blocksData?.blocks || [];
 
-      if (isFavorite) {
-        favoriteBtn.classList.add("active");
+    initialBlocks = backendBlocks.map((block: any) => {
+      if (block.type === "attachment") {
+        return {
+          id: block.id,
+          type: "image",
+          content: block.text || "",
+        };
       }
-    } catch (e) {
-      alert("Не удалось загрузить заметку.");
-      router.navigate("notes");
-      return;
-    }
-  }
 
-  if (initialBlocks.length === 0) {
-    initialBlocks.push({
-      id: `local-${Date.now()}`,
-      type: "text",
-      content: "",
+      if (block.type === "text" && block.text && block.text.startsWith("{")) {
+        try {
+          const parsed = JSON.parse(block.text);
+          if (
+            parsed &&
+            typeof parsed.content !== "undefined" &&
+            typeof parsed.language !== "undefined"
+          ) {
+            return {
+              id: block.id,
+              type: "code",
+              content: block.text,
+              language: parsed.language,
+            };
+          }
+        } catch (e) {}
+      }
+
+      return {
+        id: block.id,
+        type: "text",
+        content: block.text || "",
+      };
     });
+
+    if (isFavorite) {
+      favoriteBtn.classList.add("active");
+    }
+  } catch (e) {
+    alert("Не удалось загрузить заметку.");
+    router.navigate("notes");
+    return;
   }
 
   titleInput.value = initialTitle;
@@ -121,19 +128,11 @@ export async function renderNoteEditor(
 
   editorManager.render();
 
-  if (
-    String(noteId) === "new" &&
-    initialBlocks.length > 0 &&
-    initialBlocks[0]
-  ) {
+  if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
   }
 
   deleteBtn.addEventListener("click", async () => {
-    if (String(noteId) === "new") {
-      router.navigate("notes");
-      return;
-    }
     if (confirm("Вы уверены, что хотите удалить эту заметку?")) {
       try {
         await apiClient.deleteNote(noteId as number);
@@ -147,10 +146,6 @@ export async function renderNoteEditor(
   });
 
   favoriteBtn.addEventListener("click", async () => {
-    if (String(noteId) === "new") {
-      alert("Сначала сохраните заметку, чтобы добавить ее в избранное.");
-      return;
-    }
     const newFavoriteStatus = !favoriteBtn.classList.contains("active");
     try {
       await apiClient.toggleFavorite(noteId as number, newFavoriteStatus);

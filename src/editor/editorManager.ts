@@ -30,29 +30,20 @@ export function createEditorManager({
 }: EditorManagerConfig): EditorManager {
   let blocks: Block[] = [...initialBlocks];
   const mainContainer = container.closest<HTMLElement>(".note-editor__main");
-  let currentNoteId = String(noteId) === "new" ? null : noteId;
 
   const debouncedSaves = new Map<string | number, () => void>();
-
-  const ensureNoteExists = async (): Promise<string | number> => {
-    if (currentNoteId) {
-      return currentNoteId;
-    }
-    const newNote = await apiClient.createNote();
-    currentNoteId = newNote.id;
-    history.replaceState(null, "", `/note/${currentNoteId}`);
-    if (currentNoteId) {
-      noteId = currentNoteId;
-    }
-    return noteId;
-  };
 
   const saveTitle = async () => {
     saveStatusEl.textContent = "Сохранение...";
     try {
-      const noteIdToUpdate = await ensureNoteExists();
-      await apiClient.updateNote(noteIdToUpdate, { title: titleInput.value });
+      const newTitle = titleInput.value;
+      await apiClient.updateNote(noteId, { title: newTitle });
       saveStatusEl.textContent = "Сохранено";
+      document.dispatchEvent(
+        new CustomEvent("noteTitleUpdated", {
+          detail: { noteId: noteId, newTitle: newTitle },
+        })
+      );
     } catch (err) {
       saveStatusEl.textContent = "Ошибка сохранения";
     }
@@ -66,31 +57,14 @@ export function createEditorManager({
       const blockToSave = blocks.find((b) => b.id === blockId);
       if (!blockToSave) return;
 
-      if (blockToSave.id.toString().startsWith("local-")) {
-        const noteIdForBlock = await ensureNoteExists();
-        const newBlock = await apiClient.createBlock(noteIdForBlock, {
-          type: "text",
-        });
-        await apiClient.updateBlock(newBlock.id, {
-          text: blockToSave.content,
-          formats: [],
-        });
-        const localIndex = blocks.findIndex((b) => b.id === blockId);
-        if (
-          localIndex !== -1 &&
-          localIndex < blocks.length &&
-          blocks[localIndex]
-        ) {
-          blocks[localIndex].id = newBlock.id;
-        }
-      } else {
-        await apiClient.updateBlock(blockToSave.id, {
-          text: blockToSave.content,
-          formats: [],
-        });
-      }
+      await apiClient.updateBlock(blockToSave.id, {
+        text: blockToSave.content,
+        formats: [],
+      });
+
       saveStatusEl.textContent = "Сохранено";
     } catch (err) {
+      console.error("Save block error:", err);
       saveStatusEl.textContent = "Ошибка сохранения";
     }
   };
@@ -119,48 +93,44 @@ export function createEditorManager({
     );
     if (currentIndex === -1) return;
 
+    const beforeBlock = blocks[currentIndex + 1];
+    const beforeBlockId = beforeBlock ? beforeBlock.id : undefined;
+
+    let newBlockData;
+    let newBlock: Block;
+
     if (type === "image") {
       const uploadedFile = await createImageModal();
-      if (uploadedFile) {
-        const noteIdForBlock = await ensureNoteExists();
-        const newBlockData = await apiClient.createBlock(noteIdForBlock, {
-          type: "attachment",
-          file_id: (uploadedFile as UploadedFile).id,
-        });
+      if (!uploadedFile) return;
 
-        blocks.splice(currentIndex + 1, 0, {
-          id: newBlockData.id,
-          type: "image",
-          content: (uploadedFile as UploadedFile).url,
-        });
-        render();
-        focusBlock(newBlockData.id);
+      newBlockData = await apiClient.createBlock(noteId, {
+        type: "attachment",
+        file_id: uploadedFile.id,
+        before_block_id: beforeBlockId as number,
+      });
+
+      newBlock = {
+        id: newBlockData.id,
+        type: "image",
+        content: uploadedFile.url,
+      };
+    } else {
+      newBlockData = await apiClient.createBlock(noteId, {
+        type: "text",
+        before_block_id: beforeBlockId as number,
+      });
+
+      const baseBlock = { id: newBlockData.id, type, content: "" };
+      if (type === "code") {
+        newBlock = { ...baseBlock, language: "javascript" } as CodeBlock;
+      } else {
+        newBlock = baseBlock;
       }
-      return;
     }
 
-    let newBlock: Block | null = null;
-    const baseBlock = { id: `local-${Date.now()}`, type, content: "" };
-
-    switch (type) {
-      case "code":
-        newBlock = {
-          ...baseBlock,
-          id: baseBlock.id,
-          language: "javascript",
-        } as CodeBlock;
-        break;
-      case "text":
-      default:
-        newBlock = { ...baseBlock, id: baseBlock.id };
-        break;
-    }
-
-    if (newBlock) {
-      blocks.splice(currentIndex + 1, 0, newBlock);
-      render();
-      focusBlock(newBlock.id);
-    }
+    blocks.splice(currentIndex + 1, 0, newBlock);
+    render();
+    focusBlock(newBlock.id);
   };
 
   const render = () => {
