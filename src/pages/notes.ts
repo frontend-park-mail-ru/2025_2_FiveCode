@@ -1,79 +1,86 @@
-import ejs from "ejs";
+import ejs from 'ejs';
+import { Sidebar } from '../components/sidebar';
 import { NoteCard } from "../components/notecard";
-import { apiClient } from "../api/apiClient";
-import router from "../router";
+import { apiClient } from '../api/apiClient';
+import { loadUser } from '../utils/session';
 
 const ICONS = {
-  add_new: new URL("../static/svg/icon_add_new.svg", import.meta.url).href,
-};
+  add_new: new URL('../static/svg/icon_add_new.svg', import.meta.url).href,
+}
 
-export async function renderNotes(): Promise<void> {
-  const main = document.getElementById("main-content");
-  if (!main) return;
-  main.innerHTML = "";
+interface NoteParam {
+  id: number;
+  title: string;
+  text: string;
+  icon: string;
+  favorite: boolean;
+}
+
+export async function renderNotes(app : HTMLElement) : Promise<void> {
+  app.innerHTML = '';
+  const pageEl = document.createElement('div');
+  pageEl.innerHTML = `<div class="page page--notes"></div>`;
+  const page = pageEl.firstElementChild as HTMLElement;
+
+  const user = loadUser();
+  
+  const mainEl = document.createElement('div');
+  mainEl.innerHTML = `<div class="page__main"></div>`;
+  const main = mainEl.firstElementChild as HTMLElement;
+
+  page.appendChild(main);
+  app.appendChild(page);
 
   try {
     const allNotes = await apiClient.getNotesForUser();
+    
+    page.insertBefore(Sidebar({ user: user, notes: allNotes }), main);
 
     const categories = [
       { key: "favorites", title: "Избранное" },
       { key: "recent", title: "Заметки" },
     ];
 
-    const processedNotes = (Array.isArray(allNotes) ? allNotes : []).map(
-      (note) => ({ ...note, favorite: note.is_favorite })
-    );
+    allNotes.forEach((note: any) => {
+      let displayTitle = note.title;
+      try {
+        const parsedData = JSON.parse(note.title);
+        displayTitle = parsedData.title || 'Заметка без заголовка';
+      } catch(e) {}
+      note.title = displayTitle;
+    });
 
     categories.forEach(({ key, title }) => {
-      const sectionHtml = ejs.render(
-        `<div class="notes-section"><h2><%= title %></h2><div class="notes-content"></div></div>`,
-        { title }
-      );
-      const sectionEl = document.createElement("div");
+      const sectionHtml = ejs.render(`<div class="notes-section"><h2><%= title %></h2><div class="notes-content"></div></div>`, { title });
+      const sectionEl = document.createElement('div');
       sectionEl.innerHTML = sectionHtml;
       const section = sectionEl.firstElementChild as HTMLElement;
-      const list = section.querySelector(".notes-content") as HTMLElement;
+      const list = section.querySelector('.notes-content') as HTMLElement;
 
-      const filteredNotes = processedNotes.filter((note: any) => {
+      const filteredNotes = (Array.isArray(allNotes) ? allNotes : []).filter((note : NoteParam) => {
         if (key === "favorites") return note.favorite;
         if (key === "recent") return !note.favorite;
         return true;
       });
 
-      filteredNotes.forEach((note: any) => {
+      filteredNotes.forEach((note : NoteParam) => {
         const noteCard = NoteCard(note);
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = `/note/${note.id}`;
-        link.setAttribute("data-link", "");
-        link.className = "note-card-link";
+        link.setAttribute('data-link', '');
+        link.className = 'note-card-link';
         link.appendChild(noteCard);
         list.appendChild(link);
       });
 
       if (key === "recent") {
         const addCard = NoteCard({
-          id: 0,
-          title: "Новая заметка",
-          text: "",
-          icon: ICONS.add_new,
-          favorite: false,
+          id: 0, title: "Новая заметка", text: "", icon: ICONS.add_new, favorite: false,
         });
-
-        addCard.addEventListener("click", async (e) => {
-          e.preventDefault();
-          try {
-            const newNote = await apiClient.createNote();
-            document.dispatchEvent(new CustomEvent("notesUpdated"));
-            router.navigate(`note/${newNote.id}`);
-          } catch (error) {
-            console.error("Failed to create new note", error);
-            alert("Не удалось создать заметку.");
-          }
-        });
-
-        const addLink = document.createElement("a");
-        addLink.href = `#`;
-        addLink.className = "note-card-link";
+        const addLink = document.createElement('a');
+        addLink.href = `/note/new`;
+        addLink.setAttribute('data-link', '');
+        addLink.className = 'note-card-link';
         addLink.appendChild(addCard);
         list.appendChild(addLink);
       }
@@ -82,6 +89,6 @@ export async function renderNotes(): Promise<void> {
     });
   } catch (error) {
     console.error("Failed to render notes page:", error);
-    main.innerHTML = "<p>Не удалось загрузить заметки.</p>";
+    main.innerHTML = '<p>Не удалось загрузить заметки.</p>';
   }
 }

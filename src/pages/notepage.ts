@@ -1,20 +1,26 @@
-import { Block } from "../components/block";
-import { createEditorManager } from "../editor/editorManager";
-import router from "../router";
-import { apiClient } from "../api/apiClient";
+import { Sidebar } from '../components/sidebar';
+import { loadUser } from '../utils/session';
+import { Block, CodeBlock } from '../components/block';
+import { createEditorManager } from '../editor/editorManager';
+import router from '../router';
+import { apiClient } from '../api/apiClient';
 
 const ICONS = {
-  trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
-  star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
+  trash: new URL('../static/svg/icon_delete.svg', import.meta.url).href,
+  star: new URL('../static/svg/icon_favorite.svg', import.meta.url).href,
 };
 
-export async function renderNoteEditor(noteId: number | string): Promise<void> {
-  const mainEl = document.getElementById("main-content");
-  if (!mainEl) return;
-  mainEl.className = "note-editor__main";
+export async function renderNoteEditor(app: HTMLElement, noteId: number | string): Promise<void> {
+  app.innerHTML = '<div class="page page--note-editor"></div>';
+  const pageEl = app.querySelector('.page--note-editor') as HTMLElement;
+
+  const user = loadUser();
+  pageEl.appendChild(Sidebar({ user }));
+
+  const mainEl = document.createElement('div');
+  mainEl.className = 'note-editor__main';
   mainEl.innerHTML = `
     <div class="note-editor__header">
-      <span id="save-status"></span>
       <button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>
       <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
     </div>
@@ -43,120 +49,149 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     </div>
     <input class="note-editor__title" placeholder="Загрузка..." value="" />
     <div class="block-editor">Загрузка блоков...</div>
+    <div class="note-editor__buttons">
+      <button class="btn save-btn">Сохранить</button>
+      <button class="btn btn--secondary cancel-btn">Назад</button>
+    </div>
   `;
 
-  const titleInput = mainEl.querySelector<HTMLInputElement>(
-    ".note-editor__title"
-  )!;
-  const editorContainer = mainEl.querySelector(".block-editor") as HTMLElement;
-  const toolbar = mainEl.querySelector(".formatting-toolbar") as HTMLElement;
-  const addBlockMenu = mainEl.querySelector(".add-block-menu") as HTMLElement;
-  const deleteBtn = mainEl.querySelector(
-    "#delete-note-btn"
-  ) as HTMLButtonElement;
-  const favoriteBtn = mainEl.querySelector(
-    "#favorite-note-btn"
-  ) as HTMLButtonElement;
-  const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
+  pageEl.appendChild(mainEl);
+
+  const titleInput = mainEl.querySelector<HTMLInputElement>('.note-editor__title')!;
+  const editorContainer = mainEl.querySelector('.block-editor') as HTMLElement;
+  const saveBtn = mainEl.querySelector('.save-btn') as HTMLButtonElement;
+  const cancelBtn = mainEl.querySelector<HTMLButtonElement>('.cancel-btn')!;
+  const toolbar = mainEl.querySelector('.formatting-toolbar') as HTMLElement;
+  const addBlockMenu = mainEl.querySelector('.add-block-menu') as HTMLElement;
+  const deleteBtn = mainEl.querySelector('#delete-note-btn') as HTMLButtonElement;
+  const favoriteBtn = mainEl.querySelector('#favorite-note-btn') as HTMLButtonElement;
 
   let initialBlocks: Block[] = [];
-  let initialTitle = "Загрузка...";
+  let initialTitle = 'Новая заметка';
   let isFavorite = false;
 
-  try {
-    const note = await apiClient.getNote(noteId as number);
-    const blocksData = await apiClient.getBlocksForNote(noteId as number);
-    initialTitle = note.title;
-    isFavorite = note.is_favorite || false;
-    const backendBlocks = blocksData?.blocks || [];
-    initialBlocks = backendBlocks.map((block: any) => {
-      if (block.type === "attachment") {
-        return {
-          id: block.id,
-          type: "image",
-          content: block.text || "",
-        };
-      }
-
-      if (block.type === "text" && block.text && block.text.startsWith("{")) {
-        try {
-          const parsed = JSON.parse(block.text);
-          if (
-            parsed &&
-            typeof parsed.content !== "undefined" &&
-            typeof parsed.language !== "undefined"
-          ) {
-            return {
-              id: block.id,
-              type: "code",
-              content: block.text,
-              language: parsed.language,
-            };
-          }
-        } catch (e) {}
-      }
-
-      return {
+  if (String(noteId) !== 'new') {
+    try {
+      const note = await apiClient.getNote(noteId as number);
+      const blocksData = await apiClient.getBlocksForNote(noteId as number);
+      initialTitle = note.title;
+      isFavorite = note.is_favorite || false;
+      const backendBlocks = blocksData?.blocks || [];
+      initialBlocks = backendBlocks.map((block: any) => ({
         id: block.id,
-        type: "text",
-        content: block.text || "",
-      };
-    });
+        type: block.type,
+        content: block.text || '',
+        language: block.language || 'text'
+      }));
 
-    if (isFavorite) {
-      favoriteBtn.classList.add("active");
+      if (isFavorite) {
+        favoriteBtn.classList.add('active');
+      }
+    } catch (e) {
+      alert('Не удалось загрузить заметку.');
+      router.navigate('notes');
+      return;
     }
-  } catch (e) {
-    alert("Не удалось загрузить заметку.");
-    router.navigate("notes");
-    return;
+  }
+
+  if (initialBlocks.length === 0) {
+    initialBlocks.push({
+        id: `local-${Date.now()}`,
+        type: 'text',
+        content: ''
+    });
   }
 
   titleInput.value = initialTitle;
-
+  
   const editorManager = createEditorManager({
     container: editorContainer,
     toolbar: toolbar,
     addBlockMenu: addBlockMenu,
     initialBlocks: initialBlocks,
-    titleInput: titleInput,
-    noteId: noteId,
-    saveStatusEl: saveStatusEl,
   });
 
   editorManager.render();
-
-  if (initialBlocks.length > 0 && initialBlocks[0]) {
+  
+  if (String(noteId) === 'new' && initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
   }
 
-  deleteBtn.addEventListener("click", async () => {
-    if (confirm("Вы уверены, что хотите удалить эту заметку?")) {
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.textContent = 'Сохранение...';
+    saveBtn.disabled = true;
+
+    try {
+      let currentNoteId: string | number | null = (String(noteId) === 'new') ? null : noteId;
+      
+      if (!currentNoteId) {
+        const newNote = await apiClient.createNote();
+        currentNoteId = newNote.id;
+        history.replaceState(null, '', `/note/${currentNoteId}`);
+        if (currentNoteId){
+          noteId = currentNoteId;
+        }
+      }
+      
+      if (currentNoteId) {
+        await apiClient.updateNote(currentNoteId, { title: titleInput.value });
+        
+        const currentBlocks = editorManager.getBlocks();
+        const updatePromises = currentBlocks.map(block => {
+            if (block.id.toString().startsWith('local-')) {
+              return apiClient.createBlock(currentNoteId as number, {}).then(newBlock => {
+                return apiClient.updateBlock(newBlock.id, { text: block.content, formats: [] });
+              });
+            } else {
+              return apiClient.updateBlock(block.id, { text: block.content, formats: [] });
+            }
+        });
+        
+        await Promise.all(updatePromises);
+        alert('Сохранено!');
+      }
+
+    } catch (err) {
+      console.error('Failed to save note:', err);
+      alert('Ошибка при сохранении заметки.');
+    } finally {
+      saveBtn.textContent = 'Сохранить';
+      saveBtn.disabled = false;
+    }
+  });
+
+  cancelBtn.addEventListener('click', () => router.navigate('notes'));
+
+  deleteBtn.addEventListener('click', async () => {
+    if (String(noteId) === 'new') {
+      router.navigate('notes');
+      return;
+    }
+    if (confirm('Вы уверены, что хотите удалить эту заметку?')) {
       try {
         await apiClient.deleteNote(noteId as number);
-        document.dispatchEvent(new CustomEvent("notesUpdated"));
-        router.navigate("notes");
+        router.navigate('notes');
       } catch (err) {
-        console.error("Failed to delete note:", err);
-        alert("Не удалось удалить заметку.");
+        console.error('Failed to delete note:', err);
+        alert('Не удалось удалить заметку.');
       }
     }
   });
 
-  favoriteBtn.addEventListener("click", async () => {
-    const newFavoriteStatus = !favoriteBtn.classList.contains("active");
-    favoriteBtn.classList.toggle("active", newFavoriteStatus);
+  favoriteBtn.addEventListener('click', async () => {
+    if (String(noteId) === 'new') {
+      alert('Сначала сохраните заметку, чтобы добавить ее в избранное.');
+      return;
+    }
+    isFavorite = !isFavorite;
+    favoriteBtn.classList.toggle('active', isFavorite);
     try {
-      if (newFavoriteStatus) {
-        await apiClient.addFavorite(noteId as number);
-      } else {
-        await apiClient.removeFavorite(noteId as number);
-      }
-      document.dispatchEvent(new CustomEvent("notesUpdated"));
+      await apiClient.toggleFavorite(noteId as number, isFavorite);
     } catch (err) {
-      console.error("Failed to update favorite status:", err);
-      favoriteBtn.classList.toggle("active", !newFavoriteStatus);
-      alert("Не удалось обновить статус избранного.");
+      console.error('Failed to update favorite status:', err);
+      isFavorite = !isFavorite;
+      favoriteBtn.classList.toggle('active', isFavorite);
+      alert('Не удалось обновить статус избранного.');
     }
   });
 }

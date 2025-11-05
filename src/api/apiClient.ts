@@ -10,106 +10,82 @@ interface User {
   email?: string;
 }
 
-export interface UploadedFile {
-  id: number;
-  url: string;
-  mime_type: string;
-  size_bytes: number;
-}
-
 export const apiClient = {
-  async login(creds: User): Promise<User> {
+  async login(creds : User) : Promise<User> {
     const user = await login(creds);
     saveUser(user);
     return user;
   },
 
-  async register(data: Object): Promise<User> {
+  async register(data : Object) : Promise<User> {
     const user = await register(data);
     return user;
   },
 
-  async logout(): Promise<void> {
+  async logout() : Promise<void> {
     await logout();
     clearUser();
   },
 
-  async me(): Promise<User | null> {
+  async me() : Promise<User|null> {
     return await checkSession();
   },
 
-  async getNotesForUser(): Promise<Array<any>> {
-    return apiFetch(`/api/notes`, { method: "GET" });
+  async getNotesForUser() : Promise<Array<any>> {
+    return apiFetch(`/api/notes`, { method: 'GET' });
+  },
+  
+  async getNote(noteId: string | number) : Promise<any> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/notes/${noteId}`, { method: 'GET' });
   },
 
-  async getNote(noteId: string | number): Promise<any> {
-    if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, { method: "GET" });
+  async updateNote(noteId: string | number, data: { title: string }) : Promise<any> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/notes/${noteId}`, { method: 'PUT', body: JSON.stringify(data) });
   },
 
-  async updateNote(
-    noteId: string | number,
-    data: { title: string }
-  ): Promise<any> {
-    if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
+  async createNote() : Promise<any> {
+    return apiFetch(`/api/notes`, { method: 'POST' });
   },
 
-  async createNote(): Promise<any> {
-    return apiFetch(`/api/notes`, { method: "POST" });
+  async deleteNote(noteId: string | number) : Promise<void> {
+    if (!noteId) throw new Error('noteId required');
+    return apiFetch(`/api/notes/${noteId}`, { method: 'DELETE' });
   },
 
-  async deleteNote(noteId: string | number): Promise<void> {
-    if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, { method: "DELETE" });
+  async toggleFavorite(noteId: string | number, isFavorite: boolean): Promise<void> {
+    console.log(`(Заглушка) Заметка ${noteId}, избранное: ${isFavorite}. Эндпоинт на бэкенде отсутствует.`);
+    return Promise.resolve();
   },
 
-  async addFavorite(noteId: string | number): Promise<void> {
-    return apiFetch(`/api/notes/${noteId}/favorite`, { method: "POST" });
+  async getBlocksForNote(noteId: string | number): Promise<{ blocks: Block[] }> {
+    return apiFetch(`/api/notes/${noteId}/blocks`, { method: 'GET' });
   },
 
-  async removeFavorite(noteId: string | number): Promise<void> {
-    return apiFetch(`/api/notes/${noteId}/favorite`, { method: "DELETE" });
-  },
-
-  async getBlocksForNote(
-    noteId: string | number
-  ): Promise<{ blocks: Block[] }> {
-    return apiFetch(`/api/notes/${noteId}/blocks`, { method: "GET" });
-  },
-
-  async createBlock(
-    noteId: string | number,
-    data: { type: string; before_block_id?: string | number; file_id?: number }
-  ): Promise<Block> {
+  async createBlock(noteId: string | number, data: { before_block_id?: string | number }): Promise<Block> {
     return apiFetch(`/api/notes/${noteId}/blocks`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async updateBlock(
-    blockId: string | number,
-    data: { text: string; formats: any[] }
-  ): Promise<Block> {
+  async updateBlock(blockId: string | number, data: { text: string; formats: any[] }): Promise<Block> {
     return apiFetch(`/api/blocks/${blockId}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
+      method: 'PATCH',
+      body: JSON.stringify(data)
     });
   },
 
-  async uploadFile(file: File): Promise<UploadedFile> {
+  async uploadImage(file: File): Promise<any> {
     const formData = new FormData();
-    formData.append("file", file);
-
+    formData.append('image', file);
+    
     const url = `${API_BASE}/api/files/upload`;
     const res = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       body: formData,
-      credentials: "include",
+      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -118,5 +94,5 @@ export const apiClient = {
     }
 
     return res.json();
-  },
+  }
 };

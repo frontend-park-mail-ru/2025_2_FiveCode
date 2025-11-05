@@ -1,13 +1,14 @@
-import ejs from "ejs";
-import { Header } from "../components/header";
+import ejs from 'ejs';
+import { Header } from '../components/header';
 import { apiClient } from "../api/apiClient";
-import router from "../router";
-import { renderAppLayout } from "../layout";
+import { renderNotes } from './notes';
+import { renderRegister } from './register';
+import router from '../router';
 
 const ICONS = {
-  Icon: new URL("../static/svg/icon_goose.svg", import.meta.url).href,
-  eye: new URL("../static/svg/icon_eye.svg", import.meta.url).href,
-  eyeOff: new URL("../static/svg/icon_eye_off.svg", import.meta.url).href,
+  Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
+  eye: new URL('../static/svg/icon_eye.svg', import.meta.url).href,
+  eyeOff: new URL('../static/svg/icon_eye_off.svg', import.meta.url).href,
 };
 
 interface ValidationErrors {
@@ -16,7 +17,7 @@ interface ValidationErrors {
   confirmPassword?: string;
 }
 
-interface User {
+interface User{
   id: number;
   username: string;
   password?: string;
@@ -25,12 +26,8 @@ interface User {
 
 function validateForm(form: HTMLElement) {
   const errors: ValidationErrors = {};
-  const email = (
-    form.querySelector<HTMLInputElement>("[name='email']")?.value ?? ""
-  ).trim();
-  const password = (
-    form.querySelector<HTMLInputElement>("[name='password']")?.value ?? ""
-  ).trim();
+  const email = (form.querySelector<HTMLInputElement>("[name='email']")?.value ?? "").trim();
+  const password = (form.querySelector<HTMLInputElement>("[name='password']")?.value ?? "").trim();
 
   if (!email) {
     errors.email = "Обязательное поле";
@@ -42,7 +39,8 @@ function validateForm(form: HTMLElement) {
 
   if (!password) {
     errors.password = "Обязательное поле";
-  } else if (password.length < 8) {
+  }
+  else if (password.length < 8) {
     errors.password = "Пароль должен быть не короче 6 символов";
   } else if (!/^[A-Za-z0-9!@#$%^&*]+$/.test(password)) {
     errors.password = "Пароль содержит недопустимые символы";
@@ -53,10 +51,15 @@ function validateForm(form: HTMLElement) {
   return errors;
 }
 
-export function renderLogin(app: HTMLElement): void {
-  app.innerHTML = "";
+
+/**
+ * Рендерит страницу входа пользователя
+ * @returns {HTMLElement} DOM-элемент страницы входа
+ */
+export function renderLogin(app: HTMLElement) : void {
+  app.innerHTML = '';
   const pageTemplate = `<div class="page"></div>`;
-  const el = document.createElement("div");
+  const el = document.createElement('div');
   el.innerHTML = pageTemplate;
   const pageEl = el.firstElementChild as HTMLElement;
 
@@ -112,12 +115,9 @@ export function renderLogin(app: HTMLElement): void {
       </form>
     </div>
   `;
-
-  const loginModalHtml = ejs.render(loginModalTemplate, {
-    icon: ICONS.Icon,
-    eye: ICONS.eye,
-  });
-  const loginModalEl = document.createElement("div");
+  
+  const loginModalHtml = ejs.render(loginModalTemplate, { icon: ICONS.Icon, eye: ICONS.eye });
+  const loginModalEl = document.createElement('div');
   loginModalEl.innerHTML = loginModalHtml;
   const loginModal = loginModalEl.firstElementChild as HTMLElement;
 
@@ -143,52 +143,60 @@ export function renderLogin(app: HTMLElement): void {
     if (Object.keys(errors).length > 0) {
       if (errors.email) {
         emailErrorEl.textContent = errors.email;
-        emailErrorEl.classList.add("visible");
+        emailErrorEl.classList.add('visible');
+
       }
       if (errors.password) {
         passwordErrorEl.textContent = errors.password;
-        passwordErrorEl.classList.add("visible");
+        passwordErrorEl.classList.add('visible');
+
       }
       return;
     }
 
     const formData = new FormData(form);
-    const data: User = {
+    const data : User = {
       id: 0,
       username: "",
       email: formData.get("email") as string,
       password: formData.get("password") as string,
     };
 
-    try {
-      await apiClient.login(data);
-      await renderAppLayout(app);
-      router.navigate("notes");
+    try { 
+      const user = await apiClient.login(data);
+      router.navigate('notes');
     } catch (err) {
-      loginErrorEl.textContent = "Логин или пароль неверный";
+      loginErrorEl.textContent = "Логин или пароль неверный";      
     }
   });
 
-  const togglePassword =
-    loginModal.querySelector<HTMLSpanElement>("#togglePassword");
-  const toggleIcon = loginModal.querySelector<HTMLImageElement>(
-    "#togglePassword img"
-  );
+  // переключение видимости пароля
+  // const togglePassword = loginModal.querySelector<HTMLSpanElement>("#togglePassword");
+  // const toggleIcon = loginModal.querySelector<HTMLImageElement>("#togglePassword img");
+  // togglePassword.addEventListener("click", () => {
+  //   const passwordInput = loginModal.querySelector<HTMLInputElement>("#password");
+  //   const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+  //   passwordInput.setAttribute("type", type);
+  //   toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
+  // });
+
+  const togglePassword = loginModal.querySelector<HTMLSpanElement>("#togglePassword");
+  const toggleIcon = loginModal.querySelector<HTMLImageElement>("#togglePassword img");
   const passwordInput = loginModal.querySelector<HTMLInputElement>("#password");
 
   if (togglePassword && toggleIcon && passwordInput) {
     togglePassword.addEventListener("click", () => {
-      const type =
-        passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
       toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
     });
   }
 
   loginModal.querySelector(".register-btn")?.addEventListener("click", () => {
-    router.navigate("register");
+    router.navigate('register');
   });
 
+  
   pageEl.appendChild(loginModal);
   app.appendChild(el);
 }
