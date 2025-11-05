@@ -97,10 +97,9 @@ export function renderLogin(app: HTMLElement): void {
         </div>
         <span class="error-message" id="passwordError">&nbsp;</span>
         <span class="error-message" id="loginError">&nbsp;</span>
-        <span class="modal__text--small">Забыли пароль? <a style="color: var(--primary-500)">Восстановить доступ</a></span>
         <div class="modal__buttons">
           <button type="submit" class="btn">Войти</button>
-          <button type="button" class="btn modal__btn--secondary">Создать аккаунт</button>
+          <a href="/register" class="btn modal__btn--secondary" data-link>Создать аккаунт</a>
         </div>
       </form>
     </div>
@@ -124,6 +123,10 @@ export function renderLogin(app: HTMLElement): void {
     emailErrorEl.textContent = "";
     passwordErrorEl.textContent = "";
     loginErrorEl.textContent = "";
+    emailErrorEl.classList.remove("error-message--visible");
+    passwordErrorEl.classList.remove("error-message--visible");
+    loginErrorEl.classList.remove("error-message--visible");
+
     const errors = validateForm(form);
     if (Object.keys(errors).length > 0) {
       if (errors.email) {
@@ -149,6 +152,7 @@ export function renderLogin(app: HTMLElement): void {
       router.navigate("notes");
     } catch (err) {
       loginErrorEl.textContent = "Логин или пароль неверный";
+      loginErrorEl.classList.add("error-message--visible");
     }
   });
 
@@ -167,12 +171,6 @@ export function renderLogin(app: HTMLElement): void {
       toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
     });
   }
-
-  loginModal
-    .querySelector(".modal__btn--secondary")
-    ?.addEventListener("click", () => {
-      router.navigate("register");
-    });
 
   pageEl.appendChild(loginModal);
   app.appendChild(pageEl);

@@ -33,9 +33,9 @@
   margin-bottom: 0;
   padding-bottom: 0;
   line-height: 1.2;
-  color: var(--error);
   font-size: 12px;
   display: block;
+  text-align: center;
 }
 
 .modal__form input {
@@ -63,7 +63,7 @@
   gap: 16px;
 }
 
-.modal__buttons button {
+.modal__buttons .btn {
   flex: 1;
   padding: 10px;
   border: none;
@@ -71,6 +71,7 @@
   cursor: pointer;
   font-weight: bold;
   transition: background 0.3s;
+  text-align: center;
 }
 
 .modal__buttons button:first-child {
@@ -124,11 +125,17 @@
   color: var(--text-noraml);
 }
 
-.modal__text--small {
-  margin-bottom: 2px;
+.modal__sub-text {
   font-weight: 400;
-  font-size: 4px;
+  font-size: 14px;
   color: var(--text-noraml);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.modal__sub-text a {
+  color: var(--primary-500);
+  cursor: pointer;
 }
 
 .error-message {

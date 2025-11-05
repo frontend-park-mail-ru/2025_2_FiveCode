@@ -71,37 +71,25 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     const backendBlocks = blocksData?.blocks || [];
 
     initialBlocks = backendBlocks.map((block: any) => {
-      if (block.type === "attachment") {
-        return {
-          id: block.id,
-          type: "image",
-          content: block.text || "",
-        };
-      }
-
-      if (block.type === "text" && block.text && block.text.startsWith("{")) {
-        try {
-          const parsed = JSON.parse(block.text);
-          if (
-            parsed &&
-            typeof parsed.content !== "undefined" &&
-            typeof parsed.language !== "undefined"
-          ) {
-            return {
-              id: block.id,
-              type: "code",
-              content: block.text,
-              language: parsed.language,
-            };
-          }
-        } catch (e) {}
-      }
-
-      return {
+      const frontendBlock: Block = {
         id: block.id,
-        type: "text",
-        content: block.text || "",
+        type: 'text',
+        content: block.text || '',
       };
+
+      if (block.type === 'attachment') {
+        frontendBlock.type = 'image';
+      } else if (block.type === 'text' && frontendBlock.content.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(frontendBlock.content);
+          if (parsed && typeof parsed.content !== 'undefined' && typeof parsed.language !== 'undefined') {
+            frontendBlock.type = 'code';
+          }
+        } catch (e) {
+          // Not a JSON, so it's a regular text block
+        }
+      }
+      return frontendBlock;
     });
 
     if (isFavorite) {

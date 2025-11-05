@@ -54,8 +54,8 @@ function renderTextBlock(block: Block, updateCallback: (id: string | number, new
 }
 
 function renderImageBlock(block: Block): HTMLElement {
-  const template = `<div class="block block--image"><img src="<%= src %>" alt="image block"></div>`;
-  const html = ejs.render(template, { src: block.content || 'https://via.placeholder.com/800x200.png?text=Paste+Image+URL' });
+  const template = `<div class="block block--image"><img src="<%= content %>" alt="image block"></div>`;
+  const html = ejs.render(template, { content: block.content || 'https://via.placeholder.com/800x200.png?text=Paste+Image+URL' });
   const doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.firstChild as HTMLElement;
 }

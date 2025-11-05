@@ -1,7 +1,6 @@
 import ejs from "ejs";
 
 const ICONS = {
-  default_file: new URL("../static/svg/icon_dot.svg", import.meta.url).href,
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
     .href,
   icon_favorite: new URL("../static/svg/icon_favorite.svg", import.meta.url)
@@ -58,7 +57,6 @@ export function Subdirectories({
   const noteItemTemplate = `
         <li class="subdir-item">
             <a href="/note/<%= id %>" class="subdir-header" data-link>
-              <img src="<%= icon %>" alt="icon" class="subdir-icon" onerror="this.onerror=null; this.src='<%= defaultIcon %>';" />
               <span class="subdir-title"><%= title %></span>
             </a>
         </li>
@@ -103,9 +101,7 @@ export function Subdirectories({
     notes.forEach((item: Note) => {
       const noteItemHtml = ejs.render(noteItemTemplate, {
         id: item.id,
-        icon: item.icon,
         title: item.title,
-        defaultIcon: ICONS.default_file,
       });
       const noteItemEl = document.createElement("div");
       noteItemEl.innerHTML = noteItemHtml;
