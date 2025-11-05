@@ -1,5 +1,6 @@
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
@@ -55,10 +56,16 @@ export default {
     },
   },
   devServer: {
-    static: {
-      directory: path.join(__dirname, "public"),
-    },
-    port: config.DEV_SERVER_PORT,
+    static: [
+      {
+        directory: path.join(__dirname, "public"),
+      },
+      {
+        directory: path.join(__dirname),
+        publicPath: "/",
+      },
+    ],
+    port: 8081,
     historyApiFallback: true,
     hot: true,
     allowedHosts: "all",
@@ -73,8 +80,10 @@ export default {
       template: "index.html",
       filename: "index.html",
     }),
-    new webpack.DefinePlugin({
-      "process.env.API_BASE_URL": JSON.stringify(config.API_BASE_URL),
-    }),
+  new CopyWebpackPlugin({
+    patterns: [
+      { from: "sw.js", to: "sw.js" },
+    ],
+  }),
   ],
 };

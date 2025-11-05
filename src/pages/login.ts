@@ -69,13 +69,13 @@ export function renderLogin(app: HTMLElement) : void {
   }
 
   const loginModalTemplate = `
-    <div class="login-modal">
+    <div class="modal">
     
-    <a class="icon-login-form"><img src="<%= icon %>" class="login-icon"> </a> 
-      <h2 class="icon-login-form"> Вход</h2>
-      <form class="login-form">
+    <a class="modal__icon-container"><img src="<%= icon %>" class="modal__icon"> </a> 
+      <h2 class="modal__icon-container"> Вход</h2>
+      <form class="modal__form">
 
-        <label class="login-text">Почта<span class="validation-icon">?
+        <label class="modal__text">Почта<span class="validation-icon">?
             <div class="tooltip">
               Формат email: <br>
               • латинские буквы и цифры<br>
@@ -88,7 +88,7 @@ export function renderLogin(app: HTMLElement) : void {
         </div></label>
         <span class="error-message" id="emailError">&nbsp;</span>
 
-        <label class="login-text">Пароль<span class="validation-icon">?
+        <label class="modal__text">Пароль<span class="validation-icon">?
             <div class="tooltip">
               Пароль должен содержать:<br>
               • минимум 6 символов<br>
@@ -106,10 +106,10 @@ export function renderLogin(app: HTMLElement) : void {
         <span class="error-message" id="passwordError">&nbsp;</span>
         <span class="error-message" id="loginError">&nbsp;</span>
         
-        <span class="login-text-small">Забыли пароль? <a style="color: var(--primary-500)">Восстановить доступ </a></span>
-        <div class="login-buttons">
+        <span class="modal__text--small">Забыли пароль? <a style="color: var(--primary-500)">Восстановить доступ </a></span>
+        <div class="modal__buttons">
           <button type="submit" class="btn">Войти</button>
-          <button type="button" class="btn register-btn">Создать аккаунт</button>
+          <button type="button" class="btn modal__btn--secondary">Создать аккаунт</button>
         </div>
         
       </form>
@@ -123,10 +123,10 @@ export function renderLogin(app: HTMLElement) : void {
 
   setTimeout(() => {
     loginModal.classList.remove("hidden");
-    loginModal.classList.add("show");
+    loginModal.classList.add("modal--show");
   }, 1000);
 
-  const form = loginModal.querySelector<HTMLFormElement>(".login-form")!;
+  const form = loginModal.querySelector<HTMLFormElement>(".modal__form")!;
   const emailErrorEl = loginModal.querySelector("#emailError")!;
   const passwordErrorEl = loginModal.querySelector("#passwordError")!;
   const loginErrorEl = loginModal.querySelector("#loginError")!;
@@ -143,12 +143,12 @@ export function renderLogin(app: HTMLElement) : void {
     if (Object.keys(errors).length > 0) {
       if (errors.email) {
         emailErrorEl.textContent = errors.email;
-        emailErrorEl.classList.add('visible');
+        emailErrorEl.classList.add('error-message--visible');
 
       }
       if (errors.password) {
         passwordErrorEl.textContent = errors.password;
-        passwordErrorEl.classList.add('visible');
+        passwordErrorEl.classList.add('error-message--visible');
 
       }
       return;
@@ -192,7 +192,7 @@ export function renderLogin(app: HTMLElement) : void {
     });
   }
 
-  loginModal.querySelector(".register-btn")?.addEventListener("click", () => {
+  loginModal.querySelector(".modal__btn--secondary")?.addEventListener("click", () => {
     router.navigate('register');
   });
 

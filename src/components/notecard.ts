@@ -23,7 +23,7 @@ interface NoteCardParams{
  */
 export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLElement {
   const template = `
-    <div class="note-card <%= favorite ? 'favorite' : '' %>">
+    <div class="note-card<%= favorite ? ' note-card--favorite' : '' %>">
       <h3 class="note-card__title"><%= title %></h3>
       <p class="note-card__text"><%= text %></p>
     </div>

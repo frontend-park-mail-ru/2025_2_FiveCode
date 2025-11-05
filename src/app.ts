@@ -64,3 +64,33 @@ async function initializeApp(): Promise<void> {
 }
 
 window.addEventListener("DOMContentLoaded", initializeApp);
+
+// Регистрация Service Worker
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(
+      () => {
+        console.log('Success SW register');
+      },
+      (event) => {
+        console.log('Error SW register', event);
+      }
+    );
+}
+
+// window.addEventListener("DOMContentLoaded", async () => {
+//   const app = document.getElementById("app") as HTMLElement;
+  
+//   try {
+//     const user : User | null = await apiClient.me();
+//     if (user) {
+//       saveUser(user);
+//       renderNotes(app);
+//     } else {
+//       renderLogin(app);
+//     }
+//   } catch (error) {
+//     console.error("Auth check failed:", error);
+//     renderLogin(app);
+//   }
+// });

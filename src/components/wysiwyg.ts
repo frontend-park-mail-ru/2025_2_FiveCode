@@ -6,10 +6,10 @@ export function initWysiwyg(root: HTMLElement | string) {
   if (!rootEl) throw new Error('WYSIWYG: root element not found');
 
   const editor = rootEl.querySelector<HTMLElement>('#wysiwyg-editor')!;
-  const toolbar = rootEl.querySelector<HTMLElement>('.wysiwyg-toolbar')!;
-  const statusEl = rootEl.querySelector<HTMLElement>('.w-status')!;
+  const toolbar = rootEl.querySelector<HTMLElement>('.wysiwyg__toolbar')!;
+  const statusEl = rootEl.querySelector<HTMLElement>('.wysiwyg__status')!;
   const modal = rootEl.querySelector<HTMLElement>('[data-modal="prompt"]')!;
-  const modalInput = modal.querySelector<HTMLInputElement>('.w-input')!;
+  const modalInput = modal.querySelector<HTMLInputElement>('.wysiwyg__input')!;
 
   let htmlMode = false;
 
@@ -25,7 +25,7 @@ export function initWysiwyg(root: HTMLElement | string) {
   }
 
   toolbar.addEventListener('click', (ev) => {
-    const btn = (ev.target as HTMLElement).closest('.w-btn') as HTMLElement | null;
+    const btn = (ev.target as HTMLElement).closest('.wysiwyg__btn') as HTMLElement | null;
     if (!btn) return;
 
     const cmd = btn.getAttribute('data-cmd');
@@ -56,7 +56,7 @@ export function initWysiwyg(root: HTMLElement | string) {
     }
   });
 
-  rootEl.querySelectorAll('.w-select').forEach((sel) => {
+  rootEl.querySelectorAll('.wysiwyg__select').forEach((sel) => {
     sel.addEventListener('change', (e) => {
       const target = e.target as HTMLSelectElement;
       const action = target.getAttribute('data-action');
@@ -97,25 +97,25 @@ export function initWysiwyg(root: HTMLElement | string) {
     const btn = toolbar.querySelector('[data-action="html"]') as HTMLElement | null;
     if (htmlMode) {
       const ta = document.createElement('textarea');
-      ta.className = 'w-editor-source';
+      ta.className = 'wysiwyg__editor-source';
       ta.value = editor.innerHTML;
       ta.style.width = '100%';
       ta.style.minHeight = '220px';
       editor.replaceWith(ta);
     } else {
-      const ta = rootEl.querySelector<HTMLTextAreaElement>('.w-editor-source')!;
+      const ta = rootEl.querySelector<HTMLTextAreaElement>('.wysiwyg__editor-source')!;
       const div = document.createElement('div');
       div.id = 'wysiwyg-editor';
-      div.className = 'w-editor';
+      div.className = 'wysiwyg__editor';
       div.contentEditable = 'true';
       div.innerHTML = ta.value;
       ta.replaceWith(div);
     }
-    if (btn) btn.classList.toggle('active', htmlMode);
+    if (btn) btn.classList.toggle('wysiwyg__btn--active', htmlMode);
   }
 
   document.addEventListener('click', (e) => {
-    if (!(e.target instanceof Element && e.target.closest('.wysiwyg-root'))) {
+    if (!(e.target instanceof Element && e.target.closest('.wysiwyg'))) {
       if (modal.getAttribute('aria-hidden') === 'false') modal.setAttribute('aria-hidden', 'true');
     }
   });

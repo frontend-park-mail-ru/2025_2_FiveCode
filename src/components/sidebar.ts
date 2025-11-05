@@ -35,7 +35,7 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
                 <div class="sidebar__user-info">
                     <div class="sidebar__username"><%= user?.email?.split('@')[0] || 'Имя' %></div>
                 </div>
-                <button class="user-dots" aria-label="Открыть меню пользователя">
+                <button class="sidebar__user-dots" aria-label="Открыть меню пользователя">
                     <img src="<%= dots %>" alt="menu" />
                 </button>
             </div>
@@ -45,8 +45,9 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
             <a class="sidebar__item" data-link> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>  
         </nav>
         <div class="sidebar__subs"></div>
-        <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-        <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
+        <a class="sidebar__item sidebar__item--logout" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
+        <a class="sidebar__item sidebar__item--logout" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
+          
       </aside>
     `;
 
@@ -75,12 +76,12 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
         logoutIcon: ICONS.logout,
       });
       document.body.appendChild(userMenuComponent);
-      userMenuComponent.querySelector('.settings-btn')?.addEventListener('click', () => {
+      userMenuComponent.querySelector('.user-menu__btn--settings')?.addEventListener('click', () => {
         userMenuComponent!.style.display = 'none';
         router.navigate('settings');
       });
 
-      userMenuComponent.querySelector('.logout-btn')?.addEventListener('click', async () => {
+      userMenuComponent.querySelector('.user-menu__btn--logout')?.addEventListener('click', async () => {
         userMenuComponent!.style.display = 'none';
         await apiClient.logout();
         router.navigate('login');
@@ -96,12 +97,12 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
     if (userMenuComponent && 
         event.target instanceof Node && 
         !userMenuComponent.contains(event.target) &&
-        !(event.target as HTMLElement).closest('.user-dots')) {
+        !(event.target as HTMLElement).closest('.sidebar__user-dots')) {
       userMenuComponent.style.display = 'none';
     }
   });
 
-  el.querySelector('.user-dots')?.addEventListener('click', handleDotsClick);
+  el.querySelector('.sidebar__user-dots')?.addEventListener('click', handleDotsClick);
   const subs = el.querySelector('.sidebar__subs') as HTMLElement;
 
   const renderSubdirectories = (notesData: any[]) => {
@@ -118,9 +119,45 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
         renderSubdirectories(Array.isArray(fetchedNotes) ? fetchedNotes : []);
       })
       .catch(err => {
-        console.error('Failed to load notes for sidebar', err);
+      console.error('Failed to load notes', err);
+  });
+  el.addEventListener('click', e => {
+      const link = (e.target as HTMLElement).closest('a[data-link]');
+      if (link) {
+          e.preventDefault();
+          const href = (link as HTMLAnchorElement).getAttribute('href') || '';
+          const path = href.replace(/^\//, '').replace(/[#?].*$/, '');
+          router.navigate(path);
+      }
+  });
+
+    document.addEventListener("click", (e: MouseEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    const dots = target.closest(".sidebar__user-dots") as HTMLElement | null;
+    const menu = document.querySelector(".sidebar__dropdown") as HTMLElement | null;
+
+    if (!menu) return;
+
+    if (dots) {
+        menu.classList.toggle("sidebar__dropdown--show");
+        return;
+    }
+
+    if (!target.closest(".sidebar__dropdown")) {
+        menu.classList.remove("sidebar__dropdown--show");
+    }
     });
   }
 
+  
+  el.querySelectorAll(".sidebar__item--logout").forEach(btn => {
+    btn.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      await apiClient.logout();
+      router.navigate('login');
+    });
+  });
   return el;
 }

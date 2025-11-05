@@ -1,4 +1,4 @@
-:root{
+:root {
   --note-bg: #F1F3F5;
   --note-border: #CED4DA;
   --note-hover: #E9ECEF;
@@ -8,7 +8,6 @@
 }
 
 .notes-page {
-  /* display: flex; */
   height: 100vh;
   background: #fff;
   color: #fff;
@@ -48,11 +47,11 @@
 }
 
 .note-card:hover {
-  background: var(--note-hover) ;
+  background: var(--note-hover);
   transform: translateY(-2px);
 }
 
-.note-card.favorite {
+.note-card--favorite {
   border: 2px solid var(--gray-400);
 }
 
