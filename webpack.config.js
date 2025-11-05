@@ -65,7 +65,7 @@ export default {
         publicPath: "/",
       },
     ],
-    port: 8081,
+    port: config.DEV_SERVER_PORT,
     historyApiFallback: true,
     hot: true,
     allowedHosts: "all",
@@ -80,10 +80,8 @@ export default {
       template: "index.html",
       filename: "index.html",
     }),
-  new CopyWebpackPlugin({
-    patterns: [
-      { from: "sw.js", to: "sw.js" },
-    ],
-  }),
+    new CopyWebpackPlugin({
+      patterns: [{ from: "sw.js", to: "sw.js" }],
+    }),
   ],
 };

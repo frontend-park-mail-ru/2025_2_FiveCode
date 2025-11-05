@@ -1,69 +1,49 @@
-import { Sidebar } from '../components/sidebar';
-import { loadUser } from '../utils/session';
-import { Block, CodeBlock } from '../components/block';
-import { createEditorManager } from '../editor/editorManager';
-import router from '../router';
-import { apiClient } from '../api/apiClient';
+import { Sidebar } from "../components/sidebar";
+import { loadUser } from "../utils/session";
+import { Block } from "../components/block";
+import { createEditorManager } from "../editor/editorManager";
+import router from "../router";
+import { apiClient } from "../api/apiClient";
 
 const ICONS = {
-  trash: new URL('../static/svg/icon_delete.svg', import.meta.url).href,
-  star: new URL('../static/svg/icon_favorite.svg', import.meta.url).href,
+  trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
+  star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
 };
 
-export async function renderNoteEditor(app: HTMLElement, noteId: number | string): Promise<void> {
+export async function renderNoteEditor(
+  app: HTMLElement,
+  noteId: number | string
+): Promise<void> {
   app.innerHTML = '<div class="page page--note-editor"></div>';
-  const pageEl = app.querySelector('.page--note-editor') as HTMLElement;
+  const pageEl = app.querySelector(".page--note-editor") as HTMLElement;
 
   const user = loadUser();
   pageEl.appendChild(Sidebar({ user }));
 
-  const mainEl = document.createElement('div');
-  mainEl.className = 'note-editor__main';
+  const mainEl = document.createElement("div");
+  mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
-  <div class="note-editor__main">
-  <input class="note-editor__title" placeholder="Заголовок заметки" value="<%= title %>" />
-
-  <div id="wysiwyg-root" class="wysiwyg">
-    <div class="wysiwyg__toolbar" role="toolbar" aria-label="Editor toolbar">
-      <button class="wysiwyg__btn" data-cmd="undo" title="Undo">↶</button>
-      <button class="wysiwyg__btn" data-cmd="redo" title="Redo">↷</button>
-      <span class="wysiwyg__sep"></span>
-      <button class="wysiwyg__btn" data-cmd="bold" title="Bold"><strong>B</strong></button>
-      <button class="wysiwyg__btn" data-cmd="italic" title="Italic"><em>I</em></button>
-      <button class="wysiwyg__btn" data-cmd="underline" title="Underline"><u>U</u></button>
-      <select class="wysiwyg__select" data-action="heading" title="Heading">
-        <option value="p">Paragraph</option>
-        <option value="h1">Heading 1</option>
-        <option value="h2">Heading 2</option>
-      </select>
-      <button class="wysiwyg__btn" data-cmd="insertUnorderedList" title="Bulleted">•</button>
-      <button class="wysiwyg__btn" data-cmd="insertOrderedList" title="Numbered">1.</button>
-      <button class="wysiwyg__btn" data-action="link" title="Insert link">URL</button>
-      <button class="wysiwyg__btn" data-action="image" title="Insert image">Image</button>
-      <span class="wysiwyg__spacer"></span>
-      <button class="wysiwyg__btn" data-action="html" title="Toggle HTML view">HTML</button>
+    <div class="note-editor__header">
+      <span id="save-status"></span>
+      <button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>
+      <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
     </div>
-
-    <div id="wysiwyg-editor" class="wysiwyg__editor" contenteditable="true" spellcheck="true" aria-label="Визуальный редактор">
-      <p><%= content %></p>
-    </div>
-
-    <div class="wysiwyg__footer">
-      <div class="wysiwyg__status">Готов</div>
-      <div class="wysiwyg__actions">
-        <button class="wysiwyg__btn" data-action="export">Export</button>
-        <button class="wysiwyg__btn" data-action="clear">Clear</button>
-      </div>
-    </div>
-
-    <div class="wysiwyg__modal" data-modal="prompt" aria-hidden="true">
-      <div class="wysiwyg__modal-inner">
-        <input class="wysiwyg__input" type="text" placeholder="Введите URL" />
-        <div class="wysiwyg__modal-actions">
-          <button class="wysiwyg__btn" data-modal-ok>OK</button>
-          <button class="wysiwyg__btn" data-modal-cancel>Cancel</button>
+    <div class="formatting-toolbar">
+      <button class="format-btn" data-command="bold">B</button>
+      <button class="format-btn" data-command="italic"><i>I</i></button>
+      <button class="format-btn" data-command="underline"><u>U</u></button>
+      <button class="format-btn" data-command="strikeThrough"><s>S</s></button>
+      <button class="format-btn format-btn-code" data-command="convertToCode">&lt;/&gt;</button>
+      <div class="format-dropdown" id="font-dropdown">
+        <button class="dropdown-toggle">
+          <span id="current-font-name">Sans-Serif</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="dropdown-menu">
+          <div class="dropdown-item" data-value="Arial">Sans-Serif</div>
+          <div class="dropdown-item" data-value="Georgia">Serif</div>
+          <div class="dropdown-item" data-value="Courier New">Monospace</div>
         </div>
-      </div>
       </div>
     </div>
     <div class="add-block-menu">
@@ -73,28 +53,29 @@ export async function renderNoteEditor(app: HTMLElement, noteId: number | string
     </div>
     <input class="note-editor__title" placeholder="Загрузка..." value="" />
     <div class="block-editor">Загрузка блоков...</div>
-    <div class="note-editor__buttons">
-      <button class="btn save-btn">Сохранить</button>
-      <button class="btn btn--secondary cancel-btn">Назад</button>
-    </div>
   `;
 
   pageEl.appendChild(mainEl);
 
-  const titleInput = mainEl.querySelector<HTMLInputElement>('.note-editor__title')!;
-  const editorContainer = mainEl.querySelector('.block-editor') as HTMLElement;
-  const saveBtn = mainEl.querySelector('.save-btn') as HTMLButtonElement;
-  const cancelBtn = mainEl.querySelector<HTMLButtonElement>('.cancel-btn')!;
-  const toolbar = mainEl.querySelector('.formatting-toolbar') as HTMLElement;
-  const addBlockMenu = mainEl.querySelector('.add-block-menu') as HTMLElement;
-  const deleteBtn = mainEl.querySelector('#delete-note-btn') as HTMLButtonElement;
-  const favoriteBtn = mainEl.querySelector('#favorite-note-btn') as HTMLButtonElement;
+  const titleInput = mainEl.querySelector<HTMLInputElement>(
+    ".note-editor__title"
+  )!;
+  const editorContainer = mainEl.querySelector(".block-editor") as HTMLElement;
+  const toolbar = mainEl.querySelector(".formatting-toolbar") as HTMLElement;
+  const addBlockMenu = mainEl.querySelector(".add-block-menu") as HTMLElement;
+  const deleteBtn = mainEl.querySelector(
+    "#delete-note-btn"
+  ) as HTMLButtonElement;
+  const favoriteBtn = mainEl.querySelector(
+    "#favorite-note-btn"
+  ) as HTMLButtonElement;
+  const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
 
   let initialBlocks: Block[] = [];
-  let initialTitle = 'Новая заметка';
+  let initialTitle = "Новая заметка";
   let isFavorite = false;
 
-  if (String(noteId) !== 'new') {
+  if (String(noteId) !== "new") {
     try {
       const note = await apiClient.getNote(noteId as number);
       const blocksData = await apiClient.getBlocksForNote(noteId as number);
@@ -104,118 +85,80 @@ export async function renderNoteEditor(app: HTMLElement, noteId: number | string
       initialBlocks = backendBlocks.map((block: any) => ({
         id: block.id,
         type: block.type,
-        content: block.text || '',
-        language: block.language || 'text'
+        content: block.text || "",
+        language: block.language || "text",
       }));
 
       if (isFavorite) {
-        favoriteBtn.classList.add('active');
+        favoriteBtn.classList.add("active");
       }
     } catch (e) {
-      alert('Не удалось загрузить заметку.');
-      router.navigate('notes');
+      alert("Не удалось загрузить заметку.");
+      router.navigate("notes");
       return;
     }
   }
 
   if (initialBlocks.length === 0) {
     initialBlocks.push({
-        id: `local-${Date.now()}`,
-        type: 'text',
-        content: ''
+      id: `local-${Date.now()}`,
+      type: "text",
+      content: "",
     });
   }
 
   titleInput.value = initialTitle;
-  
+
   const editorManager = createEditorManager({
     container: editorContainer,
     toolbar: toolbar,
     addBlockMenu: addBlockMenu,
     initialBlocks: initialBlocks,
+    titleInput: titleInput,
+    noteId: noteId,
+    saveStatusEl: saveStatusEl,
   });
 
   editorManager.render();
-  
-  if (String(noteId) === 'new' && initialBlocks.length > 0 && initialBlocks[0]) {
+
+  if (
+    String(noteId) === "new" &&
+    initialBlocks.length > 0 &&
+    initialBlocks[0]
+  ) {
     editorManager.focusBlock(initialBlocks[0].id);
   }
 
-  saveBtn.addEventListener('click', async () => {
-    saveBtn.textContent = 'Сохранение...';
-    saveBtn.disabled = true;
-
-    try {
-      let currentNoteId: string | number | null = (String(noteId) === 'new') ? null : noteId;
-      
-      if (!currentNoteId) {
-        const newNote = await apiClient.createNote();
-        currentNoteId = newNote.id;
-        history.replaceState(null, '', `/note/${currentNoteId}`);
-        if (currentNoteId){
-          noteId = currentNoteId;
-        }
-      }
-      
-      if (currentNoteId) {
-        await apiClient.updateNote(currentNoteId, { title: titleInput.value });
-        
-        const currentBlocks = editorManager.getBlocks();
-        const updatePromises = currentBlocks.map(block => {
-            if (block.id.toString().startsWith('local-')) {
-              return apiClient.createBlock(currentNoteId as number, {}).then(newBlock => {
-                return apiClient.updateBlock(newBlock.id, { text: block.content, formats: [] });
-              });
-            } else {
-              return apiClient.updateBlock(block.id, { text: block.content, formats: [] });
-            }
-        });
-        
-        await Promise.all(updatePromises);
-        alert('Сохранено!');
-      }
-
-    } catch (err) {
-      console.error('Failed to save note:', err);
-      alert('Ошибка при сохранении заметки.');
-    } finally {
-      saveBtn.textContent = 'Сохранить';
-      saveBtn.disabled = false;
-    }
-  });
-
-  cancelBtn.addEventListener('click', () => router.navigate('notes'));
-
-  deleteBtn.addEventListener('click', async () => {
-    if (String(noteId) === 'new') {
-      router.navigate('notes');
+  deleteBtn.addEventListener("click", async () => {
+    if (String(noteId) === "new") {
+      router.navigate("notes");
       return;
     }
-    if (confirm('Вы уверены, что хотите удалить эту заметку?')) {
+    if (confirm("Вы уверены, что хотите удалить эту заметку?")) {
       try {
         await apiClient.deleteNote(noteId as number);
-        router.navigate('notes');
+        document.dispatchEvent(new CustomEvent("notesUpdated"));
+        router.navigate("notes");
       } catch (err) {
-        console.error('Failed to delete note:', err);
-        alert('Не удалось удалить заметку.');
+        console.error("Failed to delete note:", err);
+        alert("Не удалось удалить заметку.");
       }
     }
   });
 
-  favoriteBtn.addEventListener('click', async () => {
-    if (String(noteId) === 'new') {
-      alert('Сначала сохраните заметку, чтобы добавить ее в избранное.');
+  favoriteBtn.addEventListener("click", async () => {
+    if (String(noteId) === "new") {
+      alert("Сначала сохраните заметку, чтобы добавить ее в избранное.");
       return;
     }
-    isFavorite = !isFavorite;
-    favoriteBtn.classList.toggle('active', isFavorite);
+    const newFavoriteStatus = !favoriteBtn.classList.contains("active");
     try {
-      await apiClient.toggleFavorite(noteId as number, isFavorite);
+      await apiClient.toggleFavorite(noteId as number, newFavoriteStatus);
+      favoriteBtn.classList.toggle("active", newFavoriteStatus);
+      document.dispatchEvent(new CustomEvent("notesUpdated"));
     } catch (err) {
-      console.error('Failed to update favorite status:', err);
-      isFavorite = !isFavorite;
-      favoriteBtn.classList.toggle('active', isFavorite);
-      alert('Не удалось обновить статус избранного.');
+      console.error("Failed to update favorite status:", err);
+      alert("Не удалось обновить статус избранного.");
     }
   });
 }
