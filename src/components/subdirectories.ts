@@ -64,11 +64,11 @@ export function Subdirectories({
 
   Object.entries(folders).forEach(([folderName, notes]) => {
     let folderIcon = "";
-    if (folderName === "Избранное") {
-      folderIcon = ICONS.icon_favorite;
-    } else if (folderName === "Заметки") {
-      folderIcon = ICONS.icon_folder;
-    }
+    // if (folderName === "Избранное") {
+    //   folderIcon = ICONS.icon_favorite;
+    // } else if (folderName === "Заметки") {
+    //   folderIcon = ICONS.icon_folder;
+    // }
 
     if (folderName === "Избранное" && notes.length === 0) {
       return;

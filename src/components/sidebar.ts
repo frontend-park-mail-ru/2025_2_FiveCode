@@ -73,7 +73,7 @@ export function Sidebar({
     `;
 
   const html = ejs.render(template, {
-    user,
+    user: user,
     account: ICONS.account,
     home: ICONS.home,
     trash: ICONS.trash,

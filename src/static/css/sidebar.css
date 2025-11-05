@@ -220,7 +220,7 @@
   margin-bottom: 4px;
 }
 
-.folder__header {
+.folder-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -239,14 +239,14 @@
   padding: 0;
 }
 
-.folder__arrow {
+.folder-arrow {
   width: 12px;
   height: 12px;
   transform: rotate(0deg);
   transition: transform 0.2s ease;
 }
 
-.folder__arrow--rotated {
+.folder-arrow.rotated {
   transform: rotate(90deg);
   transition: transform 0.2s ease;
 }
@@ -261,7 +261,7 @@
   cursor: pointer;
   color: var(--text-secondary);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   transition: background-color 0.2s, color 0.2s;
 }
 
@@ -270,11 +270,11 @@
   color: var(--text-primary);
 }
 
-.sidebar__dots-icon {
+.sidebar-dots-icon {
   position: absolute; 
 }
 
-.sidebar__dropdown {
+.sidebar-dropdown {
   top: 100%;
   right: 0;
   margin-top: 4px;
@@ -289,33 +289,33 @@
   z-index: 100;
 }
 
-.sidebar__dropdown--show {
+.sidebar-dropdown--show {
   display: flex;
 }
 
-.sidebar__dropdown-item {
+.sidebar-dropdown-item {
   display: flex;
   gap: 8px;
   align-items: center;
   padding-bottom: 8px;
 }
 
-.sidebar__dropdown-icon {
+.sidebar-dropdown-icon {
   width: 32px;
   height: 32px;
   border-radius: 50%;
 }
 
-.sidebar__dropdown-name {
+.sidebar-dropdown-name {
   font-weight: 600;
 }
 
-.sidebar__dropdown-email {
+.sidebar-dropdown-email {
   font-size: 12px;
   color: gray;
 }
 
-.sidebar__dropdown-btn {
+.sidebar-ropdown-btn {
   padding: 8px;
   text-align: left;
   width: 100%;
@@ -325,7 +325,7 @@
   font-size: 14px;
 }
 
-.sidebar__dropdown-btn:hover {
+.sidebar-dropdown-btn:hover {
   background: rgba(0,0,0,0.05);
 }
 
@@ -338,3 +338,10 @@
   height: 20px;
   opacity: 0.7;
 }
+
+.folder-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
