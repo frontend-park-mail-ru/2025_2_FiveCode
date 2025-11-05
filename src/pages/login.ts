@@ -42,7 +42,7 @@ function validateForm(form: HTMLElement) {
   if (!password) {
     errors.password = "Обязательное поле";
   } else if (password.length < 8) {
-    errors.password = "Пароль должен быть не короче 6 символов";
+    errors.password = "Пароль должен быть не короче 8 символов";
   } else if (!/^[A-Za-z0-9!@#$%^&*]+$/.test(password)) {
     errors.password = "Пароль содержит недопустимые символы";
   } else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
@@ -84,7 +84,7 @@ export function renderLogin(app: HTMLElement): void {
         <label class="modal__text">Пароль<span class="validation-icon">?
             <div class="tooltip">
               Пароль должен содержать:<br>
-              • минимум 6 символов<br>
+              • минимум 8 символов<br>
               • хотя бы одну цифру<br>
               • хотя бы одну букву<br>
               • спецсимволы (!@#$%^&*)

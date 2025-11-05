@@ -1,4 +1,5 @@
-export const API_BASE = process.env.API_BASE_URL || "http://89.208.210.115:8080";
+export const API_BASE =
+  process.env.API_BASE_URL || "http://89.208.210.115:8080";
 
 interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   path?: string;

@@ -19,22 +19,38 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
     </div>
     <div class="formatting-toolbar">
+      <div class="format-dropdown" id="font-dropdown">
+        <button class="dropdown-toggle">
+          <span id="current-font-name">Inter</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="dropdown-menu">
+          <div class="dropdown-item" data-value="Inter" style="font-family: Inter;">Inter</div>
+          <div class="dropdown-item" data-value="Roboto" style="font-family: Roboto;">Roboto</div>
+          <div class="dropdown-item" data-value="Montserrat" style="font-family: Montserrat;">Montserrat</div>
+          <div class="dropdown-item" data-value="Manrope" style="font-family: Manrope;">Manrope</div>
+        </div>
+      </div>
+       <div class="format-dropdown" id="size-dropdown">
+        <button class="dropdown-toggle">
+          <span id="current-font-size">12</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="dropdown-menu">
+          <div class="dropdown-item" data-value="10">10</div>
+          <div class="dropdown-item" data-value="12">12</div>
+          <div class="dropdown-item" data-value="14">14</div>
+          <div class="dropdown-item" data-value="16">16</div>
+          <div class="dropdown-item" data-value="18">18</div>
+          <div class="dropdown-item" data-value="24">24</div>
+          <div class="dropdown-item" data-value="36">36</div>
+        </div>
+      </div>
       <button class="format-btn" data-command="bold">B</button>
       <button class="format-btn" data-command="italic"><i>I</i></button>
       <button class="format-btn" data-command="underline"><u>U</u></button>
       <button class="format-btn" data-command="strikeThrough"><s>S</s></button>
       <button class="format-btn format-btn-code" data-command="convertToCode">&lt;/&gt;</button>
-      <div class="format-dropdown" id="font-dropdown">
-        <button class="dropdown-toggle">
-          <span id="current-font-name">Sans-Serif</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div class="dropdown-menu">
-          <div class="dropdown-item" data-value="Arial">Sans-Serif</div>
-          <div class="dropdown-item" data-value="Georgia">Serif</div>
-          <div class="dropdown-item" data-value="Courier New">Monospace</div>
-        </div>
-      </div>
     </div>
     <div class="add-block-menu">
       <div class="menu-item" data-type="text">Текст</div>
@@ -70,26 +86,22 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     isFavorite = note.is_favorite || false;
     const backendBlocks = blocksData?.blocks || [];
 
-    initialBlocks = backendBlocks.map((block: any) => {
-      const frontendBlock: Block = {
+    initialBlocks = backendBlocks.map((block: any): Block => {
+      const baseBlock: Block = {
         id: block.id,
-        type: 'text',
-        content: block.text || '',
+        type: block.type,
       };
-
-      if (block.type === 'attachment') {
-        frontendBlock.type = 'image';
-      } else if (block.type === 'text' && frontendBlock.content.startsWith('{')) {
-        try {
-          const parsed = JSON.parse(frontendBlock.content);
-          if (parsed && typeof parsed.content !== 'undefined' && typeof parsed.language !== 'undefined') {
-            frontendBlock.type = 'code';
-          }
-        } catch (e) {
-          // Not a JSON, so it's a regular text block
-        }
+      if (block.type === "text") {
+        baseBlock.text = block.text;
+        baseBlock.formats = block.formats;
+      } else if (block.type === "attachment") {
+        baseBlock.type = "image";
+        baseBlock.url = block.text;
+      } else if (block.type === "code") {
+        baseBlock.text = block.text;
+        baseBlock.language = block.language;
       }
-      return frontendBlock;
+      return baseBlock;
     });
 
     if (isFavorite) {

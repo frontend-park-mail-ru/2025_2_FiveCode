@@ -221,8 +221,9 @@
 
 .format-btn-code {
     font-family: monospace;
-    font-size: 14px;
-    padding-bottom: 2px;
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
 }
 
 .format-dropdown {
@@ -241,6 +242,8 @@
     align-items: center;
     gap: 6px;
     cursor: pointer;
+    min-width: 80px;
+    justify-content: space-between;
 }
 
 .dropdown-toggle svg {

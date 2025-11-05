@@ -2,7 +2,6 @@ import { AccountSettings } from "../components/userMenu";
 import { loadUser, saveUser } from "../utils/session";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
-import "../static/css/settings.css";
 
 const ICONS = {
   userIcon: new URL("../static/svg/icon_account_gray.svg", import.meta.url)
@@ -65,7 +64,7 @@ export async function renderSettingsPage(): Promise<void> {
     "#avatar-preview"
   ) as HTMLImageElement;
 
-  const initialName = user?.username || user?.email?.split("@")[0] || "Имя";
+  let initialName = user?.username || user?.email?.split("@")[0] || "Имя";
 
   avatarUploadTrigger?.addEventListener("click", () => {
     avatarFileInput.click();
@@ -81,7 +80,8 @@ export async function renderSettingsPage(): Promise<void> {
         avatar_file_id: uploadedFile.id,
       });
       saveUser(updatedUser);
-      avatarPreview.src = uploadedFile.url;
+      avatarUrl = uploadedFile.url;
+      avatarPreview.src = avatarUrl;
       document.dispatchEvent(
         new CustomEvent("userProfileUpdated", {
           detail: { newAvatarUrl: uploadedFile.url },
@@ -105,6 +105,7 @@ export async function renderSettingsPage(): Promise<void> {
     try {
       const updatedUser = await apiClient.updateUser({ username: newName });
       saveUser(updatedUser);
+      initialName = updatedUser.username || initialName;
       document.dispatchEvent(new CustomEvent("userProfileUpdated"));
     } catch (error) {
       console.error("Failed to update user:", error);

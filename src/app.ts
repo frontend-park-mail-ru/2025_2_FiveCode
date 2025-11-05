@@ -10,6 +10,7 @@ import "./static/css/note-block.css";
 import "./static/css/sidebar.css";
 import "./static/css/note-editor.css";
 import "./static/css/modal.css";
+import "./static/css/settings.css";
 
 interface User {
   id?: number;
@@ -28,21 +29,32 @@ async function initializeApp(): Promise<void> {
   const path = window.location.pathname;
   const isAuthPage = path === "/login" || path === "/register";
 
+  let user: User | null = null;
   try {
-    const user: User | null = await apiClient.me();
-
+    user = await apiClient.me();
     if (user) {
       saveUser(user);
-      await renderAppLayout(app);
-    } else if (!isAuthPage) {
-      router.navigate("login");
     }
   } catch (error) {
-    console.error("Auth check failed:", error);
+    console.error("Session check failed, assuming logged out.");
+  }
+
+  if (user) {
+    await renderAppLayout(app);
+    if (isAuthPage) {
+      router.navigate("notes");
+    }
+  } else {
     if (!isAuthPage) {
       router.navigate("login");
     }
   }
+
+  router.start();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  initializeApp();
 
   document.body.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
@@ -65,36 +77,4 @@ async function initializeApp(): Promise<void> {
     const newPath = href.replace(/^\//, "").replace(/[#?].*$/, "");
     router.navigate(newPath);
   });
-}
-
-window.addEventListener("DOMContentLoaded", initializeApp);
-
-// Регистрация Service Worker
-// if (navigator.serviceWorker) {
-//   navigator.serviceWorker.register('/sw.js', { scope: '/' })
-//     .then(
-//       () => {
-//         console.log('Success SW register');
-//       },
-//       (event) => {
-//         console.log('Error SW register', event);
-//       }
-//     );
-// }
-
-// window.addEventListener("DOMContentLoaded", async () => {
-//   const app = document.getElementById("app") as HTMLElement;
-  
-//   try {
-//     const user : User | null = await apiClient.me();
-//     if (user) {
-//       saveUser(user);
-//       renderNotes(app);
-//     } else {
-//       renderLogin(app);
-//     }
-//   } catch (error) {
-//     console.error("Auth check failed:", error);
-//     renderLogin(app);
-//   }
-// });
+});

@@ -1,7 +1,7 @@
 import { apiFetch, API_BASE } from "../api";
 import { login, register, logout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
-import { Block } from "../components/block";
+import { Block, BlockTextFormat } from "../components/block";
 
 interface User {
   id?: number;
@@ -9,6 +9,10 @@ interface User {
   password?: string;
   email?: string;
   avatar_file_id?: number;
+}
+
+interface AuthResponse {
+  user: User;
 }
 
 export interface UploadedFile {
@@ -19,15 +23,15 @@ export interface UploadedFile {
 }
 
 export const apiClient = {
-  async login(creds: User): Promise<User> {
-    const user = await login(creds);
-    saveUser(user);
-    return user;
+  async login(creds: User): Promise<AuthResponse> {
+    const response = await login(creds);
+    saveUser(response.user);
+    return response;
   },
 
-  async register(data: Object): Promise<User> {
-    const user = await register(data);
-    return user;
+  async register(data: Object): Promise<AuthResponse> {
+    const response = await register(data);
+    return response;
   },
 
   async logout(): Promise<void> {
@@ -112,7 +116,7 @@ export const apiClient = {
 
   async updateBlock(
     blockId: string | number,
-    data: { text: string; formats: any[] }
+    data: { text: string; formats: BlockTextFormat[] }
   ): Promise<Block> {
     return apiFetch(`/api/blocks/${blockId}`, {
       method: "PATCH",

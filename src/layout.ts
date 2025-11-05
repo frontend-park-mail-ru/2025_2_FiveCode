@@ -32,4 +32,22 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
   page.appendChild(mainContent);
 
   app.appendChild(page);
+  // Обновляем sidebar/любые слушатели профиля после добавления в DOM
+  const updatedUser = loadUser();
+  const usernameEl = document.getElementById("sidebar-username");
+  const avatarEl = document.getElementById(
+    "sidebar-avatar"
+  ) as HTMLImageElement | null;
+  if (usernameEl && updatedUser) {
+    usernameEl.textContent =
+      updatedUser.username || (updatedUser.email || "").split("@")[0];
+  }
+  if (avatarEl && avatarUrl) {
+    avatarEl.src = avatarUrl;
+  }
+  document.dispatchEvent(
+    new CustomEvent("userProfileUpdated", {
+      detail: { newAvatarUrl: avatarUrl },
+    })
+  );
 }

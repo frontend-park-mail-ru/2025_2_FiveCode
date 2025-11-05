@@ -2,7 +2,7 @@ import { renderLogin } from "./pages/login";
 import { renderRegister } from "./pages/register";
 import { renderNotes } from "./pages/notes";
 import { renderNoteEditor } from "./pages/notepage";
-import { renderSettingsPage } from "./pages/settings"; // 1. ИМПОРТИРУЙТЕ НОВУЮ СТРАНИЦУ
+import { renderSettingsPage } from "./pages/settings";
 
 interface Route {
   path: RegExp;
@@ -14,13 +14,12 @@ class Router {
   private mode: "history" | "hash";
   private root: string;
   private current: string = "";
-  private intervalId: number | null = null;
+  private started: boolean = false;
 
   constructor(options: { mode?: "history" | "hash"; root?: string } = {}) {
     this.mode = "pushState" in window.history ? "history" : "hash";
     if (options.mode) this.mode = options.mode;
     this.root = options.root || "/";
-    this.listen();
   }
 
   public add(path: RegExp, cb: (...args: any[]) => void): this {
@@ -60,22 +59,45 @@ class Router {
   public navigate(path: string = ""): this {
     if (this.mode === "history") {
       window.history.pushState(null, "", this.root + this.clearSlashes(path));
+      this.interval();
     } else {
-      window.location.href = `${window.location.href.replace(/#(.*)$/, "")}#${path}`;
+      window.location.href = `${window.location.href.replace(
+        /#(.*)$/,
+        ""
+      )}#${path}`;
     }
     return this;
   }
 
   private listen(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
+    if (this.started) return;
+    this.started = true;
+    window.addEventListener("popstate", () => this.interval());
+    setTimeout(() => this.interval(), 0);
+  }
+
+  public start(): void {
+    if (this.started) {
+      this.interval();
+      return;
     }
-    this.intervalId = window.setInterval(() => this.interval(), 50);
+    this.listen();
+  }
+
+  public stop(): void {
+    if (!this.started) return;
+    this.started = false;
+    window.removeEventListener("popstate", () => this.interval());
   }
 
   private interval = (): void => {
     const fragment = this.getFragment();
-    if (this.current === fragment) return;
+    if (this.current === fragment && this.started) {
+      const shouldRecheck = this.routes.some((route) =>
+        fragment.match(route.path)
+      );
+      if (!shouldRecheck) return;
+    }
     this.current = fragment;
 
     this.routes.some((route) => {
@@ -93,6 +115,7 @@ class Router {
 const router = new Router({ mode: "history", root: "/" });
 
 router
+  .add(/^$/, () => renderNotes())
   .add(/^login$/, () => renderLogin(document.getElementById("app")!))
   .add(/^register$/, () => renderRegister(document.getElementById("app")!))
   .add(/^notes$/, () => renderNotes())
