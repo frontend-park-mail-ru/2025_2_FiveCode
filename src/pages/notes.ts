@@ -67,7 +67,6 @@ export async function renderNotes(): Promise<void> {
             router.navigate(`note/${newNote.id}`);
           } catch (error) {
             console.error("Failed to create new note", error);
-            alert("Не удалось создать заметку.");
           }
         });
 

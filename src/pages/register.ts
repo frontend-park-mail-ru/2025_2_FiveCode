@@ -1,14 +1,8 @@
-import ejs from 'ejs';
-import { Header } from '../components/header';
+import ejs from "ejs";
+import { Header } from "../components/header";
 import { apiClient } from "../api/apiClient";
-import router from '../router';
-import { renderAppLayout } from '../layout';
-
-interface RegisterData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+import router from "../router";
+import { renderAppLayout } from "../layout";
 
 interface ValidationErrors {
   email?: string;
@@ -17,18 +11,25 @@ interface ValidationErrors {
 }
 
 const ICONS = {
-  Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
-  eye: new URL('../static/svg/icon_eye.svg', import.meta.url).href,
-  eyeOff: new URL('../static/svg/icon_eye_off.svg', import.meta.url).href,
+  Icon: new URL("../static/svg/icon_goose.svg", import.meta.url).href,
+  eye: new URL("../static/svg/icon_eye.svg", import.meta.url).href,
+  eyeOff: new URL("../static/svg/icon_eye_off.svg", import.meta.url).href,
 };
 
 function validateForm(form: HTMLFormElement): ValidationErrors {
   const errors: ValidationErrors = {};
 
-  const email = (form.querySelector<HTMLInputElement>("[name='email']")?.value ?? "").trim();
-  const password = (form.querySelector<HTMLInputElement>("[name='password']")?.value ?? "").trim();
-  const confirmPassword = (form.querySelector<HTMLInputElement>("[name='confirmPassword']")?.value ?? "").trim();
-  
+  const email = (
+    form.querySelector<HTMLInputElement>("[name='email']")?.value ?? ""
+  ).trim();
+  const password = (
+    form.querySelector<HTMLInputElement>("[name='password']")?.value ?? ""
+  ).trim();
+  const confirmPassword = (
+    form.querySelector<HTMLInputElement>("[name='confirmPassword']")?.value ??
+    ""
+  ).trim();
+
   if (!email) {
     errors.email = "Обязательное поле";
   } else if (email.length < 3) {
@@ -37,7 +38,6 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
     errors.email = "Некорректный формат email";
   }
 
-  
   if (!password) {
     errors.password = "Обязательное поле";
   } else if (password.length < 8) {
@@ -48,7 +48,6 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
     errors.password = "Пароль должен содержать буквы и цифры";
   }
 
-  
   if (!confirmPassword) {
     errors.confirmPassword = "Обязательное поле";
   } else if (confirmPassword !== password) {
@@ -59,25 +58,17 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
 }
 
 export function renderRegister(app: HTMLElement): void {
-  app.innerHTML = '';
-  const pageEl = document.createElement('div');
+  app.innerHTML = "";
+  const pageEl = document.createElement("div");
   pageEl.innerHTML = `<div class="page"></div>`;
   const page = pageEl.firstElementChild as HTMLElement;
 
   const headerEl = Header({ user: null, app });
-  
+
   if (headerEl) {
     page.appendChild(headerEl);
-    typeof headerEl === 'string'
-        ? (() => {
-            const temp = document.createElement('div');
-            temp.innerHTML = headerEl;
-            return temp.firstElementChild as HTMLElement;
-          })()
-        : headerEl
-  };
+  }
 
-  
   const registerModalTemplate = `
   <div class="modal modal--show">
     <a class="modal__icon-container"> <img src="<%= icon %>"/ class="modal__icon"> </a>
@@ -127,16 +118,20 @@ export function renderRegister(app: HTMLElement): void {
       </form>
     </div>
   `;
-  const registerModalHtml = ejs.render(registerModalTemplate, { icon: ICONS.Icon, eye: ICONS.eye });
-  const registerModalEl = document.createElement('div');
+  const registerModalHtml = ejs.render(registerModalTemplate, {
+    icon: ICONS.Icon,
+    eye: ICONS.eye,
+  });
+  const registerModalEl = document.createElement("div");
   registerModalEl.innerHTML = registerModalHtml;
   const registerModal = registerModalEl.firstElementChild as HTMLElement;
-
 
   const form = registerModal.querySelector<HTMLFormElement>(".modal__form")!;
   const emailErrorEl = registerModal.querySelector("#emailError")!;
   const passwordErrorEl = registerModal.querySelector("#passwordError")!;
-  const confirmPasswordErrorEl = registerModal.querySelector("#confirmPasswordError")!;
+  const confirmPasswordErrorEl = registerModal.querySelector(
+    "#confirmPasswordError"
+  )!;
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -150,15 +145,12 @@ export function renderRegister(app: HTMLElement): void {
     if (Object.keys(errors).length > 0) {
       if (errors.email) {
         emailErrorEl.textContent = errors.email;
-        emailErrorEl.classList.add('error-message--visible');
       }
       if (errors.password) {
         passwordErrorEl.textContent = errors.password;
-        passwordErrorEl.classList.add('error-message--visible');
       }
-      if (errors.confirmPassword){
+      if (errors.confirmPassword) {
         confirmPasswordErrorEl.textContent = errors.confirmPassword;
-        confirmPasswordErrorEl.classList.add('error-message--visible');
       }
       return;
     }
@@ -170,44 +162,54 @@ export function renderRegister(app: HTMLElement): void {
         username: data.email,
         email: data.email,
         password: data.password,
-        confirm_password: data.confirmPassword
+        confirm_password: data.confirmPassword,
       });
       const email = data.email as string | null;
       const password = data.password as string | null;
 
       if (!email || !password) {
-        throw new Error('Email и пароль обязательны');
+        throw new Error("Email и пароль обязательны");
       }
 
       await apiClient.login({ email, password });
       await renderAppLayout(app);
-      router.navigate('notes');
+      router.navigate("notes");
     } catch (err) {
-      if (err instanceof Error)
-        alert("Ошибка: " + err.message);
-      else
-        alert("Неизвестная ошибка");
+      console.error("Ошибка регистрации: ", err);
     }
   });
 
-  const togglePassword = registerModal.querySelector<HTMLSpanElement>("#togglePassword");
-  const toggleIcon = registerModal.querySelector<HTMLImageElement>("#togglePassword img");
-  const passwordInput = registerModal.querySelector<HTMLInputElement>("#password");
+  const togglePassword =
+    registerModal.querySelector<HTMLSpanElement>("#togglePassword");
+  const toggleIcon = registerModal.querySelector<HTMLImageElement>(
+    "#togglePassword img"
+  );
+  const passwordInput =
+    registerModal.querySelector<HTMLInputElement>("#password");
 
   if (togglePassword && toggleIcon && passwordInput) {
     togglePassword.addEventListener("click", () => {
-      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      const type =
+        passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
       toggleIcon.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
     });
   }
 
-  const confirmPasswordInput = registerModal.querySelector<HTMLInputElement>("#confirmPassword");
-  const toggleConfirmPassword = registerModal.querySelector<HTMLSpanElement>("#toggleConfirmPassword");
-  const toggleIconConfirm = registerModal.querySelector<HTMLImageElement>("#toggleConfirmPassword img");
+  const confirmPasswordInput =
+    registerModal.querySelector<HTMLInputElement>("#confirmPassword");
+  const toggleConfirmPassword = registerModal.querySelector<HTMLSpanElement>(
+    "#toggleConfirmPassword"
+  );
+  const toggleIconConfirm = registerModal.querySelector<HTMLImageElement>(
+    "#toggleConfirmPassword img"
+  );
   if (toggleConfirmPassword && toggleIconConfirm && confirmPasswordInput) {
     toggleConfirmPassword.addEventListener("click", () => {
-      const type = confirmPasswordInput.getAttribute("type") === "password" ? "text" : "password";
+      const type =
+        confirmPasswordInput.getAttribute("type") === "password"
+          ? "text"
+          : "password";
       confirmPasswordInput.setAttribute("type", type);
       toggleIconConfirm.src = type === "password" ? ICONS.eye : ICONS.eyeOff;
     });

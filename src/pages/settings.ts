@@ -1,5 +1,5 @@
 import { AccountSettings } from "../components/userMenu";
-import { loadUser, saveUser, clearUser } from "../utils/session";
+import { loadUser, saveUser } from "../utils/session";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
 import "../static/css/settings.css";
@@ -9,7 +9,7 @@ const ICONS = {
     .href,
 };
 
-export function renderSettingsPage(): void {
+export async function renderSettingsPage(): Promise<void> {
   const mainEl = document.getElementById("main-content");
   if (!mainEl) {
     console.error("Main content element not found");
@@ -25,10 +25,21 @@ export function renderSettingsPage(): void {
     return;
   }
 
+  let avatarUrl: string | undefined;
+  if (user.avatar_file_id) {
+    try {
+      const fileData = await apiClient.getFile(user.avatar_file_id);
+      avatarUrl = fileData.url;
+    } catch (error) {
+      console.error("Failed to fetch avatar:", error);
+    }
+  }
+
   const settingsComponent = AccountSettings({
     user: user,
     userIcon: ICONS.userIcon,
     isVisible: true,
+    avatarUrl,
   });
 
   mainEl.appendChild(settingsComponent);
@@ -36,33 +47,78 @@ export function renderSettingsPage(): void {
   const nameInput = settingsComponent.querySelector(
     ".name-section input"
   ) as HTMLInputElement;
-  const saveButton = settingsComponent.querySelector(".save-button");
+  const saveButton = settingsComponent.querySelector(
+    ".save-button"
+  ) as HTMLButtonElement;
   const cancelButton = settingsComponent.querySelector(".cancel-button");
   const deleteButton = settingsComponent.querySelector(
     ".delete-account-button"
   );
   const closeButton = settingsComponent.querySelector(".close-button");
+  const avatarUploadTrigger = settingsComponent.querySelector(
+    "#avatar-upload-trigger"
+  );
+  const avatarFileInput = settingsComponent.querySelector(
+    "#avatar-file-input"
+  ) as HTMLInputElement;
+  const avatarPreview = settingsComponent.querySelector(
+    "#avatar-preview"
+  ) as HTMLImageElement;
 
-  const initialName = user?.email?.split("@")[0] || "Имя";
+  const initialName = user?.username || user?.email?.split("@")[0] || "Имя";
+
+  avatarUploadTrigger?.addEventListener("click", () => {
+    avatarFileInput.click();
+  });
+
+  avatarFileInput?.addEventListener("change", async () => {
+    const file = avatarFileInput.files?.[0];
+    if (!file) return;
+
+    try {
+      const uploadedFile = await apiClient.uploadFile(file);
+      const updatedUser = await apiClient.updateUser({
+        avatar_file_id: uploadedFile.id,
+      });
+      saveUser(updatedUser);
+      avatarPreview.src = uploadedFile.url;
+      document.dispatchEvent(
+        new CustomEvent("userProfileUpdated", {
+          detail: { newAvatarUrl: uploadedFile.url },
+        })
+      );
+    } catch (error) {
+      console.error("Failed to upload avatar:", error);
+    }
+  });
 
   saveButton?.addEventListener("click", async () => {
     const newName = nameInput.value.trim();
     if (!newName || newName === initialName) {
       return;
     }
+
+    const originalButtonText = saveButton.textContent;
+    saveButton.textContent = "Сохранение...";
+    saveButton.disabled = true;
+
     try {
       const updatedUser = await apiClient.updateUser({ username: newName });
       saveUser(updatedUser);
-      alert("Данные успешно сохранены!");
-      document.dispatchEvent(new CustomEvent("notesUpdated")); // Обновит сайдбар
+      document.dispatchEvent(new CustomEvent("userProfileUpdated"));
     } catch (error) {
       console.error("Failed to update user:", error);
-      alert("Не удалось сохранить изменения.");
+    } finally {
+      setTimeout(() => {
+        saveButton.textContent = originalButtonText;
+        saveButton.disabled = false;
+      }, 1000);
     }
   });
 
   cancelButton?.addEventListener("click", () => {
     nameInput.value = initialName;
+    avatarPreview.src = avatarUrl || ICONS.userIcon;
   });
 
   deleteButton?.addEventListener("click", async () => {
@@ -77,7 +133,6 @@ export function renderSettingsPage(): void {
         router.navigate("login");
       } catch (error) {
         console.error("Failed to delete account:", error);
-        alert("Не удалось удалить аккаунт.");
       }
     }
   });

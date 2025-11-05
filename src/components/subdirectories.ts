@@ -22,13 +22,9 @@ interface SubdirectoriesParams {
 
 export function Subdirectories({
   items = [],
-}: SubdirectoriesParams): HTMLElement {
-  const container = document.createElement("div");
-  container.classList.add("folders");
-
-  type FolderMap = { [key: string]: Note[] };
-
-  const folders: FolderMap = {
+}: SubdirectoriesParams): DocumentFragment {
+  const fragment = document.createDocumentFragment();
+  const folders: { [key: string]: Note[] } = {
     Избранное: [],
     Заметки: [],
   };
@@ -128,8 +124,8 @@ export function Subdirectories({
       });
     }
 
-    container.appendChild(folderElement);
+    fragment.appendChild(folderElement);
   });
 
-  return container;
+  return fragment;
 }

@@ -108,7 +108,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       favoriteBtn.classList.add("active");
     }
   } catch (e) {
-    alert("Не удалось загрузить заметку.");
+    console.error("Не удалось загрузить заметку.", e);
     router.navigate("notes");
     return;
   }
@@ -139,7 +139,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
         router.navigate("notes");
       } catch (err) {
         console.error("Failed to delete note:", err);
-        alert("Не удалось удалить заметку.");
       }
     }
   });
@@ -152,7 +151,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       document.dispatchEvent(new CustomEvent("notesUpdated"));
     } catch (err) {
       console.error("Failed to update favorite status:", err);
-      alert("Не удалось обновить статус избранного.");
     }
   });
 }

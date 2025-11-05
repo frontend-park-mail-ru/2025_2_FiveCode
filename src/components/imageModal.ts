@@ -37,7 +37,6 @@ export function createImageModal(): Promise<UploadedFile | null> {
     const fileInput = modalOverlay.querySelector(
       "#imageUpload"
     ) as HTMLInputElement;
-    const tabs = modalOverlay.querySelectorAll(".modal-tab");
 
     const close = (value: UploadedFile | null) => {
       document.body.removeChild(modalOverlay);
@@ -53,8 +52,7 @@ export function createImageModal(): Promise<UploadedFile | null> {
           const response = await apiClient.uploadFile(file);
           close(response);
         } catch (error) {
-          alert("Не удалось загрузить файл.");
-          console.error(error);
+          console.error("Не удалось загрузить файл.", error);
           confirmBtn.disabled = false;
           confirmBtn.textContent = "Вставить";
         }

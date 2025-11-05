@@ -8,6 +8,7 @@ interface User {
   username?: string;
   password?: string;
   email?: string;
+  avatar_file_id?: number;
 }
 
 export interface UploadedFile {
@@ -38,15 +39,22 @@ export const apiClient = {
     return await checkSession();
   },
 
-  async updateUser(data: { username: string }): Promise<User> {
-    return apiFetch(`/api/users/me`, {
+  async updateUser(data: {
+    username?: string;
+    avatar_file_id?: number;
+  }): Promise<User> {
+    return apiFetch(`/api/profile`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   async deleteUser(): Promise<void> {
-    return apiFetch(`/api/users/me`, { method: "DELETE" });
+    return apiFetch(`/api/profile`, { method: "DELETE" });
+  },
+
+  async getFile(fileId: number): Promise<UploadedFile> {
+    return apiFetch(`/api/files/${fileId}`, { method: "GET" });
   },
 
   async getNotesForUser(): Promise<Array<any>> {

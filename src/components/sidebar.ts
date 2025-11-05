@@ -3,6 +3,7 @@ import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { UserMenu } from "./userMenu";
+import { loadUser } from "../utils/session";
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,
@@ -19,11 +20,14 @@ interface User {
   username?: string;
   password?: string;
   email?: string;
+  avatar_file_id?: number;
+  avatarUrl?: string | undefined;
 }
 
 interface SidebarParams {
   user: User | null;
   notes?: any[];
+  avatarUrl?: string | undefined;
 }
 
 const handleTitleUpdate = (event: Event) => {
@@ -42,13 +46,17 @@ const handleTitleUpdate = (event: Event) => {
 document.removeEventListener("noteTitleUpdated", handleTitleUpdate);
 document.addEventListener("noteTitleUpdated", handleTitleUpdate);
 
-export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
+export function Sidebar({
+  user,
+  notes,
+  avatarUrl,
+}: SidebarParams): HTMLElement {
   const template = `
         <aside class="sidebar">
             <div class="sidebar__user">
-                <img src="<%= account %>" class="sidebar__usericon" alt="user icon" />
+                <img src="<%= avatarUrl || account %>" class="sidebar__usericon" alt="user icon" id="sidebar-avatar" />
                 <div class="sidebar__user-info">
-                    <div class="sidebar__username"><%= user?.email?.split('@')[0] || 'Имя' %></div>
+                    <div class="sidebar__username" id="sidebar-username"><%= user?.username || user?.email?.split('@')[0] || 'Имя' %></div>
                 </div>
                 <button class="sidebar__user-dots" aria-label="Открыть меню пользователя">
                     <img src="<%= dots %>" alt="menu" />
@@ -72,6 +80,7 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
     settings: ICONS.settings,
     search: ICONS.search,
     dots: ICONS.dots,
+    avatarUrl: avatarUrl,
   });
   const container = document.createElement("div");
   container.innerHTML = html;
@@ -88,8 +97,6 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
       router.navigate(`note/${newNote.id}`);
     } catch (error) {
       console.error("Failed to create new note", error);
-      alert("Не удалось создать заметку.");
-      button.textContent = "+ Добавить новую заметку";
     }
   };
 
@@ -105,7 +112,7 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
     if (!userMenuComponent) {
       userMenuComponent = UserMenu({
         user,
-        userIcon: ICONS.account,
+        userIcon: avatarUrl || ICONS.account,
         isVisible: true,
         position: {
           top: rect.bottom + 8,
@@ -146,6 +153,30 @@ export function Sidebar({ user, notes }: SidebarParams): HTMLElement {
       userMenuComponent.style.display = "none";
     }
   });
+
+  const handleProfileUpdate = (event: CustomEvent) => {
+    const updatedUser = loadUser();
+    const usernameEl = document.getElementById("sidebar-username");
+    const avatarEl = document.getElementById(
+      "sidebar-avatar"
+    ) as HTMLImageElement;
+    if (usernameEl && updatedUser) {
+      usernameEl.textContent =
+        updatedUser.username || updatedUser.email.split("@")[0];
+    }
+    if (avatarEl && event.detail?.newAvatarUrl) {
+      avatarEl.src = event.detail.newAvatarUrl;
+    }
+  };
+
+  document.removeEventListener(
+    "userProfileUpdated",
+    handleProfileUpdate as EventListener
+  );
+  document.addEventListener(
+    "userProfileUpdated",
+    handleProfileUpdate as EventListener
+  );
 
   el.querySelector(".sidebar__user-dots")?.addEventListener(
     "click",

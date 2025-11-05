@@ -1,37 +1,46 @@
-import ejs from 'ejs';
+import ejs from "ejs";
 
 const ICONS = {
-  default_file: new URL('../static/svg/icon_dot.svg', import.meta.url).href,
-  icon_triangle: new URL('../static/svg/icon_triangle.svg', import.meta.url).href,
-  icon_shared: new URL('../static/svg/icon_shared.svg', import.meta.url).href,
-  icon_folder: new URL('../static/svg/icon_folder.svg', import.meta.url).href,
-  icon_close: new URL('../static/svg/icon_close.svg', import.meta.url).href,
+  default_file: new URL("../static/svg/icon_dot.svg", import.meta.url).href,
+  icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
+    .href,
+  icon_shared: new URL("../static/svg/icon_shared.svg", import.meta.url).href,
+  icon_folder: new URL("../static/svg/icon_folder.svg", import.meta.url).href,
+  icon_close: new URL("../static/svg/icon_close.svg", import.meta.url).href,
 };
 
 interface User {
-    id?: number;
-    username?: string;
-    password?: string;
-    email?: string;
+  id?: number;
+  username?: string;
+  password?: string;
+  email?: string;
+  avatar_file_id?: number;
+  avatarUrl?: string | undefined;
 }
 
 interface UserMenuParams {
-    user: User | null;
-    userIcon: string;
-    isVisible?: boolean;
-    position?: { top: number; left: number };
-    settingsIcon?: string;
-    logoutIcon?: string;
+  user: User | null;
+  userIcon: string;
+  isVisible?: boolean;
+  position?: { top: number; left: number };
+  settingsIcon?: string;
+  logoutIcon?: string;
 }
 
-
-export function UserMenu({ user, userIcon, isVisible = false, position, settingsIcon, logoutIcon }: UserMenuParams): HTMLElement {
-    const template = `
+export function UserMenu({
+  user,
+  userIcon,
+  isVisible = false,
+  position,
+  settingsIcon,
+  logoutIcon,
+}: UserMenuParams): HTMLElement {
+  const template = `
         <div class="user-menu" role="menu" style="display: <%= isVisible ? 'block' : 'none' %>; position: fixed; top: <%= position?.top %>px; left: <%= position?.left %>px;">
             <div class="user-menu__profile">
                 <img src="<%= userIcon %>" class="user-menu__avatar" alt="avatar" />
                 <div class="user-menu__meta">
-                    <div class="user-menu__name"><%= user?.email?.split('@')[0] || 'Имя' %></div>
+                    <div class="user-menu__name"><%= user?.username || user?.email?.split('@')[0] || 'Имя' %></div>
                     <div class="user-menu__email"><%= user?.email || '' %></div>
                 </div>
             </div>
@@ -44,20 +53,33 @@ export function UserMenu({ user, userIcon, isVisible = false, position, settings
         </div>
     `;
 
-    const container = document.createElement('div');
-    container.innerHTML = ejs.render(template, { user, userIcon, isVisible, position, settingsIcon, logoutIcon });
-    const el = container.firstElementChild as HTMLElement;
-    return el;
+  const container = document.createElement("div");
+  container.innerHTML = ejs.render(template, {
+    user,
+    userIcon,
+    isVisible,
+    position,
+    settingsIcon,
+    logoutIcon,
+  });
+  const el = container.firstElementChild as HTMLElement;
+  return el;
 }
 
 interface AccountSettingsParams {
-    user: User | null;
-    userIcon: string;
-    isVisible?: boolean;
+  user: User | null;
+  userIcon: string;
+  isVisible?: boolean;
+  avatarUrl?: string | undefined;
 }
 
-export function AccountSettings({user, userIcon, isVisible = false} : AccountSettingsParams) : HTMLElement {
-    const template = `
+export function AccountSettings({
+  user,
+  userIcon,
+  isVisible = false,
+  avatarUrl,
+}: AccountSettingsParams): HTMLElement {
+  const template = `
         <div class="account-settings">
         <div class="account-settings-header">
             <h2>Настройки аккаунта</h2>
@@ -68,13 +90,16 @@ export function AccountSettings({user, userIcon, isVisible = false} : AccountSet
             <div class="avatar-section">
             <p>Аватар</p>
             <div class="avatar-placeholder">
-                <div class="avatar"><img src="<%= userIcon %>"></div>
+                <div class="avatar" id="avatar-upload-trigger" style="cursor: pointer;">
+                  <img src="<%= avatarUrl || userIcon %>" id="avatar-preview">
+                </div>
+                <input type="file" id="avatar-file-input" accept="image/png, image/jpeg, image/gif" style="display: none;" />
             </div>
             </div>
 
             <div class="name-section">
             <p>Имя</p>
-            <input type="text" value="<%= user?.email?.split('@')[0] || 'Имя' %>" placeholder="Имя" />
+            <input type="text" value="<%= user?.username || user?.email?.split('@')[0] || 'Имя' %>" placeholder="Имя" />
             </div>
 
             <div class="email-section">
@@ -89,13 +114,18 @@ export function AccountSettings({user, userIcon, isVisible = false} : AccountSet
         </div>
 
         <div class="delete-account-section">
-            <h3>Осторожно!</h3>
             <button class="delete-account-button">Удалить аккаунт</button>
         </div>
         </div>
-        `
-    const container = document.createElement('div');
-    container.innerHTML = ejs.render(template, { user, userIcon, isVisible, close: ICONS.icon_close });
-    const el = container.firstElementChild as HTMLElement;
-    return el;
+        `;
+  const container = document.createElement("div");
+  container.innerHTML = ejs.render(template, {
+    user,
+    userIcon,
+    isVisible,
+    close: ICONS.icon_close,
+    avatarUrl,
+  });
+  const el = container.firstElementChild as HTMLElement;
+  return el;
 }
