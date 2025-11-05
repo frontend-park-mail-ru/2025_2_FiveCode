@@ -11,7 +11,6 @@ const ICONS = {
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const mainEl = document.getElementById("main-content");
   if (!mainEl) return;
-
   mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
     <div class="note-editor__header">

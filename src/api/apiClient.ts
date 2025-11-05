@@ -38,6 +38,17 @@ export const apiClient = {
     return await checkSession();
   },
 
+  async updateUser(data: { username: string }): Promise<User> {
+    return apiFetch(`/api/users/me`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteUser(): Promise<void> {
+    return apiFetch(`/api/users/me`, { method: "DELETE" });
+  },
+
   async getNotesForUser(): Promise<Array<any>> {
     return apiFetch(`/api/notes`, { method: "GET" });
   },

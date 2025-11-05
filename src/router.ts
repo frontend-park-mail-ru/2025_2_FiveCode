@@ -2,6 +2,7 @@ import { renderLogin } from "./pages/login";
 import { renderRegister } from "./pages/register";
 import { renderNotes } from "./pages/notes";
 import { renderNoteEditor } from "./pages/notepage";
+import { renderSettingsPage } from "./pages/settings"; // 1. ИМПОРТИРУЙТЕ НОВУЮ СТРАНИЦУ
 
 interface Route {
   path: RegExp;
@@ -95,6 +96,7 @@ router
   .add(/^login$/, () => renderLogin(document.getElementById("app")!))
   .add(/^register$/, () => renderRegister(document.getElementById("app")!))
   .add(/^notes$/, () => renderNotes())
-  .add(/^note\/(\d+)$/, (id: string) => renderNoteEditor(Number(id)));
+  .add(/^note\/(\d+)$/, (id: string) => renderNoteEditor(Number(id)))
+  .add(/^settings$/, () => renderSettingsPage());
 
 export default router;

@@ -60,10 +60,10 @@ export default {
       {
         directory: path.join(__dirname, "public"),
       },
-      {
-        directory: path.join(__dirname),
-        publicPath: "/",
-      },
+      // {
+      //   directory: path.join(__dirname),
+      //   publicPath: "/",
+      // },
     ],
     port: config.DEV_SERVER_PORT,
     historyApiFallback: true,
@@ -80,8 +80,8 @@ export default {
       template: "index.html",
       filename: "index.html",
     }),
-    new CopyWebpackPlugin({
-      patterns: [{ from: "sw.js", to: "sw.js" }],
-    }),
+    // new CopyWebpackPlugin({
+    //   patterns: [{ from: "sw.js", to: "sw.js" }],
+    // }),
   ],
 };

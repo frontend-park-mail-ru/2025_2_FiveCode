@@ -84,7 +84,6 @@
 }
 
 .sidebar__user-dots {
-  position: absolute;
   border: none;
   background: transparent;
   padding: 8px;
@@ -96,6 +95,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .sidebar__user-dots img {
   width: 20px;
   height: 20px;
