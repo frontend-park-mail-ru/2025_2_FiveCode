@@ -51,7 +51,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <button class="format-btn" data-command="italic"><i>I</i></button>
       <button class="format-btn" data-command="underline"><u>U</u></button>
       <button class="format-btn" data-command="strikeThrough"><s>S</s></button>
-      <button class="format-btn format-btn-code" data-command="convertToCode">&lt;/&gt;</button>
     </div>
     <div class="add-block-menu">
       <div class="menu-item" data-type="text">Текст</div>
