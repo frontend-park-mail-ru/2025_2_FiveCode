@@ -88,7 +88,7 @@ export function Sidebar({
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
-  document.addEventListener('DOMContentLoaded', highlightActiveMenuLink);
+  document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
 
   const handleCreateNewNote = async (event: Event) => {
     event.preventDefault();
@@ -107,16 +107,12 @@ export function Sidebar({
     event.stopPropagation();
     const dotsButton = event.currentTarget as HTMLElement;
     const rect = dotsButton.getBoundingClientRect();
-    if (userMenuComponent && userMenuComponent.style.display !== "none") {
-      userMenuComponent.style.display = "none";
-      return;
-    }
 
     if (!userMenuComponent) {
       userMenuComponent = UserMenu({
         user,
         userIcon: avatarUrl || ICONS.account,
-        isVisible: true,
+        isVisible: false,
         position: {
           top: rect.bottom + 8,
           left: rect.left < 220 ? 230 : rect.left,
@@ -128,42 +124,44 @@ export function Sidebar({
       userMenuComponent
         .querySelector(".user-menu__btn--settings")
         ?.addEventListener("click", () => {
-          userMenuComponent!.style.display = "none";
+          userMenuComponent!.classList.remove("user-menu--visible");
           router.navigate("settings");
         });
 
       userMenuComponent
         .querySelector(".user-menu__btn--logout")
         ?.addEventListener("click", () => {
-          userMenuComponent!.style.display = "none";
+          userMenuComponent!.classList.remove("user-menu--visible");
           const exitModal = createExitConfirmationModal();
           document.body.appendChild(exitModal);
-          
+
           exitModal
             .querySelector(".exit-modal-button")
             ?.addEventListener("click", async () => {
-              userMenuComponent!.style.display = "none";
               await apiClient.logout();
               exitModal.remove();
 
               router.navigate("login");
             });
         });
-    } else {
-      userMenuComponent.style.display = "block";
-      userMenuComponent.style.top = `${rect.bottom + 8}px`;
-      userMenuComponent.style.left = `${rect.left < 220 ? 230 : rect.left}px`;
     }
+
+    userMenuComponent.style.top = `${rect.bottom + 8}px`;
+    userMenuComponent.style.left = `${rect.left < 220 ? 230 : rect.left}px`;
+    userMenuComponent.classList.toggle("user-menu--visible");
   };
 
   document.addEventListener("click", (event) => {
-    if (
-      userMenuComponent &&
-      event.target instanceof Node &&
-      !userMenuComponent.contains(event.target) &&
-      !(event.target as HTMLElement).closest(".sidebar__user-dots")
-    ) {
-      userMenuComponent.style.display = "none";
+    if (!userMenuComponent) return;
+
+    const target = event.target as Node;
+    const isClickOnDots = (target as HTMLElement).closest(
+      ".sidebar__user-dots"
+    );
+    const isClickInsideMenu = userMenuComponent.contains(target);
+
+    if (!isClickInsideMenu && !isClickOnDots) {
+      userMenuComponent.classList.remove("user-menu--visible");
     }
   });
 
@@ -241,13 +239,14 @@ type MenuLinkElement = HTMLAnchorElement & {
 };
 
 function highlightActiveMenuLink(): void {
-  console.log('highlightActiveMenuLink called');
+  console.log("highlightActiveMenuLink called");
   const currentPath: string = window.location.pathname;
-  const currentPage: string = currentPath.split('/').pop() || '';
-  const menuLinks: NodeListOf<MenuLinkElement> = document.querySelectorAll('.sidebar__item');
+  const currentPage: string = currentPath.split("/").pop() || "";
+  const menuLinks: NodeListOf<MenuLinkElement> =
+    document.querySelectorAll(".sidebar__item");
   menuLinks.forEach((link: MenuLinkElement) => {
     if (link.dataset.page === currentPage) {
-      link.classList.add('active');
+      link.classList.add("active");
     }
   });
 }

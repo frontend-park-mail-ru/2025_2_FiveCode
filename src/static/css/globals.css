@@ -48,6 +48,8 @@ a {
   border-radius: 8px;
   z-index: 1000;
   padding: 12px;
+  position: fixed;
+  display: none;
 }
 
 .user-menu__profile {
@@ -121,7 +123,6 @@ a {
   overflow: hidden;
 }
 
-/* exit-modal.css */
 .exit-modal-overlay {
     position: fixed;
     top: 0;

@@ -36,7 +36,7 @@ export function UserMenu({
   logoutIcon,
 }: UserMenuParams): HTMLElement {
   const template = `
-        <div class="user-menu" role="menu" style="display: <%= isVisible ? 'block' : 'none' %>; position: fixed; top: <%= position?.top %>px; left: <%= position?.left %>px;">
+        <div class="user-menu <%= isVisible ? 'user-menu--visible' : '' %>" role="menu" style="top: <%= position?.top %>px; left: <%= position?.left %>px;">
             <div class="user-menu__profile">
                 <img src="<%= userIcon %>" class="user-menu__avatar" alt="avatar" />
                 <div class="user-menu__meta">

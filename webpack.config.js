@@ -21,23 +21,19 @@ export default {
   },
   module: {
     rules: [
-      /** TypeScript + Babel **/
       {
         test: /\.ts$/,
         use: ["babel-loader", "ts-loader"],
         exclude: /node_modules/,
       },
-      /** CSS **/
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"],
       },
-      /** EJS **/
       {
         test: /\.ejs$/,
         use: ["html-loader", "template-ejs-loader"],
       },
-      /** Изображения **/
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
         type: "asset/resource",
@@ -60,10 +56,6 @@ export default {
       {
         directory: path.join(__dirname, "public"),
       },
-      // {
-      //   directory: path.join(__dirname),
-      //   publicPath: "/",
-      // },
     ],
     port: config.DEV_SERVER_PORT,
     historyApiFallback: true,
@@ -80,8 +72,5 @@ export default {
       template: "index.html",
       filename: "index.html",
     }),
-    // new CopyWebpackPlugin({
-    //   patterns: [{ from: "sw.js", to: "sw.js" }],
-    // }),
   ],
 };
