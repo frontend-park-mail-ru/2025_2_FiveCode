@@ -1,3 +1,5 @@
+import { sizeMap } from "./constants";
+
 export interface BlockTextFormat {
   start_offset: number;
   end_offset: number;
@@ -27,10 +29,13 @@ export function reconstructHtmlFromFormats(
     points.get(index)!.push(tag);
   };
 
+  const reverseSizeMap: { [key: number]: string } = Object.fromEntries(
+    Object.entries(sizeMap).map(([key, value]) => [value, key])
+  );
+
   formats.forEach((format) => {
     let openTag = "";
     let closeTag = "";
-    let style = "";
 
     if (format.bold) {
       openTag += "<b>";
@@ -50,13 +55,14 @@ export function reconstructHtmlFromFormats(
     }
 
     if (format.font || format.size) {
-      if (format.font) style += `font-family: ${format.font};`;
-      if (format.size) style += `font-size: ${format.size}px;`;
-    }
-
-    if (style) {
-      openTag += `<span style="${style}">`;
-      closeTag = "</span>" + closeTag;
+      let fontTag = "<font";
+      if (format.font) fontTag += ` face="${format.font}"`;
+      if (format.size && reverseSizeMap[format.size]) {
+        fontTag += ` size="${reverseSizeMap[format.size]}"`;
+      }
+      fontTag += ">";
+      openTag += fontTag;
+      closeTag = "</font>" + closeTag;
     }
 
     if (format.link) {
@@ -148,68 +154,29 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
         case "a":
           newFormats.link = el.getAttribute("href");
           break;
+        case "font":
+          if (el.getAttribute("face")) {
+            newFormats.font = el.getAttribute("face")!;
+          }
+          const sizeKey = el.getAttribute("size");
+          if (sizeKey) {
+            const size = sizeMap[sizeKey];
+            if (size !== undefined) {
+              newFormats.size = size;
+            }
+          }
+          break;
       }
 
-      // Prefer inline style, but fall back to computed style to capture
-      // fonts/sizes coming from the backend or inherited CSS rules.
-      const computed = window.getComputedStyle(el);
-      const rawFont = el.style.fontFamily || computed.fontFamily || "";
-      const rawSize = el.style.fontSize || computed.fontSize || "";
-
-      const normalizeFont = (fontValue?: string): string | undefined => {
-        if (!fontValue) return undefined;
-        // font-family can be a list: "Inter, Roboto, sans-serif".
-        // Take the first family and trim quotes/spaces.
-        const parts = fontValue.split(",");
-        if (!parts || parts.length === 0) return undefined;
-        const first = parts[0] ? parts[0].trim() : parts[0];
-        return first ? first.replace(/^['\"]|['\"]$/g, "") : undefined;
-      };
-
-      const parseFontSizeToPx = (sizeValue: string): number | undefined => {
-        if (!sizeValue) return undefined;
-        // If value already in px
-        const pxMatch = sizeValue.match(/^([0-9]+(?:\.[0-9]+)?)px$/);
-        if (pxMatch && pxMatch[1]) return Math.round(parseFloat(pxMatch[1]));
-
-        // If in em/rem/pt/% etc, try to compute using browser computed style
-        // by temporarily applying to a test element if needed. However,
-        // since we already used getComputedStyle above, sizeValue should be
-        // computed and usually in px. Try to parse any number out of it.
-        const numMatch = sizeValue.match(/([0-9]+(?:\.[0-9]+)?)/);
-        if (numMatch && numMatch[1]) return Math.round(parseFloat(numMatch[1]));
-
-        return undefined;
-      };
-
-      const fontName = normalizeFont(rawFont);
-      const fontSize = parseFontSizeToPx(rawSize);
-
-      // detect strikethrough via inline style or computed text-decoration
-      try {
-        const inlineDec =
-          (el.style &&
-            (el.style.textDecoration ||
-              (el.style as any).textDecorationLine)) ||
-          "";
-        const computedDec =
-          (computed &&
-            ((computed as any).textDecorationLine ||
-              (computed as any).textDecoration)) ||
-          "";
-        if (
-          (inlineDec && String(inlineDec).indexOf("line-through") !== -1) ||
-          (computedDec && String(computedDec).indexOf("line-through") !== -1)
-        ) {
-          newFormats.strikethrough = true;
+      if (el.style.fontFamily) {
+        newFormats.font = el.style.fontFamily;
+      }
+      if (el.style.fontSize) {
+        const size = parseInt(el.style.fontSize, 10);
+        if (!isNaN(size)) {
+          newFormats.size = size;
         }
-      } catch (e) {
-        /* ignore */
       }
-
-      if (fontName) newFormats.font = fontName;
-      if (typeof fontSize === "number" && !isNaN(fontSize))
-        newFormats.size = fontSize;
 
       el.childNodes.forEach((child) => traverse(child, newFormats));
     }
@@ -217,16 +184,4 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
 
   traverse(element, {});
   return { text, formats };
-}
-
-// Debug helper: performs reconstructHtmlFromFormats -> parseHtmlToTextAndFormats
-// roundtrip and returns parsed formats. Useful to run in console for verification.
-export function roundtripCheckForDebug(
-  text: string,
-  formats: BlockTextFormat[]
-) {
-  const html = reconstructHtmlFromFormats(text, formats);
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const el = doc.body as HTMLElement;
-  return parseHtmlToTextAndFormats(el);
 }

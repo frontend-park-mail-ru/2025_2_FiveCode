@@ -3,7 +3,8 @@ import {
   Block,
   renderBlock,
   BlockTextFormat,
-  parseHtmlToTextAndFormats,
+  UpdateCallback,
+  BlockUpdateData,
 } from "../components/block";
 import { createImageModal } from "../components/imageModal";
 import { debounce } from "../utils/debounce";
@@ -23,6 +24,10 @@ export interface EditorManager {
   render: () => void;
   getBlocks: () => Block[];
   focusBlock: (blockId: string | number) => void;
+  addNewBlock: (
+    currentBlockId: string | number | undefined,
+    type: Block["type"]
+  ) => void;
 }
 
 export function createEditorManager({
@@ -35,6 +40,9 @@ export function createEditorManager({
   saveStatusEl,
 }: EditorManagerConfig): EditorManager {
   let blocks: Block[] = [...initialBlocks];
+  const emptyStateEl = document.querySelector(
+    ".empty-state-actions"
+  ) as HTMLElement;
 
   const debouncedSaves = new Map<string | number, () => void>();
 
@@ -63,16 +71,23 @@ export function createEditorManager({
         (b) => b.id.toString() === blockId.toString()
       );
       if (!blockToSave) {
-        console.warn("saveBlock: block not found", blockId);
         return;
       }
 
-      console.debug("saveBlock: saving block", blockToSave.id);
+      let payload: any = {};
+      if (blockToSave.type === "code") {
+        payload = {
+          language: blockToSave.language,
+          code_text: blockToSave.text,
+        };
+      } else {
+        payload = {
+          text: blockToSave.text || "",
+          formats: blockToSave.formats || [],
+        };
+      }
 
-      await apiClient.updateBlock(blockToSave.id, {
-        text: blockToSave.text || "",
-        formats: blockToSave.formats || [],
-      });
+      await apiClient.updateBlock(blockToSave.id, payload);
 
       saveStatusEl.textContent = "Сохранено";
     } catch (err) {
@@ -81,15 +96,13 @@ export function createEditorManager({
     }
   };
 
-  const updateBlockContent = (
+  const updateBlockContent: UpdateCallback = (
     blockId: string | number,
-    newText: string,
-    newFormats: BlockTextFormat[]
+    data: BlockUpdateData
   ) => {
     const block = blocks.find((b) => b.id.toString() === blockId.toString());
     if (block) {
-      block.text = newText;
-      block.formats = newFormats;
+      Object.assign(block, data);
 
       if (!debouncedSaves.has(blockId)) {
         const debouncedSave = debounce(() => saveBlock(blockId), 1500);
@@ -104,13 +117,13 @@ export function createEditorManager({
   };
 
   const addNewBlock = async (
-    currentBlockId: string | number,
+    currentBlockId: string | number | undefined,
     type: Block["type"]
   ) => {
-    const currentIndex = blocks.findIndex(
-      (b) => b.id.toString() === currentBlockId.toString()
-    );
-    if (currentIndex === -1) return;
+    const currentIndex =
+      currentBlockId !== undefined
+        ? blocks.findIndex((b) => b.id.toString() === currentBlockId.toString())
+        : -1;
 
     const beforeBlock = blocks[currentIndex + 1];
     const beforeBlockId = beforeBlock ? beforeBlock.id : undefined;
@@ -136,26 +149,26 @@ export function createEditorManager({
       };
     } else {
       newBlockData = await apiClient.createBlock(noteId, {
-        type: "text",
+        type: type,
         before_block_id: beforeBlockId as number,
       });
 
       newBlock = {
         id: newBlockData.id,
-        type: "text",
-        text: "",
+        type: type,
+        text: newBlockData.text || "",
+        language: newBlockData.language || "",
         formats: [],
       };
-
-      if (type === "code") {
-        newBlock.type = "code";
-        newBlock.language = "javascript";
-      }
     }
 
-    blocks.splice(currentIndex + 1, 0, newBlock);
+    if (currentIndex === -1) {
+      blocks.push(newBlock);
+    } else {
+      blocks.splice(currentIndex + 1, 0, newBlock);
+    }
     render();
-    focusBlock(newBlock.id);
+    setTimeout(() => focusBlock(newBlock.id), 0);
   };
 
   const render = () => {
@@ -170,21 +183,75 @@ export function createEditorManager({
       container.appendChild(blockElement);
     });
 
+    if (emptyStateEl) {
+      emptyStateEl.style.display = blocks.length === 0 ? "block" : "none";
+    }
+
     if (activeBlockId) {
       focusBlock(activeBlockId);
     }
   };
 
   const focusBlock = (blockId: string | number) => {
-    const blockToFocus = container.querySelector(
-      `[data-block-id="${blockId}"] .block`
+    const blockContainerElement = container.querySelector<HTMLElement>(
+      `[data-block-id="${blockId}"]`
     );
+
+    if (blockContainerElement) {
+      blockContainerElement.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+
+    const blockToFocus =
+      blockContainerElement?.querySelector<HTMLElement>(".block");
     if (blockToFocus) {
-      (blockToFocus as HTMLElement).focus();
+      blockToFocus.focus();
     }
   };
 
   titleInput.addEventListener("input", debouncedSaveTitle);
+
+  async function deleteBlock(blockId: string | number) {
+    const idx = blocks.findIndex((b) => b.id.toString() === blockId.toString());
+    if (idx === -1) return;
+    const toDelete = blocks[idx];
+    if (!toDelete) return;
+    try {
+      await apiClient.deleteBlock(toDelete.id);
+      blocks.splice(idx, 1);
+      render();
+    } catch (err) {
+      console.error("deleteBlock error", err);
+    }
+  }
+
+  async function moveBlock(blockId: string | number, direction: "up" | "down") {
+    const idx = blocks.findIndex((b) => b.id.toString() === blockId.toString());
+    if (idx === -1) return;
+    const newIndex = direction === "up" ? idx - 1 : idx + 1;
+    if (newIndex < 0 || newIndex >= blocks.length) return;
+
+    const [movedBlock] = blocks.splice(idx, 1);
+    if (!movedBlock) return;
+
+    blocks.splice(newIndex, 0, movedBlock);
+
+    const beforeBlockId = blocks[newIndex + 1]?.id;
+
+    try {
+      await apiClient.updateBlockPosition(blockId, {
+        before_block_id: beforeBlockId as number,
+      });
+      render();
+    } catch (err) {
+      console.error("moveBlock api error", err);
+      blocks.splice(newIndex, 1);
+      blocks.splice(idx, 0, movedBlock);
+      render();
+    }
+  }
 
   setupEventManager({
     container,
@@ -192,11 +259,14 @@ export function createEditorManager({
     addBlockMenu,
     addNewBlock,
     updateBlockContent,
+    deleteBlock,
+    moveBlock,
   });
 
   return {
     render,
     getBlocks: () => blocks,
     focusBlock,
+    addNewBlock,
   };
 }

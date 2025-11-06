@@ -32,7 +32,6 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
   page.appendChild(mainContent);
 
   app.appendChild(page);
-  // Обновляем sidebar/любые слушатели профиля после добавления в DOM
   const updatedUser = loadUser();
   const usernameEl = document.getElementById("sidebar-username");
   const avatarEl = document.getElementById(

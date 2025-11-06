@@ -116,12 +116,31 @@ export const apiClient = {
 
   async updateBlock(
     blockId: string | number,
-    data: { text: string; formats: BlockTextFormat[] }
+    data: {
+      text?: string;
+      formats?: BlockTextFormat[];
+      language?: string;
+      code_text?: string;
+    }
   ): Promise<Block> {
     return apiFetch(`/api/blocks/${blockId}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     });
+  },
+
+  async updateBlockPosition(
+    blockId: string | number,
+    data: { before_block_id?: string | number }
+  ): Promise<Block> {
+    return apiFetch(`/api/blocks/${blockId}/position`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteBlock(blockId: string | number): Promise<void> {
+    return apiFetch(`/api/blocks/${blockId}`, { method: "DELETE" });
   },
 
   async uploadFile(file: File): Promise<UploadedFile> {

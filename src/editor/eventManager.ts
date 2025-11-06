@@ -1,123 +1,27 @@
-import { Block, parseHtmlToTextAndFormats } from "../components/block";
-
-type AddNewBlockCallback = (
-  currentBlockId: string | number,
-  type: Block["type"]
-) => void;
-type UpdateBlockCallback = (
-  blockId: string | number,
-  text: string,
-  formats: any[]
-) => void;
+import {
+  Block,
+  parseHtmlToTextAndFormats,
+  UpdateCallback,
+} from "../components/block";
+import { sizeMap } from "./constants";
 
 interface EventManagerDependencies {
   container: HTMLElement;
   toolbar: HTMLElement;
   addBlockMenu: HTMLElement;
-  addNewBlock: AddNewBlockCallback;
-  updateBlockContent: UpdateBlockCallback;
+  addNewBlock: (
+    currentBlockId: string | number | undefined,
+    type: Block["type"]
+  ) => void;
+  updateBlockContent: UpdateCallback;
+  deleteBlock?: (blockId: string | number) => Promise<void>;
+  moveBlock?: (
+    blockId: string | number,
+    direction: "up" | "down"
+  ) => Promise<void>;
 }
 
-// saved selection range so dropdown interactions can restore selection
 let lastSelectionRange: Range | null = null;
-
-function applyStyleToSelection(
-  styleProperty: "fontFamily" | "fontSize",
-  value: string
-) {
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return;
-  const range = selection.getRangeAt(0);
-  if (range.collapsed) return;
-
-  const parentBlock = (
-    range.startContainer.nodeType === Node.TEXT_NODE
-      ? range.startContainer.parentElement
-      : (range.startContainer as HTMLElement)
-  )?.closest(".block--text");
-
-  if (!parentBlock) return;
-  // Extract selected content, wrap it into a single span with the style,
-  // and insert back. This avoids creating multiple nested spans which can
-  // lead to compounded sizes or visual anomalies.
-  const fragment = range.extractContents();
-
-  const removeInline = (node: Node) => {
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as HTMLElement;
-      if (styleProperty === "fontFamily") {
-        el.style.fontFamily = "";
-      } else {
-        el.style.fontSize = "";
-      }
-      el.childNodes.forEach(removeInline);
-    }
-  };
-
-  // If fragment is a single element that already has the style applied,
-  // update it instead of wrapping to allow repeated changes.
-  if (
-    fragment.childNodes.length === 1 &&
-    fragment.firstChild?.nodeType === Node.ELEMENT_NODE
-  ) {
-    const firstEl = fragment.firstChild as HTMLElement;
-    if (
-      (styleProperty === "fontFamily" && firstEl.style.fontFamily) ||
-      (styleProperty === "fontSize" && firstEl.style.fontSize)
-    ) {
-      if (styleProperty === "fontFamily") firstEl.style.fontFamily = value;
-      else firstEl.style.fontSize = value;
-      range.insertNode(firstEl);
-      // Keep the contents selected: select node contents of the updated element
-      try {
-        const sel = window.getSelection();
-        if (sel) {
-          sel.removeAllRanges();
-          const r = document.createRange();
-          r.selectNodeContents(firstEl);
-          sel.addRange(r);
-          lastSelectionRange = r.cloneRange();
-        }
-      } catch (e) {
-        // fallback to caret after node
-        range.setStartAfter(firstEl);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-      return;
-    }
-  }
-
-  // Clean existing inline styles inside the fragment to avoid nested/conflicting styles
-  fragment.childNodes.forEach(removeInline);
-
-  const wrapperSpan = document.createElement("span");
-  if (styleProperty === "fontFamily") {
-    wrapperSpan.style.fontFamily = value;
-  } else {
-    wrapperSpan.style.fontSize = value;
-  }
-  wrapperSpan.appendChild(fragment);
-  range.insertNode(wrapperSpan);
-  // Keep the inserted content selected
-  try {
-    const sel = window.getSelection();
-    if (sel) {
-      sel.removeAllRanges();
-      const r = document.createRange();
-      r.selectNodeContents(wrapperSpan);
-      sel.addRange(r);
-      lastSelectionRange = r.cloneRange();
-    }
-  } catch (e) {
-    // fallback: place caret after wrapper
-    range.setStartAfter(wrapperSpan);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
-}
 
 export function setupEventManager({
   container,
@@ -125,6 +29,8 @@ export function setupEventManager({
   addBlockMenu,
   addNewBlock,
   updateBlockContent,
+  deleteBlock,
+  moveBlock,
 }: EventManagerDependencies) {
   const mainContainer = container.closest<HTMLElement>(".note-editor__main");
   if (!mainContainer) return;
@@ -145,13 +51,19 @@ export function setupEventManager({
         const { text, formats } = parseHtmlToTextAndFormats(
           parentBlock as HTMLElement
         );
-        updateBlockContent(blockId, text, formats);
+        updateBlockContent(blockId, { text, formats });
       }
     }
   };
 
   document.addEventListener("selectionchange", () => {
     const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      lastSelectionRange = selection.getRangeAt(0).cloneRange();
+    } else {
+      lastSelectionRange = null;
+    }
+
     if (!selection || selection.isCollapsed) {
       toolbar?.classList.remove("visible");
       return;
@@ -173,56 +85,12 @@ export function setupEventManager({
       const mainRect = mainContainer.getBoundingClientRect();
 
       if (toolbar) {
-        // Update toolbar current font/size display based on selection start
-        try {
-          const startContainer = range.startContainer;
-          const elForStyle =
-            startContainer.nodeType === Node.TEXT_NODE
-              ? (startContainer.parentElement as HTMLElement)
-              : (startContainer as HTMLElement);
-          const computed = elForStyle && window.getComputedStyle(elForStyle);
-          const fontNameEl =
-            toolbar.querySelector<HTMLElement>("#current-font-name");
-          const fontSizeEl =
-            toolbar.querySelector<HTMLElement>("#current-font-size");
-          if (computed && fontNameEl) {
-            const rawFam = computed.fontFamily || "";
-            let fam = "";
-            if (rawFam) {
-              const parts = rawFam.split(",");
-              if (parts && parts.length > 0 && parts[0]) {
-                fam = parts[0].trim().replace(/^['\"]|['\"]$/g, "");
-              }
-            }
-            fontNameEl.textContent = fam || fontNameEl.textContent || "";
-          }
-          if (computed && fontSizeEl) {
-            const rawSize = computed.fontSize || "";
-            const sizeNum = rawSize
-              ? Math.round(parseFloat(rawSize))
-              : undefined;
-            fontSizeEl.textContent =
-              typeof sizeNum === "number"
-                ? String(sizeNum)
-                : fontSizeEl.textContent || "";
-          }
-        } catch (err) {
-          // ignore
-        }
         toolbar.style.top = `${rect.top - mainRect.top + mainContainer.scrollTop - toolbar.offsetHeight - 5}px`;
         toolbar.style.left = `${rect.left - mainRect.left + rect.width / 2 - toolbar.offsetWidth / 2}px`;
         toolbar.classList.add("visible");
       }
     } else {
       toolbar?.classList.remove("visible");
-    }
-  });
-
-  // Keep last selection range so clicks in dropdown don't clear it
-  document.addEventListener("selectionchange", () => {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-      lastSelectionRange = sel.getRangeAt(0).cloneRange();
     }
   });
 
@@ -250,6 +118,27 @@ export function setupEventManager({
         addBlockMenu.classList.add("visible");
         addBlockMenu.dataset.currentBlockId = parentContainer.dataset.blockId;
       }
+    }
+
+    const actionBtn = target.closest<HTMLElement>("[data-action]");
+    if (actionBtn) {
+      const action = actionBtn.getAttribute("data-action");
+      const blockContainer = actionBtn.closest<HTMLElement>(".block-container");
+      if (blockContainer && blockContainer.dataset.blockId) {
+        const id = blockContainer.dataset.blockId;
+        if (action === "delete" && typeof deleteBlock === "function") {
+          if (confirm("Delete this block?")) {
+            deleteBlock(id);
+          }
+        }
+        if (action === "move-up" && typeof moveBlock === "function") {
+          moveBlock(id, "up");
+        }
+        if (action === "move-down" && typeof moveBlock === "function") {
+          moveBlock(id, "down");
+        }
+      }
+      return;
     }
   });
 
@@ -294,30 +183,32 @@ export function setupEventManager({
 
     if (dropdownItem) {
       const dropdown = dropdownItem.closest<HTMLElement>(".format-dropdown");
-      const styleProperty =
-        dropdown?.id === "font-dropdown" ? "fontFamily" : "fontSize";
       const display = dropdown?.querySelector<HTMLElement>(
-        styleProperty === "fontFamily"
+        dropdown?.id === "font-dropdown"
           ? "#current-font-name"
           : "#current-font-size"
       );
 
       if (dropdownItem.dataset.value && display) {
-        // restore selection so applyStyleToSelection works even if focus moved
         try {
           const sel = window.getSelection();
           if (sel && lastSelectionRange) {
             sel.removeAllRanges();
             sel.addRange(lastSelectionRange);
           }
-        } catch (err) {
-          /* ignore */
+        } catch (err) {}
+
+        if (dropdown?.id === "font-dropdown") {
+          document.execCommand("fontName", false, dropdownItem.dataset.value);
+        } else if (dropdown?.id === "size-dropdown") {
+          const sizeValue = Object.keys(sizeMap).find(
+            (key) => sizeMap[key] === parseInt(dropdownItem.dataset.value || "")
+          );
+          if (sizeValue) {
+            document.execCommand("fontSize", false, sizeValue);
+          }
         }
-        const value =
-          styleProperty === "fontSize"
-            ? `${dropdownItem.dataset.value}px`
-            : dropdownItem.dataset.value;
-        applyStyleToSelection(styleProperty, value);
+
         display.textContent = dropdownItem.dataset.value || "";
         dropdown?.classList.remove("active");
         triggerUpdate();

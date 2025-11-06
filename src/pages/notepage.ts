@@ -87,21 +87,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     const backendBlocks = blocksData?.blocks || [];
 
     initialBlocks = backendBlocks.map((block: any): Block => {
-      const baseBlock: Block = {
-        id: block.id,
-        type: block.type,
-      };
-      if (block.type === "text") {
-        baseBlock.text = block.text;
-        baseBlock.formats = block.formats;
-      } else if (block.type === "attachment") {
-        baseBlock.type = "image";
-        baseBlock.url = block.text;
-      } else if (block.type === "code") {
-        baseBlock.text = block.text;
-        baseBlock.language = block.language;
+      if (block.type === "attachment") {
+        return {
+          id: block.id,
+          type: "image",
+          url: block.text,
+        };
       }
-      return baseBlock;
+      return block as Block;
     });
 
     if (isFavorite) {

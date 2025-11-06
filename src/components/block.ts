@@ -17,13 +17,20 @@ export interface Block {
   file_id?: number;
 }
 
+export type BlockUpdateData = {
+  text?: string;
+  formats?: BlockTextFormat[];
+  language?: string;
+};
+
+export type UpdateCallback = (
+  blockId: string | number,
+  data: BlockUpdateData
+) => void;
+
 export function renderBlock(
   block: Block,
-  updateCallback: (
-    blockId: string | number,
-    newText: string,
-    newFormats: BlockTextFormat[]
-  ) => void
+  updateCallback: UpdateCallback
 ): HTMLElement {
   let element: HTMLElement;
   switch (block.type) {
@@ -43,24 +50,45 @@ export function renderBlock(
   const container = document.createElement("div");
   container.className = "block-container";
   container.dataset.blockId = String(block.id);
-
   const handle = document.createElement("div");
   handle.className = "block-handle";
   handle.innerHTML = "+";
 
+  const actions = document.createElement("div");
+  actions.className = "block-actions";
+
+  const btnUp = document.createElement("button");
+  btnUp.className = "block-action-btn";
+  btnUp.setAttribute("data-action", "move-up");
+  btnUp.title = "Move up";
+  btnUp.textContent = "↑";
+
+  const btnDown = document.createElement("button");
+  btnDown.className = "block-action-btn";
+  btnDown.setAttribute("data-action", "move-down");
+  btnDown.title = "Move down";
+  btnDown.textContent = "↓";
+
+  const btnDelete = document.createElement("button");
+  btnDelete.className = "block-action-btn block-action-delete";
+  btnDelete.setAttribute("data-action", "delete");
+  btnDelete.title = "Delete block";
+  btnDelete.textContent = "✕";
+
+  actions.appendChild(btnUp);
+  actions.appendChild(btnDown);
+  actions.appendChild(btnDelete);
+
   container.appendChild(handle);
   container.appendChild(element);
+  container.appendChild(actions);
 
   return container;
 }
 
 function renderTextBlock(
   block: Block,
-  updateCallback: (
-    id: string | number,
-    newText: string,
-    newFormats: BlockTextFormat[]
-  ) => void
+  updateCallback: UpdateCallback
 ): HTMLElement {
   const template = `<div class="block block--text" data-block-id="${block.id}" contenteditable="true" spellcheck="false"><%- content %></div>`;
   const htmlContent = reconstructHtmlFromFormats(block.text, block.formats);
@@ -70,7 +98,7 @@ function renderTextBlock(
 
   element.addEventListener("input", () => {
     const { text, formats } = parseHtmlToTextAndFormats(element);
-    updateCallback(block.id, text, formats);
+    updateCallback(block.id, { text, formats });
   });
 
   return element;
@@ -87,19 +115,19 @@ function renderImageBlock(block: Block): HTMLElement {
 
 function renderCodeBlock(
   block: Block,
-  updateCallback: (
-    id: string | number,
-    newText: string,
-    newFormats: BlockTextFormat[]
-  ) => void
+  updateCallback: UpdateCallback
 ): HTMLElement {
   const template = `
     <div class="block block--code" data-block-id="${block.id}">
       <div class="code-toolbar">
         <select class="code-language">
           <option value="sql" ${block.language === "sql" ? "selected" : ""}>SQL</option>
-          <option value="javascript" ${block.language === "javascript" ? "selected" : ""}>JavaScript</option>
-          <option value="text" ${block.language === "text" ? "selected" : ""}>Plain Text</option>
+          <option value="javascript" ${
+            block.language === "javascript" ? "selected" : ""
+          }>JavaScript</option>
+          <option value="text" ${
+            block.language === "text" ? "selected" : ""
+          }>Plain Text</option>
         </select>
       </div>
       <div class="code-content" contenteditable="true" spellcheck="false"><%= content %></div>
@@ -117,7 +145,10 @@ function renderCodeBlock(
   ) as HTMLSelectElement;
 
   const onUpdate = () => {
-    updateCallback(block.id, contentElement.innerText, []);
+    updateCallback(block.id, {
+      text: contentElement.innerText,
+      language: languageSelect.value,
+    });
   };
 
   contentElement.addEventListener("input", onUpdate);
