@@ -4,7 +4,7 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import { config } from "./src/project.config.ts";
+import { config } from "./src/config/project.config.js";
 
 const require = createRequire(import.meta.url);
 

@@ -1,4 +1,4 @@
-import { config } from "./project.config";
+import { config } from "./config/project.config";
 export const API_BASE = config.API_BASE_URL;
 
 interface ApiFetchOptions extends Omit<RequestInit, "body"> {

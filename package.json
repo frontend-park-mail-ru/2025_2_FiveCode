@@ -33,6 +33,7 @@
     "style-loader": "^4.0.0",
     "template-ejs-loader": "^0.9.4",
     "ts-loader": "^9.5.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "util": "^0.12.5",
     "webpack": "^5.102.1",
