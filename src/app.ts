@@ -11,6 +11,7 @@ import "./static/css/sidebar.css";
 import "./static/css/note-editor.css";
 import "./static/css/modal.css";
 import "./static/css/settings.css";
+import "./static/css/note-menu.css";
 
 interface User {
   id?: number;

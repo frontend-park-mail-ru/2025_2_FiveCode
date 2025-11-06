@@ -2,8 +2,9 @@ import ejs from "ejs";
 import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
-import { UserMenu } from "./userMenu";
+import { UserMenu, createExitConfirmationModal } from "./userMenu";
 import { loadUser } from "../utils/session";
+import { exit } from "process";
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,
@@ -87,6 +88,8 @@ export function Sidebar({
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
+  document.addEventListener('DOMContentLoaded', highlightActiveMenuLink);
+
   const handleCreateNewNote = async (event: Event) => {
     event.preventDefault();
     const button = event.currentTarget as HTMLElement;
@@ -131,10 +134,20 @@ export function Sidebar({
 
       userMenuComponent
         .querySelector(".user-menu__btn--logout")
-        ?.addEventListener("click", async () => {
+        ?.addEventListener("click", () => {
           userMenuComponent!.style.display = "none";
-          await apiClient.logout();
-          router.navigate("login");
+          const exitModal = createExitConfirmationModal();
+          document.body.appendChild(exitModal);
+          
+          exitModal
+            .querySelector(".exit-modal-button")
+            ?.addEventListener("click", async () => {
+              userMenuComponent!.style.display = "none";
+              await apiClient.logout();
+              exitModal.remove();
+
+              router.navigate("login");
+            });
         });
     } else {
       userMenuComponent.style.display = "block";
@@ -219,4 +232,22 @@ export function Sidebar({
   }
 
   return el;
+}
+
+type MenuLinkElement = HTMLAnchorElement & {
+  dataset: {
+    page?: string;
+  };
+};
+
+function highlightActiveMenuLink(): void {
+  console.log('highlightActiveMenuLink called');
+  const currentPath: string = window.location.pathname;
+  const currentPage: string = currentPath.split('/').pop() || '';
+  const menuLinks: NodeListOf<MenuLinkElement> = document.querySelectorAll('.sidebar__item');
+  menuLinks.forEach((link: MenuLinkElement) => {
+    if (link.dataset.page === currentPage) {
+      link.classList.add('active');
+    }
+  });
 }
