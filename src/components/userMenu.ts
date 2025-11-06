@@ -129,3 +129,33 @@ export function AccountSettings({
   const el = container.firstElementChild as HTMLElement;
   return el;
 }
+
+export function createExitConfirmationModal(): HTMLElement {
+    const modalTemplate = `
+        <div id="exitConfirmationModal" class="exit-modal-overlay">
+            <div class="exit-modal-content">
+                <span id="closeModal" class="exit-modal-close">×</span>
+                <p class="exit-modal-text">Вы точно хотите выйти?</p>
+                <p style="color: var(--gray-600); padding-top: 6px; padding-bottom: 6px; font-weight:350; font-size:14px;"> 
+                  Вам нужно будет снова войти в систему, чтобы получить доступ к заметкам Goose. </p>
+                <button class="exit-modal-button">Выйти</button>
+            </div>
+        </div>
+    `;
+
+    const container = document.createElement('div');
+    container.innerHTML = modalTemplate;
+    const modal = container.firstElementChild as HTMLElement;
+
+    modal.querySelector('#closeModal')?.addEventListener('click', () => {
+        modal.remove();
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    return modal;
+}

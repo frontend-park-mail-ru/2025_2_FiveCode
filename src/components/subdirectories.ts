@@ -1,4 +1,9 @@
 import ejs from "ejs";
+import { createDeleteNoteModal } from "../components/deleteNoteModal";
+import { apiClient } from "../api/apiClient";
+import router from "../router";
+
+
 
 const ICONS = {
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
@@ -6,6 +11,7 @@ const ICONS = {
   icon_favorite: new URL("../static/svg/icon_favorite.svg", import.meta.url)
     .href,
   icon_folder: new URL("../static/svg/icon_folder.svg", import.meta.url).href,
+  dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
 };
 
 interface Note {
@@ -58,6 +64,9 @@ export function Subdirectories({
         <li class="subdir-item">
             <a href="/note/<%= id %>" class="subdir-header" data-link>
               <span class="subdir-title"><%= title %></span>
+              <button class="subdir-menu-dots" style="display: none;">
+                <img src="<%= dots %>" alt="menu" />
+              </button>
             </a>
         </li>
       `;
@@ -102,10 +111,60 @@ export function Subdirectories({
       const noteItemHtml = ejs.render(noteItemTemplate, {
         id: item.id,
         title: item.title,
+        dots: ICONS.dots,
       });
       const noteItemEl = document.createElement("div");
       noteItemEl.innerHTML = noteItemHtml;
-      listEl.appendChild(noteItemEl.firstElementChild as HTMLElement);
+      const noteItem = noteItemEl.firstElementChild as HTMLElement;
+      
+      const dotsButton = noteItem.querySelector('.subdir-menu-dots');
+      dotsButton?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const existingMenu = document.querySelector('.note-menu');
+        if (existingMenu) existingMenu.remove();
+        
+        const menu = document.createElement('div');
+        menu.className = 'note-menu';
+        menu.innerHTML = `
+          <button class="rename-note" data-note-id="${item.id}">Переименовать</button>
+          <button class="delete-note" data-note-id="${item.id}">Удалить</button>
+        `;
+        
+        const rect = dotsButton.getBoundingClientRect();
+        menu.style.top = rect.bottom + 'px';
+        menu.style.left = rect.left + 'px';
+        
+        document.body.appendChild(menu);
+
+        const deleteButton = menu.querySelector('.delete-note');
+        deleteButton?.addEventListener('click', () => {
+          const deleteModal = createDeleteNoteModal();
+          document.body.appendChild(deleteModal);
+          
+          deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
+            try {
+              await apiClient.deleteNote(item.id);
+              document.dispatchEvent(new CustomEvent("notesUpdated"));
+              deleteModal.remove();
+              menu.remove();
+              router.navigate("notes");
+            } catch (err) {
+              console.error("Failed to delete note:", err);
+            }
+          });
+        });
+        
+        document.addEventListener('click', function closeMenu(e) {
+          if (!menu.contains(e.target as Node)) {
+            menu.remove();
+            document.removeEventListener('click', closeMenu);
+          }
+        });
+      });
+      
+      listEl.appendChild(noteItem);
     });
 
     header.addEventListener("click", () => {
@@ -119,6 +178,8 @@ export function Subdirectories({
         e.preventDefault();
       });
     }
+
+
 
     fragment.appendChild(folderElement);
   });

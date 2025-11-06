@@ -2,6 +2,7 @@ import { Block } from "../components/block";
 import { createEditorManager } from "../editor/editorManager";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
+import { createDeleteNoteModal } from "../components/deleteNoteModal";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -131,8 +132,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     editorManager.focusBlock(initialBlocks[0].id);
   }
 
-  deleteBtn.addEventListener("click", async () => {
-    if (confirm("Вы уверены, что хотите удалить эту заметку?")) {
+  deleteBtn.addEventListener("click", () => {
+    const deleteModal = createDeleteNoteModal();
+    document.body.appendChild(deleteModal);
+    
+    deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
       try {
         await apiClient.deleteNote(noteId as number);
         document.dispatchEvent(new CustomEvent("notesUpdated"));
@@ -140,7 +144,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       } catch (err) {
         console.error("Failed to delete note:", err);
       }
-    }
+    });
   });
 
   favoriteBtn.addEventListener("click", async () => {
