@@ -137,9 +137,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           await apiClient.deleteNote(noteId as number);
           document.dispatchEvent(new CustomEvent("notesUpdated"));
           router.navigate("notes");
+          
         } catch (err) {
           console.error("Failed to delete note:", err);
         }
+        deleteModal.remove();
       });
   });
 

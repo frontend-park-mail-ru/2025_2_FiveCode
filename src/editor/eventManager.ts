@@ -4,6 +4,7 @@ import {
   UpdateCallback,
 } from "../components/block";
 import { sizeMap } from "./constants";
+import {createDeleteBlock} from "../components/deleteNoteModal";
 
 interface EventManagerDependencies {
   container: HTMLElement;
@@ -149,9 +150,19 @@ export function setupEventManager({
       if (blockContainer && blockContainer.dataset.blockId) {
         const id = blockContainer.dataset.blockId;
         if (action === "delete" && typeof deleteBlock === "function") {
-          if (confirm("Delete this block?")) {
-            deleteBlock(id);
-          }
+          const deleteModal = createDeleteBlock();
+          document.body.appendChild(deleteModal);
+          
+          deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
+            try {
+              deleteBlock(id);
+              
+            } catch (err) {
+              console.error("Failed to delete note:", err);
+            }
+            deleteModal.remove();
+          });
+
         }
         if (action === "move-up" && typeof moveBlock === "function") {
           moveBlock(id, "up");
