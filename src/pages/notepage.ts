@@ -7,6 +7,7 @@ import { createDeleteNoteModal } from "../components/deleteNoteModal";
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
   star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
+  clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
 };
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
@@ -47,10 +48,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           <div class="dropdown-item" data-value="36">36</div>
         </div>
       </div>
-      <button class="format-btn" data-command="bold">B</button>
-      <button class="format-btn" data-command="italic"><i>I</i></button>
-      <button class="format-btn" data-command="underline"><u>U</u></button>
-      <button class="format-btn" data-command="strikeThrough"><s>S</s></button>
+    <button class="format-btn" data-command="bold" title="Жирный (Ctrl/Cmd+B)">B</button>
+    <button class="format-btn" data-command="italic" title="Курсив (Ctrl/Cmd+I)"><i>I</i></button>
+    <button class="format-btn" data-command="underline" title="Подчёркнутый (Ctrl/Cmd+U)"><u>U</u></button>
+    <button class="format-btn" data-command="strikeThrough" title="Зачёркнуть"><s>S</s></button>
+    <button class="format-btn" data-command="removeFormat" title="Очистить форматирование" aria-label="Очистить форматирование"><img src="${ICONS.clear}" alt="Clear"/></button>
     </div>
     <div class="add-block-menu">
       <div class="menu-item" data-type="text">Текст</div>
@@ -127,16 +129,18 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   deleteBtn.addEventListener("click", () => {
     const deleteModal = createDeleteNoteModal();
     document.body.appendChild(deleteModal);
-    
-    deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
-      try {
-        await apiClient.deleteNote(noteId as number);
-        document.dispatchEvent(new CustomEvent("notesUpdated"));
-        router.navigate("notes");
-      } catch (err) {
-        console.error("Failed to delete note:", err);
-      }
-    });
+
+    deleteModal
+      .querySelector(".delete-note-confirm")
+      ?.addEventListener("click", async () => {
+        try {
+          await apiClient.deleteNote(noteId as number);
+          document.dispatchEvent(new CustomEvent("notesUpdated"));
+          router.navigate("notes");
+        } catch (err) {
+          console.error("Failed to delete note:", err);
+        }
+      });
   });
 
   favoriteBtn.addEventListener("click", async () => {

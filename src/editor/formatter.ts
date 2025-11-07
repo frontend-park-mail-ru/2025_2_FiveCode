@@ -16,8 +16,15 @@ export function reconstructHtmlFromFormats(
   text: string = "",
   formats: BlockTextFormat[] = []
 ): string {
+  const escapeAndReplace = (s: string) =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\n/g, "<br>");
+
   if (!formats || formats.length === 0) {
-    return text;
+    return escapeAndReplace(text);
   }
 
   const points = new Map<number, string[]>();
@@ -80,7 +87,7 @@ export function reconstructHtmlFromFormats(
 
   for (const index of sortedIndices) {
     if (index > lastIndex) {
-      result += text.substring(lastIndex, index);
+      result += escapeAndReplace(text.substring(lastIndex, index));
     }
 
     const tags = points.get(index)!;
@@ -100,7 +107,7 @@ export function reconstructHtmlFromFormats(
   }
 
   if (lastIndex < text.length) {
-    result += text.substring(lastIndex);
+    result += escapeAndReplace(text.substring(lastIndex));
   }
 
   return result;
@@ -119,7 +126,8 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
   ) {
     if (node.nodeType === Node.TEXT_NODE) {
       const startOffset = text.length;
-      text += node.textContent || "";
+      const content = (node.textContent || "").replace(/\u200B/g, "");
+      text += content;
       const endOffset = text.length;
 
       const activeStyleKeys = Object.keys(currentFormats).filter(
@@ -134,6 +142,10 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
       }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       const el = node as HTMLElement;
+      if (el.tagName.toLowerCase() === "br") {
+        text += "\n";
+        return;
+      }
       const newFormats: Omit<BlockTextFormat, "start_offset" | "end_offset"> = {
         ...currentFormats,
       };
