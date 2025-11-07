@@ -146,6 +146,7 @@ export function Sidebar({
         });
     }
 
+    
     userMenuComponent.style.top = `${rect.bottom + 8}px`;
     userMenuComponent.style.left = `${rect.left < 220 ? 230 : rect.left}px`;
     userMenuComponent.classList.toggle("user-menu--visible");
