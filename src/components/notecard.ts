@@ -26,6 +26,7 @@ export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLE
     <div class="note-card<%= favorite ? ' note-card--favorite' : '' %>">
       <h3 class="note-card__title"><%= title %></h3>
       <p class="note-card__text"><%= text %></p>
+      <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
     </div>
   `;
 

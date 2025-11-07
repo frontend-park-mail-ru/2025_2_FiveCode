@@ -42,9 +42,10 @@ a {
 
 .user-menu {
   min-width: 220px;
-  background: var(--primary-50);
+  background: rgba(var(--primary-50), 0.9);
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(3px);
   border-radius: 8px;
   z-index: 1000;
   padding: 12px;
