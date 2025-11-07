@@ -1,0 +1,208 @@
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 3px solid var(--primary-300);
+  z-index: 1000;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.modal--show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal__form .input {
+  margin-bottom: 0;
+}
+
+.modal__form .error-message {
+  margin-top: -10px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  line-height: 1.2;
+  font-size: 12px;
+  display: block;
+  text-align: center;
+}
+
+.modal__form input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--primary-300);
+  color: var(--text-noraml);
+}
+
+.modal__form input::placeholder {
+  color: #000;
+  opacity: 1;
+}
+
+.modal__form input.input--error {
+  margin-top: -15px;
+  border-color: var(--error);
+}
+
+.modal__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal__buttons .btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+  text-align: center;
+}
+
+.modal__buttons button:first-child {
+  background: var(--primary-300);
+  color: var(--text-noraml);
+}
+
+.modal__buttons button:first-child:hover {
+  background: var(--primary-400);
+}
+
+.modal__btn--secondary {
+  background: var(--primary-50);
+  color: var(--text-noraml);
+}
+
+.modal__btn--secondary:hover {
+  background: var(--primary-100);
+}
+
+.modal__form input::placeholder {
+  color: rgba(73, 80, 87, 0.7);
+}
+
+.welcome {
+  margin-top: 5%;
+  display: flex;
+  justify-content: center;
+  font-size: 40px;
+  height: 100vh;
+}
+
+.modal__icon {
+  width: 64px;
+  height: 64px;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.modal__icon-container {
+  display: flex;
+  justify-content: center;
+  font-size: 36px;
+}
+
+.modal__text {
+  margin-bottom: 5px;
+  margin-left: 5px;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text-noraml);
+}
+
+.modal__sub-text {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--text-noraml);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.modal__sub-text a {
+  color: var(--primary-500);
+  cursor: pointer;
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 12px;
+  margin: 0;
+  opacity: 0;
+  margin-top: -15px;
+  transition: opacity 0.8s ease;
+  visibility: hidden;
+}
+
+.error-message--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid var(--primary-400);
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 16px;
+}
+
+.validation-icon {
+  margin-left: 8px;
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 10px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  width: 220px;
+  background: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 10;
+  top: -5px;
+  left: 110%;
+  transition: opacity 0.3s;
+  font-size: 12px;
+}
+
+.validation-icon:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
