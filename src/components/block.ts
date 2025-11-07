@@ -52,7 +52,10 @@ export function renderBlock(
   container.dataset.blockId = String(block.id);
   const handle = document.createElement("div");
   handle.className = "block-handle";
-  handle.innerHTML = "+";
+
+  const plus = document.createElement("div");
+  plus.className = "button-plus";
+  plus.innerHTML = "+";
 
   const actions = document.createElement("div");
   actions.className = "block-actions";
@@ -79,6 +82,7 @@ export function renderBlock(
   actions.appendChild(btnDown);
   actions.appendChild(btnDelete);
 
+  handle.appendChild(plus);
   container.appendChild(handle);
   container.appendChild(element);
   container.appendChild(actions);
