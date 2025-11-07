@@ -86,3 +86,10 @@
   background-color: #e2e8f0;
   color: #2d3748;
 }
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
