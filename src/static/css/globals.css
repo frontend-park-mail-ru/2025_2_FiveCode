@@ -109,11 +109,22 @@ a {
 
 .user-menu__btn:hover {
   background: var(--primary-100, #f5f5f5);
+  fill: var(--primary-100, #f5f5f5);
 }
 
 .user-menu__btn--logout:hover {
   background: var(--danger-500, #e74c3c);
   color: var(--bg-default);
+}
+
+.icon-logout {
+  color: #495057;
+  transition: filter 1.3s ease;
+}
+
+.icon-logout:hover {
+  color: var(--bg-default);
+  fill: var(--bg-default);
 }
 
 .page--layout {

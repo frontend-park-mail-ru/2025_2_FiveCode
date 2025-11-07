@@ -123,7 +123,7 @@ export function Subdirectories({
         const menu = document.createElement('div');
         menu.className = 'note-menu';
         menu.innerHTML = `
-          <button class="rename-note" data-note-id="${item.id}">Переименовать</button>
+
           <button class="delete-note" data-note-id="${item.id}">Удалить</button>
         `;
         

@@ -48,7 +48,7 @@ export function UserMenu({
                 <button class="user-menu__btn user-menu__btn--settings" style="border: 1px var(--primary-300) solid;">
                     <img src="<%= settingsIcon %>" style="width: 20px; height: 20px;"> Настройки</button>
                 <button class="user-menu__btn user-menu__btn--logout" style="border: 1px var(--danger-500) solid;">
-                    <img src="<%= logoutIcon %>" style="width: 20px; height: 20px;"> Выйти</button>
+                    <img class="icon-logout" src="<%= logoutIcon %>" style="width: 20px; height: 20px;"> Выйти</button>
             </div>
         </div>
     `;

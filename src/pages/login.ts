@@ -87,7 +87,6 @@ export function renderLogin(app: HTMLElement): void {
               • минимум 8 символов<br>
               • хотя бы одну цифру<br>
               • хотя бы одну букву<br>
-              • спецсимволы (!@#$%^&*)
             </div>
           </span>
         </label>

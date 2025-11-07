@@ -18,7 +18,7 @@ const ICONS = {
 
 function validateForm(form: HTMLFormElement): ValidationErrors {
   const errors: ValidationErrors = {};
-
+  
   const email = (
     form.querySelector<HTMLInputElement>("[name='email']")?.value ?? ""
   ).trim();
@@ -51,6 +51,7 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
   if (!confirmPassword) {
     errors.confirmPassword = "Обязательное поле";
   } else if (confirmPassword !== password) {
+    
     errors.confirmPassword = "Пароли не совпадают";
   }
 
@@ -93,7 +94,6 @@ export function renderRegister(app: HTMLElement): void {
               • минимум 8 символов<br>
               • хотя бы одну цифру<br>
               • хотя бы одну букву<br>
-              • спецсимволы (!@#$%^&*)
             </div>
           </span></label>
         <div class="input-wrapper">
@@ -146,6 +146,7 @@ export function renderRegister(app: HTMLElement): void {
     const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
+      console.log(errors);
       if (errors.email) {
         emailErrorEl.textContent = errors.email;
         emailErrorEl.classList.add("error-message--visible");
@@ -175,7 +176,12 @@ export function renderRegister(app: HTMLElement): void {
       if (err instanceof Error && confirmPasswordErrorEl) {
         const body = (err as any).body;
         if (body && body.error) {
-          confirmPasswordErrorEl.textContent = body.error;
+          if (body.error == "user already exists"){
+            emailErrorEl.textContent = "Пользователь уже существует";
+            emailErrorEl.classList.add("error-message--visible");
+          }
+          else
+            confirmPasswordErrorEl.textContent = body.error;
         } else {
           confirmPasswordErrorEl.textContent = err.message;
         }

@@ -177,11 +177,11 @@
 }
 
 .validation-icon {
-  margin-left: 8px;
+  margin-left: 3px;
   cursor: pointer;
-  position: relative;
+  position: absolute;
   padding-bottom: 10px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -205,4 +205,5 @@
 .validation-icon:hover .tooltip {
   visibility: visible;
   opacity: 1;
+  margin-left: 4px;
 }
