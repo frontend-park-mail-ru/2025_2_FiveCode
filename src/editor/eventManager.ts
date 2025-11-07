@@ -98,9 +98,31 @@ export function setupEventManager({
     if (e.key === "Enter") {
       const target = e.target as HTMLElement;
       if (target.closest(".block--code")) return;
-      e.preventDefault();
       const targetBlockContainer =
         target.closest<HTMLElement>(".block-container");
+      if (e.shiftKey) {
+        e.preventDefault();
+        try {
+          const sel = window.getSelection();
+          if (!sel || !sel.getRangeAt(0)) return;
+          const range = sel.getRangeAt(0);
+          const br = document.createElement("br");
+          const zwsp = document.createTextNode("\u200B");
+          range.deleteContents();
+          range.insertNode(br);
+          range.collapse(false);
+          br.parentNode?.insertBefore(zwsp, br.nextSibling);
+          range.setStart(zwsp, 1);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          triggerUpdate();
+        } catch (err) {}
+        return;
+      }
+
+      e.preventDefault();
+      triggerUpdate();
       if (targetBlockContainer?.dataset.blockId) {
         addNewBlock(targetBlockContainer.dataset.blockId, "text");
       }
