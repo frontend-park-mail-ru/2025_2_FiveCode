@@ -78,17 +78,4 @@ window.addEventListener("DOMContentLoaded", () => {
     const newPath = href.replace(/^\//, "").replace(/[#?].*$/, "");
     router.navigate(newPath);
   });
-
-  if ('serviceWorker' in navigator) {
-  // регистрируем после загрузки страницы — можно в load или DOMContentLoaded,
-  // у тебя уже есть DOMContentLoaded, так что размещаем код здесь безопасно
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('Service Worker зарегистрирован, scope:', reg.scope);
-    } catch (err) {
-      console.error('Ошибка регистрации Service Worker:', err);
-    }
-  });
-}
 });
