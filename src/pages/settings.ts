@@ -2,6 +2,7 @@ import { AccountSettings } from "../components/userMenu";
 import { loadUser, saveUser } from "../utils/session";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
+import { createDeleteAccountModal } from "../components/deleteAccountModal";
 
 const ICONS = {
   userIcon: new URL("../static/svg/icon_account_gray.svg", import.meta.url)
@@ -122,20 +123,23 @@ export async function renderSettingsPage(): Promise<void> {
     avatarPreview.src = avatarUrl || ICONS.userIcon;
   });
 
-  deleteButton?.addEventListener("click", async () => {
-    if (
-      confirm(
-        "Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо."
-      )
-    ) {
-      try {
-        await apiClient.deleteUser();
-        await apiClient.logout();
-        router.navigate("login");
-      } catch (error) {
-        console.error("Failed to delete account:", error);
+  deleteButton?.addEventListener("click", () => {
+    const deleteModal = createDeleteAccountModal();
+    document.body.appendChild(deleteModal);
+
+    deleteModal.querySelector(".delete-account-confirm")?.addEventListener(
+      "click",
+      async () => {
+        try {
+          await apiClient.deleteUser();
+          await apiClient.logout();
+          deleteModal.remove();
+          router.navigate("login");
+        } catch (error) {
+          console.error("Failed to delete account:", error);
+        }
       }
-    }
+    );
   });
 
   closeButton?.addEventListener("click", () => {

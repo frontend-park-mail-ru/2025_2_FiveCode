@@ -81,10 +81,10 @@ export function renderRegister(app: HTMLElement): void {
               • латинские буквы и цифры<br>
               • символ "@" и домен (например: test@mail.com)
             </div>
-          </span>
+          </span></label>
         <div class="input-wrapper">
           <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
-        </div></label>
+        </div>
         <span class="error-message" id="emailError">&nbsp;</span>
 
         <label class="modal__text">Пароль<span class="validation-icon">?
