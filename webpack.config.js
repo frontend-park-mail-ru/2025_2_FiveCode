@@ -12,9 +12,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  entry: "./src/app.ts",
+  entry: {
+    main: "./src/app.ts",
+    "service-worker": "./src/service-worker.js"
+  },
   output: {
-    filename: "bundle.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
     clean: true,
     publicPath: "/",
@@ -55,6 +58,7 @@ export default {
     static: [
       {
         directory: path.join(__dirname, "public"),
+        directory: path.join(__dirname, "dist") ,
       },
     ],
     port: config.DEV_SERVER_PORT,
@@ -71,6 +75,18 @@ export default {
     new HtmlWebpackPlugin({
       template: "index.html",
       filename: "index.html",
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "src/service-worker.js", // исходник
+          to: "service-worker.js",       // имя в dist
+          transform(content) {
+
+            return content;
+          },
+        },
+      ],
     }),
   ],
 };
