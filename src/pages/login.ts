@@ -59,6 +59,8 @@ export function renderLogin(app: HTMLElement): void {
   el.innerHTML = pageTemplate;
   const pageEl = el.firstElementChild as HTMLElement;
 
+  
+
   let headerEl = Header({ user: null, app });
   if (headerEl) {
     pageEl.appendChild(headerEl);
