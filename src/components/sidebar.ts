@@ -240,7 +240,6 @@ type MenuLinkElement = HTMLAnchorElement & {
 };
 
 function highlightActiveMenuLink(): void {
-  console.log("highlightActiveMenuLink called");
   const currentPath: string = window.location.pathname;
   const currentPage: string = currentPath.split("/").pop() || "";
   const menuLinks: NodeListOf<MenuLinkElement> =

@@ -53,7 +53,7 @@ export async function renderNotes(): Promise<void> {
       if (key === "recent") {
         const addCard = NoteCard({
           id: 0,
-          title: "Новая заметка",
+          title: "Создать заметку",
           text: "",
           icon: ICONS.add_new,
           favorite: false,

@@ -146,7 +146,6 @@ export function renderRegister(app: HTMLElement): void {
     const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
-      console.log(errors);
       if (errors.email) {
         emailErrorEl.textContent = errors.email;
         emailErrorEl.classList.add("error-message--visible");
