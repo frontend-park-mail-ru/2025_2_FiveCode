@@ -1,5 +1,6 @@
 import { apiClient } from "./api/apiClient";
 import { saveUser } from "./utils/session";
+import ejs from "ejs";
 import router from "./router";
 import { renderAppLayout } from "./layout";
 import "../styles.css";
@@ -20,13 +21,25 @@ interface User {
   email?: string;
 }
 
+const ICONS = {
+  Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
+};
+
+
 async function initializeApp(): Promise<void> {
   const app = document.getElementById("app");
   if (!app) {
     console.error("Could not find app container");
     return;
   }
-
+  const faviconTemplate = `
+      <link rel="icon" type="image/x-icon" href="<%= icon %>" />
+    `;
+    const faviconHtml = ejs.render(faviconTemplate, {icon: ICONS.Icon});
+    const faviconEl = document.createElement("link");
+    faviconEl.innerHTML = faviconHtml;
+    const favicon = faviconEl.firstElementChild as HTMLLinkElement;
+    document.head.appendChild(favicon);
   const path = window.location.pathname;
   const isAuthPage = path === "/login" || path === "/register";
 

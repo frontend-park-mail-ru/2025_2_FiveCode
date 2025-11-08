@@ -28,15 +28,6 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
   }
 
   const notes = await apiClient.getNotesForUser();
-
-  const faviconTemplate = `
-    <link rel="icon" type="image/x-icon" href="<%= icon %>" />
-  `;
-  const faviconHtml = ejs.render(faviconTemplate, {icon: ICONS.Icon});
-  const faviconEl = document.createElement("link");
-  faviconEl.innerHTML = faviconHtml;
-  const favicon = faviconEl.firstElementChild as HTMLLinkElement;
-  document.head.appendChild(favicon);
   
   page.appendChild(Sidebar({ user, notes, avatarUrl }));
 
