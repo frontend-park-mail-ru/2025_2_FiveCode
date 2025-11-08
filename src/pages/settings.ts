@@ -64,6 +64,16 @@ export async function renderSettingsPage(): Promise<void> {
   const avatarPreview = settingsComponent.querySelector(
     "#avatar-preview"
   ) as HTMLImageElement;
+  const errorSaveMessage = settingsComponent.querySelector(
+    "#saveError"
+  ) as HTMLElement;
+  const avatarErrorMessage = settingsComponent.querySelector(
+    "#avatarError"
+  ) as HTMLElement;
+  avatarErrorMessage.textContent = " ";
+  errorSaveMessage.textContent = " ";
+  avatarErrorMessage.classList.remove("status-message--visible");
+  errorSaveMessage.classList.remove("status-message--visible");
 
   let initialName = user?.username || user?.email?.split("@")[0] || "Имя";
 
@@ -88,7 +98,11 @@ export async function renderSettingsPage(): Promise<void> {
           detail: { newAvatarUrl: uploadedFile.url },
         })
       );
+      avatarErrorMessage.textContent = "Аватар успешно загружен";
+      avatarErrorMessage.classList.add("complete--visible");
     } catch (error) {
+      avatarErrorMessage.textContent = "Ошибка при загрузке аватара";
+      avatarErrorMessage.classList.add("error--visible");
       console.error("Failed to upload avatar:", error);
     }
   });
@@ -108,8 +122,11 @@ export async function renderSettingsPage(): Promise<void> {
       saveUser(updatedUser);
       initialName = updatedUser.username || initialName;
       document.dispatchEvent(new CustomEvent("userProfileUpdated"));
+      errorSaveMessage.textContent = "Аватар успешно загружен";
+      errorSaveMessage.classList.add("complete--visible");
     } catch (error) {
-      console.error("Failed to update user:", error);
+      errorSaveMessage.textContent = "Ошибка при сохранении изменений";
+      errorSaveMessage.classList.add("error--visible");
     } finally {
       setTimeout(() => {
         saveButton.textContent = originalButtonText;

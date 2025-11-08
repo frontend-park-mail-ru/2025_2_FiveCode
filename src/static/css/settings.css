@@ -140,3 +140,24 @@
   background-color: var(--danger-500);
   color: white;
 }
+
+.status-message {
+  font-size: 14px;
+  margin-top: -12px;
+  margin-bottom: 12px;
+  color: var(--text-noraml);
+}
+
+.status-message.complete--visible{
+  color: var(--bg-default);
+  padding: 8px 12px;
+  background: var(--success-400);
+  border-radius: 6px;
+}
+
+.status-message.error--visible{
+  color: var(--bg-default);
+  padding: 8px 12px;
+  background: var(--danger-400);
+  border-radius: 6px;
+}

@@ -95,8 +95,10 @@ export function AccountSettings({
                 </div>
                 <input type="file" id="avatar-file-input" accept="image/png, image/jpeg, image/gif" style="display: none;" />
             </div>
-            </div>
+            
 
+            </div>
+            <span class="status-message" id="avatarError">&nbsp;</span>
             <div class="name-section">
             <p>Имя</p>
             <input type="text" value="<%= user?.username || user?.email?.split('@')[0] || 'Имя' %>" placeholder="Имя" />
@@ -106,7 +108,7 @@ export function AccountSettings({
             <p>Ваша почта</p>
             <input type="email" value="<%= user?.email %>" readonly />
             </div>
-
+            <span class="status-message" id="saveError">&nbsp;</span>
             <div class="actions">
             <button class="save-button">Сохранить</button>
             <button class="cancel-button">Отменить изменения</button>
