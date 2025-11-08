@@ -33,7 +33,7 @@ a {
 
 .page__main {
   flex: 1;
-  padding: 20px 290px;
+  padding: 20px 10%;
   min-height: calc(100vh - 64px);
   font-size: 40px;
   color: var(--primary-color);
