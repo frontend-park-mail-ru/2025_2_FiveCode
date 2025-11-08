@@ -83,8 +83,13 @@ export async function renderSettingsPage(): Promise<void> {
 
   avatarFileInput?.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
+    console.log(file?.type);
     if (!file) return;
-
+    if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+      avatarErrorMessage.textContent = "Недопустимый формат файла";
+      avatarErrorMessage.classList.add("error--visible");
+      return;
+    }
     try {
       const uploadedFile = await apiClient.uploadFile(file);
       const updatedUser = await apiClient.updateUser({

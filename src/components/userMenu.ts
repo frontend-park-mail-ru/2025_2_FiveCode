@@ -91,7 +91,7 @@ export function AccountSettings({
             <p>Аватар</p>
             <div class="avatar-placeholder">
                 <div class="avatar" id="avatar-upload-trigger" style="cursor: pointer;">
-                  <img src="<%= avatarUrl || userIcon %>" id="avatar-preview">
+                  <img class="sidebar__usericon" src="<%= avatarUrl || userIcon %>" id="avatar-preview" style="margin-right: 0px; width: 92px; height: 92px; border-radius: 20%;">
                 </div>
                 <input type="file" id="avatar-file-input" accept="image/png, image/jpeg, image/gif" style="display: none;" />
             </div>

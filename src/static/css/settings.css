@@ -68,10 +68,11 @@
 }
 
 .avatar-placeholder .avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 20%;
   background-color: var(--gray-200);
+  border: 2px solid var(--primary-300);
   display: flex;
   align-items: center;
   justify-content: center;
