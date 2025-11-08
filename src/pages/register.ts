@@ -170,6 +170,7 @@ export function renderRegister(app: HTMLElement): void {
         password: data.password,
         confirm_password: data.confirmPassword,
       });
+      await apiClient.login(data);
       await renderAppLayout(app);
       router.navigate("notes");
     } catch (err) {
