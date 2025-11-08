@@ -14,6 +14,7 @@ const ICONS = {
   account: new URL("../static/svg/icon_account_gray.svg", import.meta.url).href,
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
   dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  collapse: new URL("../static/svg/icon_arrow.svg", import.meta.url).href,
 };
 
 interface User {
@@ -70,6 +71,7 @@ export function Sidebar({
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
             <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
+            <a class="sidebar__item" data-link> <img style="transform: rotate(90deg); transition: transform 0.2s ease;" src="<%= collapse %>" class="sidebar__icon" /> Свернуть </a>
         </aside>
     `;
 
@@ -82,6 +84,7 @@ export function Sidebar({
     search: ICONS.search,
     dots: ICONS.dots,
     avatarUrl: avatarUrl,
+    collapse: ICONS.collapse,
   });
   const container = document.createElement("div");
   container.innerHTML = html;

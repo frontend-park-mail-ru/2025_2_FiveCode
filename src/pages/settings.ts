@@ -83,9 +83,13 @@ export async function renderSettingsPage(): Promise<void> {
 
   avatarFileInput?.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
-    
+    avatarErrorMessage.textContent = " ";
+    errorSaveMessage.textContent = " ";
+    avatarErrorMessage.classList.remove("status-message--visible");
+    errorSaveMessage.classList.remove("status-message--visible");
     if (!file) return;
     if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+      avatarErrorMessage.classList.remove("complete--visible");
       avatarErrorMessage.textContent = "Недопустимый формат файла";
       avatarErrorMessage.classList.add("error--visible");
       return;
@@ -103,9 +107,11 @@ export async function renderSettingsPage(): Promise<void> {
           detail: { newAvatarUrl: uploadedFile.url },
         })
       );
+      avatarErrorMessage.classList.remove("error--visible");
       avatarErrorMessage.textContent = "Аватар успешно загружен";
       avatarErrorMessage.classList.add("complete--visible");
     } catch (error) {
+      avatarErrorMessage.classList.remove("complete--visible");
       avatarErrorMessage.textContent = "Ошибка при загрузке аватара";
       avatarErrorMessage.classList.add("error--visible");
       console.error("Failed to upload avatar:", error);
@@ -117,7 +123,10 @@ export async function renderSettingsPage(): Promise<void> {
     if (!newName || newName === initialName) {
       return;
     }
-
+    avatarErrorMessage.textContent = " ";
+    errorSaveMessage.textContent = " ";
+    avatarErrorMessage.classList.remove("status-message--visible");
+    errorSaveMessage.classList.remove("status-message--visible");
     const originalButtonText = saveButton.textContent;
     saveButton.textContent = "Сохранение...";
     saveButton.disabled = true;
@@ -127,9 +136,11 @@ export async function renderSettingsPage(): Promise<void> {
       saveUser(updatedUser);
       initialName = updatedUser.username || initialName;
       document.dispatchEvent(new CustomEvent("userProfileUpdated"));
-      errorSaveMessage.textContent = "Аватар успешно загружен";
+      errorSaveMessage.classList.remove("error--visible");
+      errorSaveMessage.textContent = "Логин успешно изменен";
       errorSaveMessage.classList.add("complete--visible");
     } catch (error) {
+      errorSaveMessage.classList.remove("complete--visible");
       errorSaveMessage.textContent = "Ошибка при сохранении изменений";
       errorSaveMessage.classList.add("error--visible");
     } finally {
