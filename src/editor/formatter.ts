@@ -161,6 +161,8 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
           newFormats.underline = true;
           break;
         case "s":
+        case "strike":
+        case "del":
           newFormats.strikethrough = true;
           break;
         case "a":
@@ -188,6 +190,24 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
         if (!isNaN(size)) {
           newFormats.size = size;
         }
+      }
+      if (
+        el.style.textDecoration &&
+        el.style.textDecoration.includes("line-through")
+      ) {
+        newFormats.strikethrough = true;
+      }
+      try {
+        const comp = window.getComputedStyle(el as Element);
+        if (
+          comp &&
+          (comp.textDecorationLine === "line-through" ||
+            comp.textDecoration.includes("line-through"))
+        ) {
+          newFormats.strikethrough = true;
+        }
+      } catch (err) {
+        ;
       }
 
       el.childNodes.forEach((child) => traverse(child, newFormats));
