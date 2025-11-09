@@ -2,15 +2,14 @@
   position: relative;
 }
 
-.subdir-header:hover .subdir-menu-dots {
+.subdir-header:hover .subdir-menu-dots,
+.subdir-header:hover .subdir-menu-favorite {
   display: block !important;
 }
 
 .subdir-menu-dots {
-  position: absolute;
   right: 8px;
   top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;

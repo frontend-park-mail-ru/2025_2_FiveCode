@@ -24,7 +24,17 @@ interface NoteCardParams{
 export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLElement {
   const template = `
     <div class="note-card<%= favorite ? ' note-card--favorite' : '' %>">
-      <h3 class="note-card__title"><%= title %></h3>
+      <h3 class="note-card__title">
+        <% if (title.includes(' ')) { %>
+                <%= title %>
+            <% } else if (title.length > 24) { %>
+                <%= title.substring(0, 13) + '- ' + title.substring(13, 23) + '...' %>
+            <% } else if (title.length > 14) { %>
+                <%= title.substring(0, 13) + '- ' + title.substring(13) %>
+            <% } else { %>
+                <%= title %>
+            <% } %>
+      </h3>
       <p class="note-card__text"><%= text %></p>
       <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
     </div>

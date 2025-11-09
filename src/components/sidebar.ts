@@ -108,12 +108,12 @@ export function Sidebar({
 
   const searchBtn = el.querySelector('#search-btn');
 
-  searchBtn?.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (document.querySelector('#searchModal')) return;
-    const searchModal = createSearchModal();
-    document.body.appendChild(searchModal);
-  });
+  // searchBtn?.addEventListener('click', (e) => {
+  //   e.preventDefault();
+  //   if (document.querySelector('#searchModal')) return;
+  //   const searchModal = createSearchModal();
+  //   document.body.appendChild(searchModal);
+  // });
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
