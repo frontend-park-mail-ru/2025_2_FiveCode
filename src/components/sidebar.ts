@@ -2,7 +2,7 @@ import ejs from "ejs";
 import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
-import { UserMenu, createExitConfirmationModal } from "./userMenu";
+import { UserMenu, createExitConfirmationModal, createSearchModal } from "./userMenu";
 import { loadUser } from "../utils/session";
 import { exit } from "process";
 
@@ -66,7 +66,7 @@ export function Sidebar({
             </div>
             <nav class="sidebar__nav">
                 <a href="/notes" class="sidebar__item" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
-                <a class="sidebar__item" data-link> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
+                <a class="sidebar__item" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
@@ -105,6 +105,15 @@ export function Sidebar({
       console.error("Failed to create new note", error);
     }
   };
+
+  const searchBtn = el.querySelector('#search-btn');
+
+  searchBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (document.querySelector('#searchModal')) return;
+    const searchModal = createSearchModal();
+    document.body.appendChild(searchModal);
+  });
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
@@ -147,6 +156,7 @@ export function Sidebar({
               router.navigate("login");
             });
         });
+      
     }
 
     

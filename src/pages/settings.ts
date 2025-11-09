@@ -70,8 +70,6 @@ export async function renderSettingsPage(): Promise<void> {
   const avatarErrorMessage = settingsComponent.querySelector(
     "#avatarError"
   ) as HTMLElement;
-  avatarErrorMessage.textContent = " ";
-  errorSaveMessage.textContent = " ";
   avatarErrorMessage.classList.remove("status-message--visible");
   errorSaveMessage.classList.remove("status-message--visible");
 

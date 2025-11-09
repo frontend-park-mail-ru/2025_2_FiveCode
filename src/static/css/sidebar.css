@@ -8,6 +8,8 @@
   padding-left: 8px;
   border-right: 1px solid var(--primary-50);
   height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .sidebar__user {
@@ -122,6 +124,7 @@
   flex: 1;
   font-size: 14px;
   font-weight: 500;
+  overflow: auto
 }
 
 .sidebar__settings {
