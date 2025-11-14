@@ -7,19 +7,42 @@ import {
 
 export { BlockTextFormat, parseHtmlToTextAndFormats };
 
-export interface Block {
+export interface BaseBlock {
   id: string | number;
+  noteId: number;
   type: "text" | "code" | "image" | "attachment";
-  text?: string;
-  formats?: BlockTextFormat[];
-  url?: string;
-  language?: string;
-  file_id?: number;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
 }
+
+export interface TextContent {
+  text: string;
+  formats: BlockTextFormat[];
+}
+
+export interface CodeContent {
+  code: string;
+  language: string;
+}
+
+export interface AttachmentContent {
+  url: string;
+  caption?: string;
+  mimeType: string;
+  sizeBytes: number;
+  width?: number;
+  height?: number;
+}
+
+export type Block = BaseBlock & {
+  content: TextContent | CodeContent | AttachmentContent;
+};
 
 export type BlockUpdateData = {
   text?: string;
   formats?: BlockTextFormat[];
+  code?: string;
   language?: string;
 };
 
@@ -94,8 +117,9 @@ function renderTextBlock(
   block: Block,
   updateCallback: UpdateCallback
 ): HTMLElement {
+  const content = block.content as TextContent;
   const template = `<div class="block block--text" data-block-id="${block.id}" contenteditable="true" spellcheck="false"><%- content %></div>`;
-  const htmlContent = reconstructHtmlFromFormats(block.text, block.formats);
+  const htmlContent = reconstructHtmlFromFormats(content.text, content.formats);
   const html = ejs.render(template, { content: htmlContent });
   const doc = new DOMParser().parseFromString(html, "text/html");
   const element = doc.body.firstChild as HTMLElement;
@@ -109,9 +133,10 @@ function renderTextBlock(
 }
 
 function renderImageBlock(block: Block): HTMLElement {
+  const content = block.content as AttachmentContent;
   const template = `<div class="block block--image"><img src="<%= url %>" alt="image block"></div>`;
   const html = ejs.render(template, {
-    url: block.url || "https://via.placeholder.com/800x200.png?text=Image",
+    url: content.url || "https://via.placeholder.com/800x200.png?text=Image",
   });
   const doc = new DOMParser().parseFromString(html, "text/html");
   return doc.body.firstChild as HTMLElement;
@@ -121,16 +146,19 @@ function renderCodeBlock(
   block: Block,
   updateCallback: UpdateCallback
 ): HTMLElement {
+  const content = block.content as CodeContent;
   const template = `
     <div class="block block--code" data-block-id="${block.id}">
       <div class="code-toolbar">
         <select class="code-language">
-          <option value="sql" ${block.language === "sql" ? "selected" : ""}>SQL</option>
+          <option value="sql" ${
+            content.language === "sql" ? "selected" : ""
+          }>SQL</option>
           <option value="javascript" ${
-            block.language === "javascript" ? "selected" : ""
+            content.language === "javascript" ? "selected" : ""
           }>JavaScript</option>
           <option value="text" ${
-            block.language === "text" ? "selected" : ""
+            content.language === "text" ? "selected" : ""
           }>Plain Text</option>
         </select>
       </div>
@@ -138,8 +166,8 @@ function renderCodeBlock(
     </div>
   `;
   const html = ejs.render(template, {
-    content: block.text,
-    language: block.language,
+    content: content.code,
+    language: content.language,
   });
   const doc = new DOMParser().parseFromString(html, "text/html");
   const element = doc.body.firstChild as HTMLElement;
@@ -150,7 +178,7 @@ function renderCodeBlock(
 
   const onUpdate = () => {
     updateCallback(block.id, {
-      text: contentElement.innerText,
+      code: contentElement.innerText,
       language: languageSelect.value,
     });
   };

@@ -2,9 +2,10 @@ import { apiClient } from "../api/apiClient";
 import {
   Block,
   renderBlock,
-  BlockTextFormat,
   UpdateCallback,
   BlockUpdateData,
+  TextContent,
+  CodeContent,
 } from "../components/block";
 import { createImageModal } from "../components/imageModal";
 import { debounce } from "../utils/debounce";
@@ -74,17 +75,28 @@ export function createEditorManager({
         return;
       }
 
-      let payload: any = {};
+      let payload: { type: string; content: any };
+
       if (blockToSave.type === "code") {
+        const content = blockToSave.content as CodeContent;
         payload = {
-          language: blockToSave.language,
-          code_text: blockToSave.text,
+          type: "code",
+          content: {
+            language: content.language,
+            code: content.code,
+          },
+        };
+      } else if (blockToSave.type === "text") {
+        const content = blockToSave.content as TextContent;
+        payload = {
+          type: "text",
+          content: {
+            text: content.text || "",
+            formats: content.formats || [],
+          },
         };
       } else {
-        payload = {
-          text: blockToSave.text || "",
-          formats: blockToSave.formats || [],
-        };
+        return;
       }
 
       await apiClient.updateBlock(blockToSave.id, payload);
@@ -102,7 +114,15 @@ export function createEditorManager({
   ) => {
     const block = blocks.find((b) => b.id.toString() === blockId.toString());
     if (block) {
-      Object.assign(block, data);
+      if (block.type === "text") {
+        const content = block.content as TextContent;
+        if (data.text !== undefined) content.text = data.text;
+        if (data.formats !== undefined) content.formats = data.formats;
+      } else if (block.type === "code") {
+        const content = block.content as CodeContent;
+        if (data.code !== undefined) content.code = data.code;
+        if (data.language !== undefined) content.language = data.language;
+      }
 
       if (!debouncedSaves.has(blockId)) {
         const debouncedSave = debounce(() => saveBlock(blockId), 1500);
@@ -128,38 +148,22 @@ export function createEditorManager({
     const beforeBlock = blocks[currentIndex + 1];
     const beforeBlockId = beforeBlock ? beforeBlock.id : undefined;
 
-    let newBlockData;
     let newBlock: Block;
 
     if (type === "image") {
       const uploadedFile = await createImageModal();
       if (!uploadedFile) return;
 
-      newBlockData = await apiClient.createBlock(noteId, {
+      newBlock = await apiClient.createBlock(noteId, {
         type: "attachment",
         file_id: uploadedFile.id,
         before_block_id: beforeBlockId as number,
       });
-
-      newBlock = {
-        id: newBlockData.id,
-        type: "image",
-        url: newBlockData.text || "",
-        file_id: uploadedFile.id,
-      };
     } else {
-      newBlockData = await apiClient.createBlock(noteId, {
+      newBlock = await apiClient.createBlock(noteId, {
         type: type,
         before_block_id: beforeBlockId as number,
       });
-
-      newBlock = {
-        id: newBlockData.id,
-        type: type,
-        text: newBlockData.text || "",
-        language: newBlockData.language || "",
-        formats: [],
-      };
     }
 
     if (currentIndex === -1) {
