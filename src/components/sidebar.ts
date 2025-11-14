@@ -91,6 +91,12 @@ export function Sidebar({
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
+  const navigateToSettings = (event?: Event) => {
+    event?.preventDefault();
+    userMenuComponent?.classList.remove("user-menu--visible");
+    router.navigate("settings");
+  };
+
   document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
 
   const handleCreateNewNote = async (event: Event) => {
@@ -178,6 +184,9 @@ export function Sidebar({
       userMenuComponent.classList.remove("user-menu--visible");
     }
   });
+
+  el.querySelector("#sidebar-avatar")?.addEventListener("click", navigateToSettings);
+  el.querySelector("#sidebar-username")?.addEventListener("click", navigateToSettings);
 
   const handleProfileUpdate = (event: CustomEvent) => {
     const updatedUser = loadUser();

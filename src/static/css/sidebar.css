@@ -63,6 +63,7 @@
   border-radius: 50%;
   margin-right: 12px;
   object-fit: cover;
+  cursor: pointer;
 }
 
 .sidebar__user-info {
@@ -77,6 +78,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .sidebar__user-email {
