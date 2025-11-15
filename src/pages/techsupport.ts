@@ -18,11 +18,11 @@ export async function renderTechSupportPage(): Promise<void> {
   app.appendChild(page);
 
   const user = loadUser();
-  if (!user) {
-    page.innerHTML =
-      "<p>Пожалуйста, войдите в систему для доступа к техподдержке.</p>";
-    return;
-  }
+//   if (!user) {
+//     page.innerHTML =
+//       "<p>Пожалуйста, войдите в систему для доступа к техподдержке.</p>";
+//     return;
+//   }
 
   const closeIframe = () => {
     window.parent.postMessage("close-support-iframe", "*");
@@ -160,6 +160,7 @@ export async function renderTechSupportPage(): Promise<void> {
                      <div class="form-status-message" id="formStatusMessage"></div>
                     <div class="send-form-btn">
                         <button type="submit" class="submit-button" id="saveTicketButton">Сохранить</button>
+                        <button type="button" class="go-to-chat-btn" id="go-to-chat-btn" data-ticket-id="<%= ticket.id %>">Перейти к чату</button>
                     </div>
                 </form>
             </div>
@@ -307,7 +308,7 @@ export async function renderTechSupportPage(): Promise<void> {
     }
   };
 
-  const renderTicketDetail = async (ticketId: number) => {
+    const renderTicketDetail = async (ticketId: number) => {
     try {
       const ticket = await apiClient.getTicketById(ticketId);
       let imageUrl = null;
@@ -333,6 +334,11 @@ export async function renderTechSupportPage(): Promise<void> {
       document
         .getElementById("back-to-list-btn")
         ?.addEventListener("click", renderTicketsList);
+      document
+            .getElementById("go-to-chat-btn")
+            ?.addEventListener("click", () => {
+                openChatForTicket(ticketId);
+            });
 
       const form = document.getElementById(
         "ticket-detail-form"
@@ -386,6 +392,11 @@ export async function renderTechSupportPage(): Promise<void> {
         });
     }
   };
+
+  const openChatForTicket = (ticketId: number) => {
+    localStorage.setItem("currentTicketId", String(ticketId));
+    window.location.href = `/chat?ticketId=${ticketId}`;
+};
 
   renderMainMenu();
 }
