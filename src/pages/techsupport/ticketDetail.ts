@@ -53,7 +53,7 @@ export async function renderUserTicketDetail(
                      <div class="form-status-message" id="formStatusMessage"></div>
                     <div class="send-form-btn">
                         <button type="submit" class="submit-button" id="saveTicketButton">Сохранить</button>
-                        <button type="button" class="go-to-chat-btn" id="go-to-chat-btn" data-ticket-id="<%= ticket.id %>">Перейти к чату</button>
+                        
                     </div>
                 </form>
             </div>

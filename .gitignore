@@ -4,4 +4,5 @@
 /.env
 *.sh
 *.txt
-/config
+src/config
+src/config/project.config.js
