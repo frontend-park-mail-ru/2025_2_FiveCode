@@ -22,6 +22,29 @@ export interface UploadedFile {
   size_bytes: number;
 }
 
+export interface Ticket {
+  id?: number;
+  email: string;
+  full_name: string;
+  category: string;
+  status?: string;
+  title: string;
+  description: string;
+  file_id?: number;
+}
+
+export interface StatisticForCategory {
+  category: string;
+  total_tickets: number;
+  open_tickets: number;
+  closed_tickets: number;
+  in_progress_tickets: number;
+}
+
+export interface Statistics {
+  statistics: StatisticForCategory[];
+}
+
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -155,5 +178,20 @@ export const apiClient = {
     }
 
     return res.json();
+  },
+
+  async createTicket(ticketData: Ticket): Promise<Ticket> {
+    return apiFetch(`/api/tickets`, {
+      method: "POST",
+      body: JSON.stringify(ticketData),
+    });
+  },
+
+  async getMyTickets(): Promise<Ticket[]> {
+    return apiFetch(`/api/tickets`, { method: "GET" });
+  },
+
+  async getTicketStatistics(): Promise<Statistics> {
+    return apiFetch(`/api/admin/statistics`, { method: "GET" });
   },
 };

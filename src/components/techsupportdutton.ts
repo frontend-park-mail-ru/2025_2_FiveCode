@@ -11,27 +11,41 @@ export function techSupportWrapper(): HTMLElement {
     const container = document.createElement("div");
     container.innerHTML = template;
 
-const techSupportWrapper = container.querySelector(".tech-support-wrapper");
-if (techSupportWrapper) {
-    techSupportWrapper.addEventListener("click", (event) => {
+    const techSupportButton = container.querySelector(".tech-support-wrapper");
+
+    const toggleIframe = () => {
+        const existingIframe = document.getElementById("tech-support-iframe");
+        if (existingIframe) {
+            existingIframe.remove();
+            return;
+        }
+
         const iframe = document.createElement("iframe");
-        iframe.src = "http://localhost:8030/techsupport";
+        iframe.id = "tech-support-iframe";
+        iframe.src = "/techsupport";
         iframe.width = "400";
         iframe.height = "600";
         iframe.style.border = "none";
-        iframe.style.position = "fixed"; 
-        iframe.style.zIndex = "10";
-        const rect = techSupportWrapper.getBoundingClientRect();
-        // iframe.style.left = `${rect.left + window.scrollX - rect.width - 200}px`;
-        // iframe.style.top = `${rect.top + window.scrollY - 200}px`;
-        iframe.style.left = `${window.innerWidth - 250}px`;
-        iframe.style.top = `${window.innerHeight - 350}px`;
-        iframe.style.transform = "translate(-50%, -50%)";
+        iframe.style.position = "fixed";
+        iframe.style.right = "24px";
+        iframe.style.bottom = "88px";
+        iframe.style.zIndex = "1001";
         iframe.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
         iframe.style.borderRadius = "8px";
 
         document.body.appendChild(iframe);
+    };
+    
+    techSupportButton?.addEventListener("click", toggleIframe);
+
+    window.addEventListener('message', (event) => {
+        if (event.data === 'close-support-iframe') {
+            const iframe = document.getElementById('tech-support-iframe');
+            if (iframe) {
+                iframe.remove();
+            }
+        }
     });
-}
+
     return container.firstElementChild as HTMLElement;
-};
+}
