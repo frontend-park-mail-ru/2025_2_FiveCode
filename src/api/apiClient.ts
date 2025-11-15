@@ -191,6 +191,24 @@ export const apiClient = {
     return apiFetch(`/api/tickets`, { method: "GET" });
   },
 
+  async getTicketById(ticketId: number): Promise<Ticket> {
+    return apiFetch(`/api/tickets/${ticketId}`, { method: "GET" });
+  },
+
+  async updateTicket(
+    ticketId: number,
+    data: { title?: string; description?: string }
+  ): Promise<Ticket> {
+    const payload = {
+      tittle: data.title,
+      description: data.description,
+    };
+    return apiFetch(`/api/tickets/${ticketId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+
   async getTicketStatistics(): Promise<Statistics> {
     return apiFetch(`/api/admin/statistics`, { method: "GET" });
   },
