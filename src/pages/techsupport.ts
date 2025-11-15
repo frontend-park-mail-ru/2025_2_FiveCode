@@ -39,6 +39,9 @@ export async function renderTechSupportPage(): Promise<void> {
     const page = document.createElement("div");
     page.className = "page";
 
+    let attachedFileId: number | null = null;
+
+
     const mainMenuTemplate = `
         <div class="tech-support-menu">
             <h2>Техническая поддержка</h2>
@@ -52,7 +55,6 @@ export async function renderTechSupportPage(): Promise<void> {
   const techSupportTemplate = `
     <div class="tech-support">
         <div class="tech-support-header">
-            <button class="back-to-menu-button" id="menu-btn"><img src="<%= back %>"></button>
             <h2>Создать обращение</h2>
             <button class="close-button" id="close-iframe-btn"><img src="<%= close %>"></button>
         </div>
@@ -198,14 +200,46 @@ export async function renderTechSupportPage(): Promise<void> {
         };
         const form = document.getElementById("tech-support-form") as HTMLFormElement;
         const submitButton = document.getElementById("submitButton") as HTMLButtonElement;
+        const attachFileButton = document.getElementById("attach-file-btn") as HTMLButtonElement;
+        const fileStatusDiv = document.getElementById("file-attachment-status") as HTMLDivElement;
+        const titleErrorEl = document.getElementById("supportTitleError") as HTMLSpanElement;
+        const descriptionErrorEl = document.getElementById("supportDescriptionError") as HTMLSpanElement;
+        const formStatusMessageEl = document.getElementById("formStatusMessage") as HTMLDivElement;
+        const errorSpans = [titleErrorEl, descriptionErrorEl];
 
 
         document.getElementById("close-iframe-btn")?.addEventListener("click", closeIframe);
         document.getElementById("cancelButton")?.addEventListener("click", closeIframe);
         document.getElementById("menu-btn")?.addEventListener("click", backToMenu);
 
+        const clearAttachment = () => {
+            attachedFileId = null;
+            fileStatusDiv.innerHTML = `Файл (необязательно)`;
+        };
+
+        attachFileButton.addEventListener("click", async () => {
+            const uploadedFile = await createImageModal();
+            if (uploadedFile) {
+            attachedFileId = uploadedFile.id;
+            const fileName = uploadedFile.url.split("/").pop() || "файл";
+            fileStatusDiv.innerHTML = `Прикреплен: ${fileName} <button type="button" class="remove-file-btn" title="Удалить файл">✕</button>`;
+
+            fileStatusDiv
+                .querySelector(".remove-file-btn")
+                ?.addEventListener("click", clearAttachment);
+            }
+        });
+
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
+            
+            errorSpans.forEach((span) => {
+            span.textContent = "\u00A0";
+            span.classList.remove("error-message--visible");
+            });
+            formStatusMessageEl.innerHTML = "";
+            formStatusMessageEl.className = "form-status-message";
+
 
             const fullNameInput = document.getElementById("support-name") as HTMLInputElement;
             const emailInput = document.getElementById("support-email") as HTMLInputElement;
@@ -213,30 +247,37 @@ export async function renderTechSupportPage(): Promise<void> {
             const titleInput = document.getElementById("support-title") as HTMLInputElement;
             const descriptionInput = document.getElementById("support-description") as HTMLTextAreaElement;
 
-            const ticketData: Ticket = {
+              const ticketData: Ticket = {
                 full_name: fullNameInput.value,
                 email: emailInput.value,
                 category: categoryInput.value,
                 title: titleInput.value,
                 description: descriptionInput.value,
-                file_id: 1,
-            };
+                file_id: attachedFileId !== null ? attachedFileId : 1,
+                };
+
 
             submitButton.disabled = true;
             submitButton.textContent = "Отправка...";
 
             try {
                 await apiClient.createTicket(ticketData);
-                alert("Ваше обращение успешно отправлено!");
-                form.reset();
-                closeIframe();
-            } catch (error) {
+                formStatusMessageEl.textContent = "Ваше обращение успешно отправлено!";
+                formStatusMessageEl.classList.add("success");
+                setTimeout(() => {
+                    form.reset();
+                    clearAttachment();
+                    closeIframe();
+                }, 2000);
+                } catch (error) {
                 console.error("Failed to create ticket:", error);
-                alert("Произошла ошибка при отправке обращения. Попробуйте снова.");
-            } finally {
+                formStatusMessageEl.textContent =
+                    "Ошибка при отправке. Попробуйте снова.";
+                formStatusMessageEl.classList.add("error");
+                } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = "Отправить";
-            }
+                }
         });
     }
 }
