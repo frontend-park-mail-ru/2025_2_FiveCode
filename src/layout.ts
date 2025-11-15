@@ -12,7 +12,16 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
   app.innerHTML = "";
   const page = document.createElement("div");
   page.className = "page page--layout";
+  const isTechSupportPage = window.location.pathname === '/techsupport';
+  if (isTechSupportPage){
+    const mainContent = document.createElement("main");
+    mainContent.id = "main-content";
+    mainContent.className = "page__main";
+    page.appendChild(mainContent);
 
+    app.appendChild(page);
+    return;
+  }
   const user = loadUser();
   if (!user) {
     return;
@@ -27,7 +36,6 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
       console.error("Failed to fetch avatar:", error);
     }
   }
-  const isTechSupportPage = window.location.pathname === '/techsupport';
   if (!isTechSupportPage){
     const notes = await apiClient.getNotesForUser();
     
