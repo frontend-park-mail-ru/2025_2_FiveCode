@@ -15,6 +15,11 @@ import "./static/css/settings.css";
 import "./static/css/note-menu.css";
 import "./static/css/user-menu.css";
 import "./static/css/search.css";
+import "./static/css/techsupport.css";
+import "./static/css/techsupport/menu.css";
+import "./static/css/techsupport/ticket-list.css";
+import "./static/css/techsupport/ticket-detail.css";
+import "./static/css/techsupport/statistics.css";
 
 interface User {
   id?: number;
