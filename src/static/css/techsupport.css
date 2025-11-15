@@ -25,6 +25,7 @@
   text-align: center;
   background-color: var(--bg-default);
   border: 1px solid var(--primary-200);
+  position: relative;
 }
 
 .tech-support-menu h2 {
@@ -77,11 +78,23 @@
   font-size: 21px;
   font-weight: 700;
   margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.tech-support-header .back-to-menu-button,
+.tech-support-header .back-to-list-button,
+.tech-support-header .back-to-all-list-btn,
+.tech-support-header #back-to-admin-menu-btn {
+  position: absolute;
+  left: 20px;
 }
 
 .close-button,
 .back-to-menu-button,
-.back-to-list-button {
+.back-to-list-button,
+#back-to-all-list-btn,
+#back-to-admin-menu-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -94,7 +107,9 @@
 }
 
 .back-to-menu-button img,
-.back-to-list-button img {
+.back-to-list-button img,
+#back-to-all-list-btn img,
+#back-to-admin-menu-btn img {
   width: 22px;
   height: 22px;
 }
@@ -120,7 +135,8 @@
   font-family: inherit;
 }
 
-.form-group.readonly input:disabled {
+.form-group.readonly input:disabled,
+.form-group.readonly input[readonly] {
   background-color: var(--gray-200);
   cursor: not-allowed;
   opacity: 0.7;
@@ -291,6 +307,12 @@
   margin-left: 10px;
 }
 
+.ticket-item-user {
+  font-size: 13px;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
 .ticket-item-status {
   font-size: 13px;
   padding: 2px 8px;
@@ -319,4 +341,32 @@
   border-radius: 8px;
   border: 1px solid var(--primary-300);
   margin-top: 8px;
+}
+
+.statistics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.statistics-table th,
+.statistics-table td {
+  border: 1px solid var(--primary-200);
+  padding: 10px;
+  text-align: left;
+}
+
+.statistics-table th {
+  background-color: var(--primary-100);
+  font-weight: 600;
+}
+
+.statistics-table tbody tr:hover {
+  background-color: var(--gray-100);
+}
+
+.statistics-table td:first-child {
+  text-transform: capitalize;
+  font-weight: 500;
 }

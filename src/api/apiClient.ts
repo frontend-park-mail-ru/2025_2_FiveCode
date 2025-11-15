@@ -9,6 +9,7 @@ interface User {
   password?: string;
   email?: string;
   avatar_file_id?: number;
+  is_admin?: boolean;
 }
 
 interface AuthResponse {
@@ -30,7 +31,8 @@ export interface Ticket {
   status?: string;
   title: string;
   description: string;
-  file_id?: number;
+  file_id?: number | null;
+  created_at?: string;
 }
 
 export interface StatisticForCategory {
@@ -211,5 +213,16 @@ export const apiClient = {
 
   async getTicketStatistics(): Promise<Statistics> {
     return apiFetch(`/api/admin/statistics`, { method: "GET" });
+  },
+
+  async getAllTickets(): Promise<Ticket[]> {
+    return apiFetch(`/api/admin/tickets`, { method: "GET" });
+  },
+
+  async updateTicketStatus(ticketId: number, status: string): Promise<Ticket> {
+    return apiFetch(`/api/admin/tickets/${ticketId}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    });
   },
 };
