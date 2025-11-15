@@ -1,7 +1,6 @@
 .tech-support {
   max-width: 900px;
   width: 100%;
-  /* margin: 40px auto; */
   padding: 24px;
   background-color: var(--bg-default);
   border: 1px solid var(--primary-200);
@@ -37,13 +36,15 @@
 }
 
 .tech-support-content p {
-  margin-bottom: 0px;
+  margin-bottom: 8px;
   font-weight: 500;
   font-size: 14px;
   color: var(--text-noraml);
 }
 
-.tech-support-content input, textarea {
+.tech-support-content input,
+.tech-support-content textarea,
+.tech-support-content select {
   width: 100%;
   padding: 10px;
   border-radius: 5px;
@@ -52,22 +53,21 @@
   color: var(--text-noraml);
   font-size: 16px;
   margin-bottom: 8px;
-  resize: none;
+  font-family: inherit;
 }
 
-.textarea {
-  height: 100px;
-  margin-top: 8px;
-  resize: none;
+.messageContent {
+  resize: vertical;
 }
 
-.actions {
+.send-form-btn {
   display: flex;
   gap: 12px;
   margin-top: 24px;
 }
 
-.actions button {
+.send-form-btn button {
+  flex: 1;
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -76,13 +76,18 @@
   transition: background 0.3s;
 }
 
-.save-button {
+.submit-button {
   background: var(--primary-300);
   color: var(--text-noraml);
 }
 
-.save-button:hover {
+.submit-button:hover {
   background: var(--primary-400);
+}
+
+.submit-button:disabled {
+  background: var(--gray-300);
+  cursor: not-allowed;
 }
 
 .cancel-button {
@@ -94,8 +99,46 @@
   background: var(--primary-100);
 }
 
+.file-attachment-section {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-.tech-support-wrapper{
+#attach-file-btn {
+  padding: 10px 15px;
+  background: var(--primary-300);
+  color: var(--text-noraml);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+#attach-file-btn:hover {
+  background: var(--primary-400);
+}
+
+#file-attachment-status {
+  font-size: 14px;
+  color: var(--text-caption);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: var(--danger-500);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.tech-support-wrapper {
   width: 52px;
   height: 52px;
   background: rgb(0, 119, 255);
@@ -116,4 +159,25 @@
 .tech-support .sidebar,
 .tech-support .tech-support-wrapper {
   display: none !important;
+}
+
+.form-status-message {
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 12px;
+    visibility: hidden;
+}
+
+.form-status-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    visibility: visible;
+}
+
+.form-status-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    visibility: visible;
 }
