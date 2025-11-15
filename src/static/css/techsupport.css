@@ -8,7 +8,7 @@
   color: var(--text-noraml);
 }
 
-.menu-options{
+.menu-options {
   display: grid;
   justify-content: space-between;
   padding-bottom: 16px;
@@ -17,49 +17,51 @@
 }
 
 .tech-support-menu {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    width: 100%;
-    max-width: 500px;
-    text-align: center;
-    background-color: var(--bg-default);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  background-color: var(--bg-default);
   border: 1px solid var(--primary-200);
 }
 
 .tech-support-menu h2 {
-    color: #2c3e50;
-    font-size: 24px;
-    margin-bottom: 25px;
-    font-weight: 600;
+  color: #2c3e50;
+  font-size: 24px;
+  margin-bottom: 25px;
+  font-weight: 600;
 }
 
 .menu-options {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .menu-button {
-    background-color: var(--primary-400);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    width: 100%;
+  background-color: var(--primary-400);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+  width: 100%;
 }
 
 .menu-button:hover {
-    background-color: #2980b9;
-    transform: translateY(-1px);
+  background-color: #2980b9;
+  transform: translateY(-1px);
 }
 
 .menu-button:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 .tech-support-header {
@@ -77,7 +79,9 @@
   margin: 0;
 }
 
-.close-button, .back-to-menu-button{
+.close-button,
+.back-to-menu-button,
+.back-to-list-button {
   background: none;
   border: none;
   cursor: pointer;
@@ -89,7 +93,8 @@
   height: 12px;
 }
 
-.back-to-menu-button img {
+.back-to-menu-button img,
+.back-to-list-button img {
   width: 22px;
   height: 22px;
 }
@@ -113,6 +118,12 @@
   font-size: 16px;
   margin-bottom: 8px;
   font-family: inherit;
+}
+
+.form-group.readonly input:disabled {
+  background-color: var(--gray-200);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .messageContent {
@@ -221,22 +232,91 @@
 }
 
 .form-status-message {
-    text-align: center;
-    padding: 8px;
-    border-radius: 6px;
-    font-size: 14px;
-    margin-top: 12px;
-    visibility: hidden;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 12px;
+  visibility: hidden;
 }
 
 .form-status-message.success {
-    background-color: #d4edda;
-    color: #155724;
-    visibility: visible;
+  background-color: #d4edda;
+  color: #155724;
+  visibility: visible;
 }
 
 .form-status-message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    visibility: visible;
+  background-color: #f8d7da;
+  color: #721c24;
+  visibility: visible;
+}
+
+.ticket-title-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ticket-item a {
+  display: block;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--primary-200);
+  text-decoration: none;
+  color: var(--text-noraml);
+  transition: background-color 0.2s;
+}
+
+.ticket-item a:hover {
+  background-color: var(--primary-100);
+}
+
+.ticket-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ticket-item-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--primary-500);
+}
+
+.ticket-item-date {
+  font-size: 12px;
+  color: var(--text-caption);
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.ticket-item-status {
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.status-open {
+  color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.status-in_progress {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.status-closed {
+  color: #6c757d;
+  background-color: rgba(108, 117, 125, 0.1);
+}
+
+.ticket-image-attachment img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--primary-300);
+  margin-top: 8px;
 }
