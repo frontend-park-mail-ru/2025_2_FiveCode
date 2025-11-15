@@ -13,7 +13,6 @@ import "./static/css/note-editor.css";
 import "./static/css/modal.css";
 import "./static/css/settings.css";
 import "./static/css/note-menu.css";
-import "./static/css/techsupport.css";
 import "./static/css/user-menu.css";
 import "./static/css/search.css";
 

@@ -1,11 +1,36 @@
+import "../static/css/techsupport.css";
 import ejs from "ejs";
 import { apiClient, Ticket } from "../api/apiClient";
 import { loadUser } from "../utils/session";
+import { createImageModal } from "../components/imageModal";
 
 const ICONS = {
     close: new URL("../static/svg/icon_close.svg", import.meta.url).href,
     back: new URL("../static/svg/icon_back.svg", import.meta.url).href,
 };
+
+interface SupportFormErrors {
+  title?: string;
+  description?: string;
+}
+
+function validateSupportForm(form: HTMLFormElement): SupportFormErrors {
+  const errors: SupportFormErrors = {};
+  const title = (
+    form.querySelector<HTMLInputElement>("#support-title")?.value ?? ""
+  ).trim();
+  const description = (
+    form.querySelector<HTMLTextAreaElement>("#support-description")?.value ?? ""
+  ).trim();
+
+  if (!title) {
+    errors.title = "Тема обращения не может быть пустой";
+  }
+  if (!description) {
+    errors.description = "Текст обращения не может быть пустым";
+  }
+  return errors;
+}
 
 export async function renderTechSupportPage(): Promise<void> {
     const app = document.getElementById("app")!;
@@ -24,7 +49,7 @@ export async function renderTechSupportPage(): Promise<void> {
         </div>
     `
 
-    const techSupportTemplate = `
+  const techSupportTemplate = `
     <div class="tech-support">
         <div class="tech-support-header">
             <button class="back-to-menu-button" id="menu-btn"><img src="<%= back %>"></button>
@@ -33,32 +58,41 @@ export async function renderTechSupportPage(): Promise<void> {
         </div>
 
         <div class="tech-support-content">
-            <form id="tech-support-form">
-                <div class="name-section">
+            <form id="tech-support-form" novalidate>
+                <div class="form-group">
                     <p>Имя</p>
-                    <input type="text" id="support-name" value="<%= user?.username || user?.email?.split('@')[0] || '' %>" placeholder="Ваше имя" required />
+                    <input type="text" id="support-name" value="<%= user?.username || user?.email?.split('@')[0] || '' %>" placeholder="Ваше имя" />
                 </div>
-                <div class="email-section">
+                <div class="form-group">
                     <p>Ваша почта</p>
-                    <input type="email" id="support-email" value="<%= user?.email || '' %>" readonly required />
+                    <input type="email" id="support-email" value="<%= user?.email || '' %>" readonly />
                 </div>
-                <div class="category-section" style="margin-bottom: 8px;">
+                <div class="form-group">
                     <p>Категория</p>
-                    <select id="support-category" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--primary-300);">
-                        <option value="bug">Сообщение о баге</option>
-                        <option value="suggestion">Предложение по улучшению</option>
-                        <option value="complaint">Продуктовая жалоба</option>
-                        <option value="other">Другое</option>
-                    </select>
+                    <div class="select-wrapper">
+                        <select id="support-category">
+                            <option value="bug">Сообщение о баге</option>
+                            <option value="suggestion">Предложение по улучшению</option>
+                            <option value="complaint">Продуктовая жалоба</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="title-section">
+                <div class="form-group">
                     <p>Тема обращения</p>
-                    <input type="text" id="support-title" placeholder="Кратко опишите проблему" required />
+                    <input type="text" id="support-title" placeholder="Кратко опишите проблему" />
+                    <span class="error-message" id="supportTitleError">&nbsp;</span>
                 </div>
-                <div class="message-section">
+                <div class="form-group">
                     <p>Текст обращения</p>
-                    <textarea id="support-description" class="messageContent" placeholder="Опишите вашу проблему здесь..." rows="8" required></textarea>
+                    <textarea id="support-description" class="messageContent" placeholder="Опишите вашу проблему здесь..." rows="6"></textarea>
+                    <span class="error-message" id="supportDescriptionError">&nbsp;</span>
                 </div>
+                <div class="file-attachment-section">
+                    <button type="button" class="btn-attach" id="attach-file-btn">Прикрепить файл</button>
+                    <div id="file-attachment-status">Файл (необязательно)</div>
+                </div>
+                <div class="form-status-message" id="formStatusMessage"></div>
                 <div class="send-form-btn">
                     <button type="button" class="cancel-button" id="cancelButton">Отменить</button>
                     <button type="submit" class="submit-button" id="submitButton">Отправить</button>
