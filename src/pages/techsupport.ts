@@ -18,11 +18,6 @@ export async function renderTechSupportPage(): Promise<void> {
   app.appendChild(page);
 
   const user = loadUser();
-  if (!user) {
-    page.innerHTML =
-      "<p>Пожалуйста, войдите в систему для доступа к техподдержке.</p>";
-    return;
-  }
 
   const closeIframe = () => {
     window.parent.postMessage("close-support-iframe", "*");
@@ -52,7 +47,9 @@ export async function renderTechSupportPage(): Promise<void> {
   const createTicketTemplate = `
         <div class="tech-support">
             <div class="tech-support-header">
+                <% if (user) { %>
                 <button class="back-to-menu-button" id="back-to-menu-btn"><img src="<%= back %>"></button>
+                <% } %>
                 <h2>Создать обращение</h2>
                 <button class="close-button" id="close-iframe-btn"><img src="<%= close %>"></button>
             </div>
@@ -60,11 +57,13 @@ export async function renderTechSupportPage(): Promise<void> {
                 <form id="tech-support-form" novalidate>
                     <div class="form-group">
                         <p>Имя</p>
-                        <input type="text" id="support-name" value="<%= user?.username || user?.email?.split('@')[0] || '' %>" placeholder="Ваше имя" readonly />
+                        <input type="text" id="support-name" value="<%= user?.username || '' %>" placeholder="Ваше имя" <%= user ? 'readonly' : '' %> />
+                        <span class="error-message" id="supportNameError">&nbsp;</span>
                     </div>
                     <div class="form-group">
                         <p>Ваша почта</p>
-                        <input type="email" id="support-email" value="<%= user?.email || '' %>" readonly />
+                        <input type="email" id="support-email" value="<%= user?.email || '' %>" placeholder="Ваша почта" <%= user ? 'readonly' : '' %> />
+                         <span class="error-message" id="supportEmailError">&nbsp;</span>
                     </div>
                     <div class="form-group">
                         <p>Категория</p>
@@ -235,6 +234,7 @@ export async function renderTechSupportPage(): Promise<void> {
                      <div class="form-status-message" id="formStatusMessage"></div>
                     <div class="send-form-btn">
                         <button type="submit" class="submit-button" id="saveTicketButton">Сохранить</button>
+                        <button type="button" class="go-to-chat-btn" id="go-to-chat-btn" data-ticket-id="<%= ticket.id %>">Перейти к чату</button>
                     </div>
                 </form>
             </div>
@@ -339,16 +339,30 @@ export async function renderTechSupportPage(): Promise<void> {
     const formStatusMessageEl = document.getElementById(
       "formStatusMessage"
     ) as HTMLDivElement;
+    const nameErrorEl = document.getElementById(
+      "supportNameError"
+    ) as HTMLSpanElement;
+    const emailErrorEl = document.getElementById(
+      "supportEmailError"
+    ) as HTMLSpanElement;
+    const titleErrorEl = document.getElementById(
+      "supportTitleError"
+    ) as HTMLSpanElement;
+    const descriptionErrorEl = document.getElementById(
+      "supportDescriptionError"
+    ) as HTMLSpanElement;
 
     document
       .getElementById("close-iframe-btn")
       ?.addEventListener("click", closeIframe);
-    document
-      .getElementById("back-to-menu-btn")
-      ?.addEventListener(
+
+    const backButton = document.getElementById("back-to-menu-btn");
+    if (backButton) {
+      backButton.addEventListener(
         "click",
         user.is_admin ? renderAdminMainMenu : renderUserMainMenu
       );
+    }
 
     const clearAttachment = () => {
       attachedFileId = null;
@@ -369,22 +383,70 @@ export async function renderTechSupportPage(): Promise<void> {
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      [nameErrorEl, emailErrorEl, titleErrorEl, descriptionErrorEl].forEach(
+        (el) => {
+          el.textContent = "\u00A0";
+          el.classList.remove("error-message--visible");
+        }
+      );
       formStatusMessageEl.innerHTML = "";
       formStatusMessageEl.className = "form-status-message";
 
+      const fullNameInput = document.getElementById(
+        "support-name"
+      ) as HTMLInputElement;
+      const emailInput = document.getElementById(
+        "support-email"
+      ) as HTMLInputElement;
+      const titleInput = document.getElementById(
+        "support-title"
+      ) as HTMLInputElement;
+      const descriptionInput = document.getElementById(
+        "support-description"
+      ) as HTMLTextAreaElement;
+
+      const fullName = fullNameInput.value.trim();
+      const email = emailInput.value.trim();
+      const title = titleInput.value.trim();
+      const description = descriptionInput.value.trim();
+
+      let hasError = false;
+      if (!user) {
+        if (!fullName) {
+          nameErrorEl.textContent = "Имя не может быть пустым";
+          nameErrorEl.classList.add("error-message--visible");
+          hasError = true;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          emailErrorEl.textContent = "Введите корректный email";
+          emailErrorEl.classList.add("error-message--visible");
+          hasError = true;
+        }
+      }
+
+      if (!title) {
+        titleErrorEl.textContent = "Тема обращения не может быть пустой";
+        titleErrorEl.classList.add("error-message--visible");
+        hasError = true;
+      }
+      if (!description) {
+        descriptionErrorEl.textContent = "Текст обращения не может быть пустым";
+        descriptionErrorEl.classList.add("error-message--visible");
+        hasError = true;
+      }
+      if (hasError) {
+        return;
+      }
+
       const ticketData: Ticket = {
-        full_name: (document.getElementById("support-name") as HTMLInputElement)
-          .value,
-        email: (document.getElementById("support-email") as HTMLInputElement)
-          .value,
+        full_name: fullName,
+        email: email,
         category: (
           document.getElementById("support-category") as HTMLSelectElement
         ).value,
-        title: (document.getElementById("support-title") as HTMLInputElement)
-          .value,
-        description: (
-          document.getElementById("support-description") as HTMLTextAreaElement
-        ).value,
+        title: title,
+        description: description,
         file_id: attachedFileId ?? null,
       };
 
@@ -398,7 +460,11 @@ export async function renderTechSupportPage(): Promise<void> {
         setTimeout(() => {
           form.reset();
           clearAttachment();
-          user.is_admin ? renderAdminMainMenu() : renderUserMainMenu();
+          if (user) {
+            user.is_admin ? renderAdminMainMenu() : renderUserMainMenu();
+          } else {
+            closeIframe();
+          }
         }, 1500);
       } catch (error) {
         console.error("Failed to create ticket:", error);
@@ -540,6 +606,11 @@ export async function renderTechSupportPage(): Promise<void> {
       document
         .getElementById("back-to-list-btn")
         ?.addEventListener("click", renderUserTicketsList);
+      document
+        .getElementById("go-to-chat-btn")
+        ?.addEventListener("click", () => {
+          openChatForTicket(ticketId);
+        });
 
       const form = document.getElementById(
         "ticket-detail-form"
@@ -596,7 +667,7 @@ export async function renderTechSupportPage(): Promise<void> {
 
   const renderAdminTicketDetail = async (ticketId: number) => {
     try {
-      const ticket = await apiClient.getTicketById(ticketId); // Assuming admins can use the same endpoint
+      const ticket = await apiClient.getTicketById(ticketId);
       let imageUrl = null;
       if (ticket.file_id) {
         try {
@@ -668,9 +739,16 @@ export async function renderTechSupportPage(): Promise<void> {
     }
   };
 
-  if (user.is_admin) {
+  const openChatForTicket = (ticketId: number) => {
+    localStorage.setItem("currentTicketId", String(ticketId));
+    window.location.href = `/chat?ticketId=${ticketId}`;
+  };
+
+  if (user && user.is_admin) {
     renderAdminMainMenu();
-  } else {
+  } else if (user) {
     renderUserMainMenu();
+  } else {
+    renderCreateTicketForm();
   }
 }
