@@ -229,20 +229,29 @@ export async function renderTechSupportPage(): Promise<void> {
       formStatusMessageEl.innerHTML = "";
       formStatusMessageEl.className = "form-status-message";
 
+      const fullNameInput = document.getElementById(
+        "support-name"
+      ) as HTMLInputElement;
+      const emailInput = document.getElementById(
+        "support-email"
+      ) as HTMLInputElement;
+      const categoryInput = document.getElementById(
+        "support-category"
+      ) as HTMLSelectElement;
+      const titleInput = document.getElementById(
+        "support-title"
+      ) as HTMLInputElement;
+      const descriptionInput = document.getElementById(
+        "support-description"
+      ) as HTMLTextAreaElement;
+
       const ticketData: Ticket = {
-        full_name: (document.getElementById("support-name") as HTMLInputElement)
-          .value,
-        email: (document.getElementById("support-email") as HTMLInputElement)
-          .value,
-        category: (
-          document.getElementById("support-category") as HTMLSelectElement
-        ).value,
-        title: (document.getElementById("support-title") as HTMLInputElement)
-          .value,
-        description: (
-          document.getElementById("support-description") as HTMLTextAreaElement
-        ).value,
-        file_id: attachedFileId !== null ? attachedFileId : 1,
+        full_name: fullNameInput.value,
+        email: emailInput.value,
+        category: categoryInput.value,
+        title: titleInput.value,
+        description: descriptionInput.value,
+        file_id: attachedFileId ?? null,
       };
 
       submitButton.disabled = true;
@@ -340,39 +349,31 @@ export async function renderTechSupportPage(): Promise<void> {
       const saveButton = document.getElementById(
         "saveTicketButton"
       ) as HTMLButtonElement;
-      const formStatusMessageEl = document.getElementById(
-        "formStatusMessage"
-      ) as HTMLDivElement;
+      const titleInput = document.getElementById(
+        "ticket-title"
+      ) as HTMLInputElement;
+      const descriptionInput = document.getElementById(
+        "ticket-description"
+      ) as HTMLTextAreaElement;
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const title = (
-          document.getElementById("ticket-title") as HTMLInputElement
-        ).value;
-        const description = (
-          document.getElementById("ticket-description") as HTMLTextAreaElement
-        ).value;
+        const title = titleInput.value;
+        const description = descriptionInput.value;
 
         saveButton.disabled = true;
         saveButton.textContent = "Сохранение...";
-        formStatusMessageEl.innerHTML = "";
-        formStatusMessageEl.className = "form-status-message";
 
         try {
           await apiClient.updateTicket(ticketId, { title, description });
-          formStatusMessageEl.textContent = "Обращение успешно обновлено!";
-          formStatusMessageEl.classList.add("success");
+          alert("Обращение успешно обновлено!");
         } catch (error) {
           console.error("Failed to update ticket:", error);
-          formStatusMessageEl.textContent =
-            "Ошибка при сохранении. Попробуйте снова.";
-          formStatusMessageEl.classList.add("error");
+          alert("Ошибка при сохранении. Попробуйте снова.");
         } finally {
-          setTimeout(() => {
-            saveButton.disabled = false;
-            saveButton.textContent = "Сохранить";
-          }, 1000);
+          saveButton.disabled = false;
+          saveButton.textContent = "Сохранить";
         }
       });
     } catch (error) {
