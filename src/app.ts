@@ -13,6 +13,7 @@ import "./static/css/note-editor.css";
 import "./static/css/modal.css";
 import "./static/css/settings.css";
 import "./static/css/note-menu.css";
+import "./static/css/techsupport.css";
 
 interface User {
   id?: number;
@@ -42,7 +43,7 @@ async function initializeApp(): Promise<void> {
     document.head.appendChild(favicon);
   const path = window.location.pathname;
   const isAuthPage = path === "/login" || path === "/register";
-
+  const techsupportPath = path === "/techsupport";
   let user: User | null = null;
   try {
     user = await apiClient.me();
@@ -54,6 +55,10 @@ async function initializeApp(): Promise<void> {
   }
 
   if (user) {
+    // if (techsupportPath) {
+    //   router.navigate("techsupport");
+    //   return;
+    // }
     await renderAppLayout(app);
     if (isAuthPage) {
       router.navigate("notes");

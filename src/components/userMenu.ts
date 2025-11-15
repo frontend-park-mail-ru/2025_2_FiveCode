@@ -80,7 +80,7 @@ export function AccountSettings({
   avatarUrl,
 }: AccountSettingsParams): HTMLElement {
   const template = `
-        <div class="account-settings">
+      <div class="account-settings">
         <div class="account-settings-header">
             <h2>Настройки аккаунта</h2>
             <button class="close-button"><img src="<%= close %>"></button>

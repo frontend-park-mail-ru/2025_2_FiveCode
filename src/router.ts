@@ -3,6 +3,7 @@ import { renderRegister } from "./pages/register";
 import { renderNotes } from "./pages/notes";
 import { renderNoteEditor } from "./pages/notepage";
 import { renderSettingsPage } from "./pages/settings";
+import { renderTechSupportPage } from "./pages/techsupport";
 
 interface Route {
   path: RegExp;
@@ -120,6 +121,7 @@ router
   .add(/^register$/, () => renderRegister(document.getElementById("app")!))
   .add(/^notes$/, () => renderNotes())
   .add(/^note\/(\d+)$/, (id: string) => renderNoteEditor(Number(id)))
-  .add(/^settings$/, () => renderSettingsPage());
+  .add(/^settings$/, () => renderSettingsPage())
+  .add(/^techsupport$/, () => renderTechSupportPage());
 
 export default router;

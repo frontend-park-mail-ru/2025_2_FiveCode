@@ -4,7 +4,6 @@ import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { UserMenu, createExitConfirmationModal } from "./userMenu";
 import { loadUser } from "../utils/session";
-import { exit } from "process";
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,

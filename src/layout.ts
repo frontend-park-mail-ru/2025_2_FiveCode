@@ -1,5 +1,6 @@
 import ejs from "ejs";
 import { Sidebar } from "./components/sidebar";
+import { techSupportWrapper } from "./components/techsupportdutton";
 import { loadUser } from "./utils/session";
 import { apiClient } from "./api/apiClient";
 
@@ -30,6 +31,7 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
   const notes = await apiClient.getNotesForUser();
   
   page.appendChild(Sidebar({ user, notes, avatarUrl }));
+  page.appendChild(techSupportWrapper());
 
   const mainContent = document.createElement("main");
   mainContent.id = "main-content";
@@ -49,6 +51,7 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
   if (avatarEl && avatarUrl) {
     avatarEl.src = avatarUrl;
   }
+
   document.dispatchEvent(
     new CustomEvent("userProfileUpdated", {
       detail: { newAvatarUrl: avatarUrl },
