@@ -14,6 +14,13 @@ import {
 import { renderCreateTicketForm } from "./techsupport/createTicketForm";
 import { renderStatistics } from "./techsupport/statistics";
 import "../static/css/techsupport.css";
+import { createImageModal } from "../components/imageModal";
+import { renderChatPage } from "./chat";
+
+const ICONS = {
+  close: new URL("../static/svg/icon_close.svg", import.meta.url).href,
+  back: new URL("../static/svg/icon_back.svg", import.meta.url).href,
+};
 
 export async function renderTechSupportPage(): Promise<void> {
   const app = document.getElementById("app")!;

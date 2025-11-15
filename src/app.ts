@@ -20,6 +20,7 @@ import "./static/css/techsupport/menu.css";
 import "./static/css/techsupport/ticket-list.css";
 import "./static/css/techsupport/ticket-detail.css";
 import "./static/css/techsupport/statistics.css";
+import "./static/css/chat.css";
 
 interface User {
   id?: number;

@@ -1,0 +1,84 @@
+.chat-support {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.tech-support-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tech-support-header h2 {
+  margin: 0;
+}
+
+.chat-support-content {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.chat-messages {
+  height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.chat-message {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+}
+
+.user-message {
+  background-color: #e3f2fd;
+  margin-left: auto;
+  text-align: right;
+}
+
+.support-message {
+  background-color: #f1f1f1;
+  margin-right: auto;
+  text-align: left;
+}
+
+.chat-input-section {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-section input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#send-chat-message {
+  padding: 10px 20px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#send-chat-message:hover {
+  background-color: #0b7dda;
+}
+
+.back-to-list-button, .close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
