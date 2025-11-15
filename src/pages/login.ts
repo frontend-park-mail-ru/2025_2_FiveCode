@@ -3,6 +3,7 @@ import { Header } from "../components/header";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { renderAppLayout } from "../layout";
+import { techSupportWrapper } from "../components/techsupportdutton";
 
 const ICONS = {
   Icon: new URL("../static/svg/icon_goose.svg", import.meta.url).href,
@@ -57,6 +58,7 @@ export function renderLogin(app: HTMLElement): void {
   const pageTemplate = `<div class="page"></div>`;
   const el = document.createElement("div");
   el.innerHTML = pageTemplate;
+  
   const pageEl = el.firstElementChild as HTMLElement;
 
   
@@ -174,5 +176,6 @@ export function renderLogin(app: HTMLElement): void {
   }
 
   pageEl.appendChild(loginModal);
+  app.appendChild(techSupportWrapper());
   app.appendChild(pageEl);
 }

@@ -56,15 +56,16 @@ async function initializeApp(): Promise<void> {
   }
 
   if (user) {
-    // if (techsupportPath) {
-    //   router.navigate("techsupport");
-    //   return;
-    // }
+    
     await renderAppLayout(app);
     if (isAuthPage) {
       router.navigate("notes");
     }
   } else {
+    if (techsupportPath) {
+      router.navigate("techsupport");
+      return;
+    }
     if (!isAuthPage) {
       router.navigate("login");
     }

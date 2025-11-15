@@ -55,6 +55,7 @@ export async function renderTechSupportPage(): Promise<void> {
   const techSupportTemplate = `
     <div class="tech-support">
         <div class="tech-support-header">
+            <button class="back-to-menu-button" id="menu-btn"><img src="<%= back %>"></button>
             <h2>Создать обращение</h2>
             <button class="close-button" id="close-iframe-btn"><img src="<%= close %>"></button>
         </div>
