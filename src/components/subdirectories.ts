@@ -12,6 +12,7 @@ const ICONS = {
     .href,
   icon_folder: new URL("../static/svg/icon_folder.svg", import.meta.url).href,
   dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  star: new URL("../static/svg/icon_star.svg", import.meta.url).href,
 };
 
 interface Note {
@@ -63,10 +64,17 @@ export function Subdirectories({
   const noteItemTemplate = `
         <li class="subdir-item">
             <a href="/note/<%= id %>" class="subdir-header" data-link>
-              <span class="subdir-title"><%= title %></span>
-              <button class="subdir-menu-dots" style="display: none;">
-                <img src="<%= dots %>" alt="menu" />
-              </button>
+              <span class="subdir-title">
+                <%= title.length > 18 ? title.substring(0, 17) + '...' : title %>
+              </span>
+              <span class="subdir-buttons">
+                <button class="subdir-menu-dots" style="display: none;">
+                  <img src="<%= dots %>" alt="menu" />
+                </button>
+                <button class="subdir-menu-favorite" style="display: none;">
+                  <img src="<%= star %>" alt="Favorite" />
+                </button>
+              </span>
             </a>
         </li>
       `;
@@ -103,10 +111,15 @@ export function Subdirectories({
     };
 
     notes.forEach((item: Note) => {
+      let star = ICONS.star; 
+      if (folderName === "Избранное"){
+        star = ICONS.icon_favorite;
+      }
       const noteItemHtml = ejs.render(noteItemTemplate, {
         id: item.id,
         title: item.title,
         dots: ICONS.dots,
+        star: star,
       });
       const noteItemEl = document.createElement("div");
       noteItemEl.innerHTML = noteItemHtml;
@@ -159,9 +172,28 @@ export function Subdirectories({
         });
       });
       
+      const favoriteButton = noteItem.querySelector('.subdir-menu-favorite');
+      favoriteButton?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const newFavoriteStatus = !favoriteButton.classList.contains("active");
+        try {
+          await apiClient.toggleFavorite(item.id as number, newFavoriteStatus);
+          favoriteButton.classList.toggle("active", newFavoriteStatus);
+          document.dispatchEvent(new CustomEvent("notesUpdated"));
+        } catch (err) {
+          console.error("Failed to update favorite status:", err);
+        }
+      });
+      if (folderName === "Избранное") {
+      favoriteButton?.classList.add("active");
+      }
+
+
       listEl.appendChild(noteItem);
     });
 
+    
     header.addEventListener("click", () => {
       collapsed = !collapsed;
       updateState();

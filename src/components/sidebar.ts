@@ -2,7 +2,7 @@ import ejs from "ejs";
 import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
-import { UserMenu, createExitConfirmationModal } from "./userMenu";
+import { UserMenu, createExitConfirmationModal, createSearchModal } from "./userMenu";
 import { loadUser } from "../utils/session";
 
 const ICONS = {
@@ -65,7 +65,7 @@ export function Sidebar({
             </div>
             <nav class="sidebar__nav">
                 <a href="/notes" class="sidebar__item" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
-                <a class="sidebar__item" data-link> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
+                <a class="sidebar__item" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
@@ -90,6 +90,12 @@ export function Sidebar({
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
+  const navigateToSettings = (event?: Event) => {
+    event?.preventDefault();
+    userMenuComponent?.classList.remove("user-menu--visible");
+    router.navigate("settings");
+  };
+
   document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
 
   const handleCreateNewNote = async (event: Event) => {
@@ -104,6 +110,15 @@ export function Sidebar({
       console.error("Failed to create new note", error);
     }
   };
+
+  const searchBtn = el.querySelector('#search-btn');
+
+  // searchBtn?.addEventListener('click', (e) => {
+  //   e.preventDefault();
+  //   if (document.querySelector('#searchModal')) return;
+  //   const searchModal = createSearchModal();
+  //   document.body.appendChild(searchModal);
+  // });
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
@@ -146,6 +161,7 @@ export function Sidebar({
               router.navigate("login");
             });
         });
+      
     }
 
     
@@ -167,6 +183,9 @@ export function Sidebar({
       userMenuComponent.classList.remove("user-menu--visible");
     }
   });
+
+  el.querySelector("#sidebar-avatar")?.addEventListener("click", navigateToSettings);
+  el.querySelector("#sidebar-username")?.addEventListener("click", navigateToSettings);
 
   const handleProfileUpdate = (event: CustomEvent) => {
     const updatedUser = loadUser();

@@ -86,15 +86,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     const blocksData = await apiClient.getBlocksForNote(noteId as number);
     initialTitle = note.title;
     isFavorite = note.is_favorite || false;
-    const backendBlocks = blocksData?.blocks || [];
 
-    initialBlocks = backendBlocks.map((block: any): Block => {
+    initialBlocks = (blocksData.blocks || []).map((block: any): Block => {
       if (block.type === "attachment") {
-        return {
-          id: block.id,
-          type: "image",
-          url: block.text,
-        };
+        block.type = "image";
       }
       return block as Block;
     });
@@ -137,7 +132,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           await apiClient.deleteNote(noteId as number);
           document.dispatchEvent(new CustomEvent("notesUpdated"));
           router.navigate("notes");
-          
         } catch (err) {
           console.error("Failed to delete note:", err);
         }

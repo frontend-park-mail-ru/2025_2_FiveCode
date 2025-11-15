@@ -1,7 +1,7 @@
 import { apiFetch, API_BASE } from "../api";
 import { login, register, logout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
-import { Block, BlockTextFormat } from "../components/block";
+import { Block, TextContent, CodeContent } from "../components/block";
 
 interface User {
   id?: number;
@@ -116,16 +116,11 @@ export const apiClient = {
 
   async updateBlock(
     blockId: string | number,
-    data: {
-      text?: string;
-      formats?: BlockTextFormat[];
-      language?: string;
-      code_text?: string;
-    }
+    payload: { type: string; content: Partial<TextContent | CodeContent> }
   ): Promise<Block> {
     return apiFetch(`/api/blocks/${blockId}`, {
       method: "PATCH",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   },
 
