@@ -45,6 +45,16 @@ export interface Statistics {
   statistics: StatisticForCategory[];
 }
 
+export interface Message {
+  text: string;
+  sender: User;
+  created_at: number;
+}
+
+export interface Messages{
+  messages: Messages[];
+}
+
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -212,4 +222,12 @@ export const apiClient = {
   async getTicketStatistics(): Promise<Statistics> {
     return apiFetch(`/api/admin/statistics`, { method: "GET" });
   },
+
+  async sendChatMessage(ticketId: number, messageText: string): Promise<Message> {
+    return apiFetch(`/api/chat/${ticketId}`, {method: "POST"});
+  },
+
+  async getChatMessages(ticketId: number): Promise<Messages> {
+    return apiFetch(`/api/tickets/${ticketId}/messages`, {method: "GET"});
+  }
 };

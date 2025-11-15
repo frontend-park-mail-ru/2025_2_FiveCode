@@ -15,6 +15,7 @@ import "./static/css/settings.css";
 import "./static/css/note-menu.css";
 import "./static/css/user-menu.css";
 import "./static/css/search.css";
+import "./static/css/chat.css";
 
 interface User {
   id?: number;

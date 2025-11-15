@@ -4,3 +4,4 @@
 /.env
 *.sh
 *.txt
+/config

@@ -3,6 +3,7 @@ import ejs from "ejs";
 import { apiClient, Ticket } from "../api/apiClient";
 import { loadUser } from "../utils/session";
 import { createImageModal } from "../components/imageModal";
+import { renderChatPage } from "./chat";
 
 const ICONS = {
   close: new URL("../static/svg/icon_close.svg", import.meta.url).href,
@@ -395,7 +396,8 @@ export async function renderTechSupportPage(): Promise<void> {
 
   const openChatForTicket = (ticketId: number) => {
     localStorage.setItem("currentTicketId", String(ticketId));
-    window.location.href = `/chat?ticketId=${ticketId}`;
+    // window.location.href = `/techsupport/chat?ticketId=${ticketId}`;
+    renderChatPage(ticketId);
 };
 
   renderMainMenu();
