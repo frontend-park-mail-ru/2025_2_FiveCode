@@ -5,8 +5,62 @@
   padding: 24px;
   background-color: var(--bg-default);
   border: 1px solid var(--primary-200);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--text-noraml);
+}
+
+.menu-options{
+  display: grid;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--primary-200);
+}
+
+.tech-support-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    background-color: var(--bg-default);
+  border: 1px solid var(--primary-200);
+}
+
+.tech-support-menu h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-button {
+    background-color: var(--primary-400);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    width: 100%;
+}
+
+.menu-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.menu-button:active {
+    transform: translateY(0);
 }
 
 .tech-support-header {
@@ -24,7 +78,7 @@
   margin: 0;
 }
 
-.close-button {
+.close-button, .back-to-menu-button{
   background: none;
   border: none;
   cursor: pointer;
@@ -32,8 +86,13 @@
 }
 
 .close-button img {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
+}
+
+.back-to-menu-button img {
+  width: 22px;
+  height: 22px;
 }
 
 .tech-support-content p {
@@ -76,24 +135,41 @@
   transition: background 0.3s;
 }
 
-.save-button {
-  background: var(--primary-300);
-  color: var(--text-noraml);
-}
-
-.save-button:hover {
-  background: var(--primary-400);
-}
-
 .cancel-button {
-  background: var(--primary-50);
-  color: var(--text-noraml);
+    background-color: #e0e0e0;
+    color: #7f8c8d;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 15px;
 }
 
-.cancel-button:hover {
-  background: var(--primary-100);
+.submit-button {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 15px;
 }
 
+.submit-button:hover {
+    background-color: #27ae60;
+}
+
+.submit-button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.send-form-btn {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
 
 .tech-support-wrapper{
   width: 52px;
