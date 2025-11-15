@@ -22,7 +22,7 @@ export function renderCreateTicketForm(page: HTMLElement, user: any, nav: any) {
                     <div class="form-group"><p>Категория</p><div class="select-wrapper"><select id="support-category">
                         <option value="bug">Сообщение о баге</option>
                         <option value="suggestion">Предложение по улучшению</option>
-                        <option value="complaint">Продуктовая жалоба</option>
+                        <option value="complaint">Жалоба</option>
                         <option value="other">Другое</option>
                     </select></div></div>
                     <div class="form-group"><p>Тема</p><input type="text" id="support-title" placeholder="Кратко опишите проблему" /><span class="error-message" id="supportTitleError">&nbsp;</span></div>
@@ -70,6 +70,7 @@ export function renderCreateTicketForm(page: HTMLElement, user: any, nav: any) {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     [nameErrorEl, emailErrorEl, titleErrorEl, descriptionErrorEl].forEach(
       (el) => {
         el.textContent = "\u00A0";

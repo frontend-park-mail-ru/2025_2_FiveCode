@@ -6,6 +6,15 @@ const ICONS = {
   close: new URL("../../static/svg/icon_close.svg", import.meta.url).href,
 };
 
+function formatStatusName(status: string): string {
+  const names: { [key: string]: string } = {
+    open: "Открыто",
+    in_progress: "В процессе",
+    closed: "Закрыто",
+  };
+  return names[status] || status;
+}
+
 export async function renderUserTicketsList(page: HTMLElement, nav: any) {
   const template = `
         <div class="tickets-list">
@@ -24,7 +33,7 @@ export async function renderUserTicketsList(page: HTMLElement, nav: any) {
                                         <span class="ticket-item-title"><%= ticket.title %></span>
                                         <span class="ticket-item-date"><%= new Date(ticket.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
                                     </div>
-                                    <div class="ticket-item-status status-<%= ticket.status %>"><%= ticket.status.replace('_', ' ') %></div>
+                                    <div class="ticket-item-status status-<%= ticket.status %>"><%= formatStatusName(ticket.status) %></div>
                                 </a>
                             </li>
                         <% }); %>
@@ -35,7 +44,11 @@ export async function renderUserTicketsList(page: HTMLElement, nav: any) {
     `;
   try {
     const tickets = await apiClient.getMyTickets();
-    page.innerHTML = ejs.render(template, { tickets, ...ICONS });
+    page.innerHTML = ejs.render(template, {
+      tickets,
+      formatStatusName,
+      ...ICONS,
+    });
     document
       .getElementById("close-iframe-btn")
       ?.addEventListener("click", nav.close);
@@ -78,7 +91,7 @@ export async function renderAllTicketsList(page: HTMLElement, nav: any) {
                                         <span class="ticket-item-date"><%= new Date(ticket.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
                                     </div>
                                     <div class="ticket-item-user"><%= ticket.email %></div>
-                                    <div class="ticket-item-status status-<%= ticket.status %>"><%= ticket.status.replace('_', ' ') %></div>
+                                    <div class="ticket-item-status status-<%= ticket.status %>"><%= formatStatusName(ticket.status) %></div>
                                 </a>
                             </li>
                         <% }); %>
@@ -89,7 +102,11 @@ export async function renderAllTicketsList(page: HTMLElement, nav: any) {
     `;
   try {
     const tickets = await apiClient.getAllTickets();
-    page.innerHTML = ejs.render(template, { tickets, ...ICONS });
+    page.innerHTML = ejs.render(template, {
+      tickets,
+      formatStatusName,
+      ...ICONS,
+    });
     document
       .getElementById("close-iframe-btn")
       ?.addEventListener("click", nav.close);

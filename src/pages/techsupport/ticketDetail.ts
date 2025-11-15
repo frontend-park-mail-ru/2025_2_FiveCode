@@ -6,6 +6,25 @@ const ICONS = {
   close: new URL("../../static/svg/icon_close.svg", import.meta.url).href,
 };
 
+function formatCategoryName(category: string): string {
+  const names: { [key: string]: string } = {
+    bug: "Сообщение о баге",
+    suggestion: "Предложение по улучшению",
+    complaint: "Жалоба",
+    other: "Другое",
+  };
+  return names[category] || category;
+}
+
+function formatStatusName(status: string): string {
+  const names: { [key: string]: string } = {
+    open: "Открыто",
+    in_progress: "В процессе",
+    closed: "Закрыто",
+  };
+  return names[status] || status;
+}
+
 export async function renderUserTicketDetail(
   page: HTMLElement,
   ticketId: number,
@@ -36,11 +55,11 @@ export async function renderUserTicketDetail(
                     </div>
                     <div class="form-group readonly">
                         <p>Категория</p>
-                        <input type="text" value="<%= ticket.category %>" disabled />
+                        <input type="text" value="<%= formatCategoryName(ticket.category) %>" disabled />
                     </div>
                     <div class="form-group readonly">
                         <p>Статус</p>
-                        <input type="text" value="<%= ticket.status.replace('_', ' ') %>" disabled />
+                        <input type="text" value="<%= formatStatusName(ticket.status) %>" disabled />
                     </div>
                     <% if (imageUrl) { %>
                     <div class="form-group">
@@ -53,7 +72,7 @@ export async function renderUserTicketDetail(
                      <div class="form-status-message" id="formStatusMessage"></div>
                     <div class="send-form-btn">
                         <button type="submit" class="submit-button" id="saveTicketButton">Сохранить</button>
-                        
+                        <button type="button" class="go-to-chat-btn" id="go-to-chat-btn" data-ticket-id="<%= ticket.id %>">Перейти к чату</button>
                     </div>
                 </form>
             </div>
@@ -71,7 +90,13 @@ export async function renderUserTicketDetail(
       }
     }
 
-    page.innerHTML = ejs.render(template, { ticket, imageUrl, ...ICONS });
+    page.innerHTML = ejs.render(template, {
+      ticket,
+      imageUrl,
+      formatCategoryName,
+      formatStatusName,
+      ...ICONS,
+    });
     document
       .getElementById("close-iframe-btn")
       ?.addEventListener("click", nav.close);
@@ -177,11 +202,11 @@ export async function renderAdminTicketDetail(
                     <div class="form-group readonly"><p>Тема</p><input type="text" value="<%= ticket.title %>" readonly /></div>
                     <div class="form-group readonly"><p>Описание</p><textarea rows="6" readonly><%= ticket.description %></textarea></div>
                     <div class="form-group readonly"><p>Пользователь</p><input type="text" value="<%= ticket.full_name %> (<%= ticket.email %>)" readonly /></div>
-                    <div class="form-group readonly"><p>Категория</p><input type="text" value="<%= ticket.category %>" readonly /></div>
+                    <div class="form-group readonly"><p>Категория</p><input type="text" value="<%= formatCategoryName(ticket.category) %>" readonly /></div>
                     <div class="form-group"><p>Статус</p><div class="select-wrapper"><select id="ticket-status">
-                        <option value="open" <%= ticket.status === 'open' ? 'selected' : '' %>>Open</option>
-                        <option value="in_progress" <%= ticket.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
-                        <option value="closed" <%= ticket.status === 'closed' ? 'selected' : '' %>>Closed</option>
+                        <option value="open" <%= ticket.status === 'open' ? 'selected' : '' %>>Открыто</option>
+                        <option value="in_progress" <%= ticket.status === 'in_progress' ? 'selected' : '' %>>В процессе</option>
+                        <option value="closed" <%= ticket.status === 'closed' ? 'selected' : '' %>>Закрыто</option>
                     </select></div></div>
                     <% if (imageUrl) { %><div class="form-group"><p>Прикрепленный файл</p><div class="ticket-image-attachment"><img src="<%= imageUrl %>" alt="Прикрепленное изображение" /></div></div><% } %>
                     <div class="form-status-message" id="formStatusMessage"></div>
@@ -201,7 +226,12 @@ export async function renderAdminTicketDetail(
         console.error("Failed to fetch attached file:", fileError);
       }
     }
-    page.innerHTML = ejs.render(template, { ticket, imageUrl, ...ICONS });
+    page.innerHTML = ejs.render(template, {
+      ticket,
+      imageUrl,
+      formatCategoryName,
+      ...ICONS,
+    });
     document
       .getElementById("close-iframe-btn")
       ?.addEventListener("click", nav.close);
