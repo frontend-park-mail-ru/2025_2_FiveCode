@@ -12,6 +12,13 @@
   box-shadow: 0 6px 20px rgba(47, 111, 246, 0.2);
 }
 
+.tickets-content p {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  padding-top: 5%;
+}
+
 .tech-support-header {
   display: flex;
   justify-content: space-between;
@@ -19,6 +26,8 @@
   padding-bottom: 16px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--primary-200);
+  margin-top: 16px;
+  padding-right: 10px;
 }
 
 .tech-support-header h2 {
