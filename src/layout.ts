@@ -27,12 +27,13 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
       console.error("Failed to fetch avatar:", error);
     }
   }
-
-  const notes = await apiClient.getNotesForUser();
-  
-  page.appendChild(Sidebar({ user, notes, avatarUrl }));
-  page.appendChild(techSupportWrapper());
-
+  const isTechSupportPage = window.location.pathname === '/techsupport';
+  if (!isTechSupportPage){
+    const notes = await apiClient.getNotesForUser();
+    
+    page.appendChild(Sidebar({ user, notes, avatarUrl }));
+    page.appendChild(techSupportWrapper());
+  }
   const mainContent = document.createElement("main");
   mainContent.id = "main-content";
   mainContent.className = "page__main";
