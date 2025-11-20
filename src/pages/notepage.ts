@@ -144,9 +144,32 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     try {
       await apiClient.toggleFavorite(noteId as number, newFavoriteStatus);
       favoriteBtn.classList.toggle("active", newFavoriteStatus);
-      document.dispatchEvent(new CustomEvent("notesUpdated"));
+      document.dispatchEvent(
+        new CustomEvent("notesUpdated", {
+          detail: { noteId: noteId, isFavorite: newFavoriteStatus },
+        })
+      );
     } catch (err) {
       console.error("Failed to update favorite status:", err);
     }
   });
+
+  // Keep favorite button in editor in sync when favorites change elsewhere
+  const handleNotesUpdated = (event: Event) => {
+    const custom = event as CustomEvent;
+    if (!custom?.detail) return;
+    const { noteId: updatedId, isFavorite } = custom.detail;
+    if (String(updatedId) === String(noteId)) {
+      favoriteBtn.classList.toggle("active", Boolean(isFavorite));
+    }
+  };
+
+  document.removeEventListener(
+    "notesUpdated",
+    handleNotesUpdated as EventListener
+  );
+  document.addEventListener(
+    "notesUpdated",
+    handleNotesUpdated as EventListener
+  );
 }

@@ -1,5 +1,5 @@
-import { apiFetch, API_BASE } from "../api";
-import { login, register, logout, checkSession } from "../auth";
+import { apiFetch, API_BASE, clearCsrfToken } from "../api";
+import { login, register, logout as authLogout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
 import { Block, TextContent, CodeContent } from "../components/block";
 
@@ -53,7 +53,7 @@ export interface Message {
   created_at: number;
 }
 
-export interface Messages{
+export interface Messages {
   messages: Messages[];
 }
 
@@ -70,8 +70,9 @@ export const apiClient = {
   },
 
   async logout(): Promise<void> {
-    await logout();
+    await authLogout();
     clearUser();
+    clearCsrfToken();
   },
 
   async me(): Promise<User | null> {
@@ -224,7 +225,7 @@ export const apiClient = {
   async getTicketStatistics(): Promise<Statistics> {
     return apiFetch(`/api/admin/statistics`, { method: "GET" });
   },
-    async getAllTickets(): Promise<Ticket[]> {
+  async getAllTickets(): Promise<Ticket[]> {
     return apiFetch(`/api/admin/tickets`, { method: "GET" });
   },
 
@@ -235,11 +236,17 @@ export const apiClient = {
     });
   },
 
-  async sendChatMessage(ticketId: number, messageText: string): Promise<Message> {
-    return apiFetch(`/api/chat/${ticketId}`, {method: "POST"});
+  async sendChatMessage(
+    ticketId: number,
+    messageText: string
+  ): Promise<Message> {
+    return apiFetch(`/api/tickets/${ticketId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body: messageText }),
+    });
   },
 
   async getChatMessages(ticketId: number): Promise<Messages> {
-    return apiFetch(`/api/tickets/${ticketId}/messages`, {method: "GET"});
-  }
+    return apiFetch(`/api/tickets/${ticketId}/messages`, { method: "GET" });
+  },
 };

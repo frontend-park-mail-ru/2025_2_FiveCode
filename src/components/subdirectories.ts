@@ -3,8 +3,6 @@ import { createDeleteNoteModal } from "../components/deleteNoteModal";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
 
-
-
 const ICONS = {
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
     .href,
@@ -111,8 +109,8 @@ export function Subdirectories({
     };
 
     notes.forEach((item: Note) => {
-      let star = ICONS.star; 
-      if (folderName === "Избранное"){
+      let star = ICONS.star;
+      if (folderName === "Избранное") {
         star = ICONS.icon_favorite;
       }
       const noteItemHtml = ejs.render(noteItemTemplate, {
@@ -124,76 +122,80 @@ export function Subdirectories({
       const noteItemEl = document.createElement("div");
       noteItemEl.innerHTML = noteItemHtml;
       const noteItem = noteItemEl.firstElementChild as HTMLElement;
-      
-      const dotsButton = noteItem.querySelector('.subdir-menu-dots');
-      dotsButton?.addEventListener('click', (e) => {
+
+      const dotsButton = noteItem.querySelector(".subdir-menu-dots");
+      dotsButton?.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
-        const existingMenu = document.querySelector('.note-menu');
+
+        const existingMenu = document.querySelector(".note-menu");
         if (existingMenu) existingMenu.remove();
-        
-        const menu = document.createElement('div');
-        menu.className = 'note-menu';
+
+        const menu = document.createElement("div");
+        menu.className = "note-menu";
         menu.innerHTML = `
 
           <button class="delete-note" data-note-id="${item.id}">Удалить</button>
         `;
-        
+
         const rect = dotsButton.getBoundingClientRect();
-        menu.style.top = rect.bottom + 'px';
-        menu.style.left = rect.left + 'px';
-        
+        menu.style.top = rect.bottom + "px";
+        menu.style.left = rect.left + "px";
+
         document.body.appendChild(menu);
 
-        const deleteButton = menu.querySelector('.delete-note');
-        deleteButton?.addEventListener('click', () => {
+        const deleteButton = menu.querySelector(".delete-note");
+        deleteButton?.addEventListener("click", () => {
           const deleteModal = createDeleteNoteModal();
           document.body.appendChild(deleteModal);
-          
-          deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
-            try {
-              await apiClient.deleteNote(item.id);
-              document.dispatchEvent(new CustomEvent("notesUpdated"));
-              deleteModal.remove();
-              menu.remove();
-              router.navigate("notes");
-            } catch (err) {
-              console.error("Failed to delete note:", err);
-            }
-          });
+
+          deleteModal
+            .querySelector(".delete-note-confirm")
+            ?.addEventListener("click", async () => {
+              try {
+                await apiClient.deleteNote(item.id);
+                document.dispatchEvent(new CustomEvent("notesUpdated"));
+                deleteModal.remove();
+                menu.remove();
+                router.navigate("notes");
+              } catch (err) {
+                console.error("Failed to delete note:", err);
+              }
+            });
         });
-        
-        document.addEventListener('click', function closeMenu(e) {
+
+        document.addEventListener("click", function closeMenu(e) {
           if (!menu.contains(e.target as Node)) {
             menu.remove();
-            document.removeEventListener('click', closeMenu);
+            document.removeEventListener("click", closeMenu);
           }
         });
       });
-      
-      const favoriteButton = noteItem.querySelector('.subdir-menu-favorite');
-      favoriteButton?.addEventListener('click', async (e) => {
+
+      const favoriteButton = noteItem.querySelector(".subdir-menu-favorite");
+      favoriteButton?.addEventListener("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
         const newFavoriteStatus = !favoriteButton.classList.contains("active");
         try {
           await apiClient.toggleFavorite(item.id as number, newFavoriteStatus);
           favoriteButton.classList.toggle("active", newFavoriteStatus);
-          document.dispatchEvent(new CustomEvent("notesUpdated"));
+          document.dispatchEvent(
+            new CustomEvent("notesUpdated", {
+              detail: { noteId: item.id, isFavorite: newFavoriteStatus },
+            })
+          );
         } catch (err) {
           console.error("Failed to update favorite status:", err);
         }
       });
       if (folderName === "Избранное") {
-      favoriteButton?.classList.add("active");
+        favoriteButton?.classList.add("active");
       }
-
 
       listEl.appendChild(noteItem);
     });
 
-    
     header.addEventListener("click", () => {
       collapsed = !collapsed;
       updateState();
@@ -205,8 +207,6 @@ export function Subdirectories({
         e.preventDefault();
       });
     }
-
-
 
     fragment.appendChild(folderElement);
   });

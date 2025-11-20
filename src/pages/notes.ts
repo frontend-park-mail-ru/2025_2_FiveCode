@@ -84,3 +84,15 @@ export async function renderNotes(): Promise<void> {
     main.innerHTML = "<p>Не удалось загрузить заметки.</p>";
   }
 }
+
+// Keep notes list in sync when favorites change elsewhere in the app
+document.removeEventListener("notesUpdated", renderNotes as EventListener);
+document.addEventListener("notesUpdated", () => {
+  const currentPath = window.location.pathname;
+  const currentPage = currentPath.split("/").pop() || "";
+  if (currentPage === "notes") {
+    renderNotes().catch((err) =>
+      console.error("Failed to refresh notes after update:", err)
+    );
+  }
+});
