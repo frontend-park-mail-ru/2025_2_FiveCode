@@ -179,7 +179,7 @@ export const apiClient = {
     formData.append("file", file);
 
     const url = `${API_BASE}/api/files/upload`;
-    const res = await fetch(url, {
+    const res = await apiFetch(url, {
       method: "POST",
       body: formData,
       credentials: "include",

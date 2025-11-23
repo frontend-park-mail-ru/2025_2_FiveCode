@@ -10,10 +10,16 @@ const ICONS = {
 export async function renderNotes(): Promise<void> {
   const main = document.getElementById("main-content");
   if (!main) return;
+
   main.innerHTML = "";
 
   try {
     const allNotes = await apiClient.getNotesForUser();
+
+    const currentPath = window.location.pathname;
+    if (currentPath !== "/notes" && currentPath !== "/") {
+      return;
+    }
 
     const categories = [
       { key: "favorites", title: "Избранное" },
@@ -63,8 +69,8 @@ export async function renderNotes(): Promise<void> {
           e.preventDefault();
           try {
             const newNote = await apiClient.createNote();
-            document.dispatchEvent(new CustomEvent("notesUpdated"));
             router.navigate(`note/${newNote.id}`);
+            document.dispatchEvent(new CustomEvent("notesUpdated"));
           } catch (error) {
             console.error("Failed to create new note", error);
           }
@@ -81,16 +87,19 @@ export async function renderNotes(): Promise<void> {
     });
   } catch (error) {
     console.error("Failed to render notes page:", error);
-    main.innerHTML = "<p>Не удалось загрузить заметки.</p>";
+    if (
+      window.location.pathname === "/notes" ||
+      window.location.pathname === "/"
+    ) {
+      main.innerHTML = "<p>Не удалось загрузить заметки.</p>";
+    }
   }
 }
 
-// Keep notes list in sync when favorites change elsewhere in the app
 document.removeEventListener("notesUpdated", renderNotes as EventListener);
 document.addEventListener("notesUpdated", () => {
   const currentPath = window.location.pathname;
-  const currentPage = currentPath.split("/").pop() || "";
-  if (currentPage === "notes") {
+  if (currentPath === "/notes" || currentPath === "/") {
     renderNotes().catch((err) =>
       console.error("Failed to refresh notes after update:", err)
     );

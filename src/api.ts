@@ -3,7 +3,7 @@ export const API_BASE = config.API_BASE_URL;
 
 interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   path?: string;
-  body?: BodyInit | null;
+  body?: BodyInit | null | FormData;
 }
 
 let csrfToken: string | null = null;
@@ -50,13 +50,29 @@ export async function apiFetch(
   options: ApiFetchOptions = {}
 ): Promise<any> {
   const url = path.startsWith("http") ? path : API_BASE + path;
+
+  const headers: Record<string, string> = { ...options.headers } as Record<
+    string,
+    string
+    >;
+  
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const opts: RequestInit = {
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers,
     credentials: "include",
     ...options,
   };
-  if (opts.body && typeof opts.body !== "string")
+
+  if (
+    opts.body &&
+    typeof opts.body !== "string" &&
+    !(opts.body instanceof FormData)
+  ) {
     opts.body = JSON.stringify(opts.body);
+  }
 
   const method = (opts.method || "GET").toUpperCase();
   const mutatingMethods = ["POST", "PUT", "DELETE", "PATCH"];

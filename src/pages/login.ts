@@ -176,6 +176,6 @@ export function renderLogin(app: HTMLElement): void {
   }
 
   pageEl.appendChild(loginModal);
-  app.appendChild(techSupportWrapper());
+  // app.appendChild(techSupportWrapper());
   app.appendChild(pageEl);
 }

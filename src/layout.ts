@@ -40,7 +40,7 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
     const notes = await apiClient.getNotesForUser();
     
     page.appendChild(Sidebar({ user, notes, avatarUrl }));
-    page.appendChild(techSupportWrapper());
+    // page.appendChild(techSupportWrapper());
   }
   const mainContent = document.createElement("main");
   mainContent.id = "main-content";
