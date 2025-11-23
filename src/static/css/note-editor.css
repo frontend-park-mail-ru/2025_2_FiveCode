@@ -428,3 +428,25 @@
   margin-bottom: 2px;
   margin-left: 1px;
 }
+
+.token-keyword {
+  color: #a626a4;
+  font-weight: bold;
+}
+
+.token-string {
+  color: #50a14f;
+}
+
+.token-comment {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.token-number {
+  color: #986801;
+}
+
+.block--code {
+  color: #383a42;
+}

@@ -1,4 +1,7 @@
 import ejs from "ejs";
+import { highlightCode } from "../utils/syntaxHighlighter";
+import { getCaretPosition, setCaretPosition } from "../utils/caret";
+import { debounce } from "../utils/debounce";
 import {
   BlockTextFormat,
   reconstructHtmlFromFormats,
@@ -62,7 +65,14 @@ export function renderBlock(
       break;
     case "image":
     case "attachment":
-      element = renderImageBlock(block);
+      const content = block.content as AttachmentContent;
+      const templateImg = `<div class="block block--image"><img src="<%= url %>" alt="image block"></div>`;
+      const htmlImg = ejs.render(templateImg, {
+        url:
+          content.url || "https://via.placeholder.com/800x200.png?text=Image",
+      });
+      const docImg = new DOMParser().parseFromString(htmlImg, "text/html");
+      element = docImg.body.firstChild as HTMLElement;
       break;
     case "text":
     default:
@@ -75,36 +85,28 @@ export function renderBlock(
   container.dataset.blockId = String(block.id);
   const handle = document.createElement("div");
   handle.className = "block-handle";
-
   const plus = document.createElement("div");
   plus.className = "button-plus";
   plus.innerHTML = "+";
-
   const actions = document.createElement("div");
   actions.className = "block-actions";
 
   const btnUp = document.createElement("button");
   btnUp.className = "block-action-btn";
   btnUp.setAttribute("data-action", "move-up");
-  btnUp.title = "Move up";
   btnUp.textContent = "↑";
-
   const btnDown = document.createElement("button");
   btnDown.className = "block-action-btn";
   btnDown.setAttribute("data-action", "move-down");
-  btnDown.title = "Move down";
   btnDown.textContent = "↓";
-
   const btnDelete = document.createElement("button");
   btnDelete.className = "block-action-btn block-action-delete";
   btnDelete.setAttribute("data-action", "delete");
-  btnDelete.title = "Delete block";
   btnDelete.textContent = "✕";
 
   actions.appendChild(btnUp);
   actions.appendChild(btnDown);
   actions.appendChild(btnDelete);
-
   handle.appendChild(plus);
   container.appendChild(handle);
   container.appendChild(element);
@@ -132,43 +134,32 @@ function renderTextBlock(
   return element;
 }
 
-function renderImageBlock(block: Block): HTMLElement {
-  const content = block.content as AttachmentContent;
-  const template = `<div class="block block--image"><img src="<%= url %>" alt="image block"></div>`;
-  const html = ejs.render(template, {
-    url: content.url || "https://via.placeholder.com/800x200.png?text=Image",
-  });
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return doc.body.firstChild as HTMLElement;
-}
-
 function renderCodeBlock(
   block: Block,
   updateCallback: UpdateCallback
 ): HTMLElement {
   const content = block.content as CodeContent;
+
+  const highlightedCode = highlightCode(content.code, content.language);
+
   const template = `
     <div class="block block--code" data-block-id="${block.id}">
       <div class="code-toolbar">
         <select class="code-language">
-          <option value="sql" ${
-            content.language === "sql" ? "selected" : ""
-          }>SQL</option>
-          <option value="javascript" ${
-            content.language === "javascript" ? "selected" : ""
-          }>JavaScript</option>
-          <option value="text" ${
-            content.language === "text" ? "selected" : ""
-          }>Plain Text</option>
+          <option value="sql" ${content.language === "sql" ? "selected" : ""}>SQL</option>
+          <option value="javascript" ${content.language === "javascript" ? "selected" : ""}>JavaScript</option>
+          <option value="text" ${content.language === "text" ? "selected" : ""}>Plain Text</option>
         </select>
       </div>
-      <div class="code-content" contenteditable="true" spellcheck="false"><%= content %></div>
+      <div class="code-content" contenteditable="true" spellcheck="false"><%- content %></div>
     </div>
   `;
+
   const html = ejs.render(template, {
-    content: content.code,
+    content: highlightedCode,
     language: content.language,
   });
+
   const doc = new DOMParser().parseFromString(html, "text/html");
   const element = doc.body.firstChild as HTMLElement;
   const contentElement = element.querySelector(".code-content") as HTMLElement;
@@ -176,15 +167,85 @@ function renderCodeBlock(
     ".code-language"
   ) as HTMLSelectElement;
 
-  const onUpdate = () => {
+  const applyHighlighting = () => {
+    const currentPos = getCaretPosition(contentElement);
+    const rawCode = contentElement.innerText;
+    const newHtml = highlightCode(rawCode, languageSelect.value);
+
+    if (contentElement.innerHTML !== newHtml) {
+      contentElement.innerHTML = newHtml;
+      setCaretPosition(contentElement, currentPos);
+    }
+  };
+
+  const debouncedSave = debounce(() => {
     updateCallback(block.id, {
       code: contentElement.innerText,
       language: languageSelect.value,
     });
+  }, 1000);
+
+  const onInput = (e: Event) => {
+    if ((e as InputEvent).inputType === "insertParagraph") {
+      return;
+    }
+    applyHighlighting();
+    debouncedSave();
   };
 
-  contentElement.addEventListener("input", onUpdate);
-  languageSelect.addEventListener("change", onUpdate);
+  contentElement.addEventListener("input", onInput);
+
+  contentElement.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const textNode = document.createTextNode("\n");
+
+      range.deleteContents();
+      range.insertNode(textNode);
+
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      applyHighlighting();
+      debouncedSave();
+    }
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const textNode = document.createTextNode("  ");
+
+      range.deleteContents();
+      range.insertNode(textNode);
+
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      applyHighlighting();
+      debouncedSave();
+    }
+  });
+
+  languageSelect.addEventListener("change", () => {
+    updateCallback(block.id, {
+      code: contentElement.innerText,
+      language: languageSelect.value,
+    });
+    applyHighlighting();
+  });
 
   return element;
 }
