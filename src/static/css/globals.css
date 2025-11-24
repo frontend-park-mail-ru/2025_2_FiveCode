@@ -134,6 +134,16 @@ a {
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+    .page--layout {
+    display: grid;
+    grid-template-columns: 100% 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+}
+
 .exit-modal-overlay {
   position: fixed;
   top: 0;

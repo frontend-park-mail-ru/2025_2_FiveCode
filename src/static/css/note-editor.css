@@ -12,6 +12,15 @@
   padding: 20px 10%;
 }
 
+@media (max-width: 768px) {
+  .note-editor__main {
+  width: 100%;
+  overflow-y: auto;
+  position: relative;
+  padding: 10px 5%;
+}
+}
+
 .note-editor__header {
   display: flex;
   justify-content: flex-end;

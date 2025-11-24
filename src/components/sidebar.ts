@@ -70,7 +70,6 @@ export function Sidebar({
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
             <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
-            <a class="sidebar__item" data-link> <img style="transform: rotate(90deg); transition: transform 0.2s ease;" src="<%= collapse %>" class="sidebar__icon" /> Свернуть </a>
         </aside>
     `;
 
