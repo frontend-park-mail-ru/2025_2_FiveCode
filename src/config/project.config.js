@@ -1,4 +1,4 @@
-const API_BASE_HOST = "89.208.210.115";
+const API_BASE_HOST = "localhost";
 const API_BASE_PORT = 8080;
 
 export const config = {
