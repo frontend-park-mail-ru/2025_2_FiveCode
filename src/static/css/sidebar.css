@@ -56,7 +56,7 @@
     left: 0;
     bottom: 0;
     width: 100%;
-    height: 64px;                 /* высота мобильного меню */
+    height: 64px;
     padding: 0;
     border-right: none;
     border-top: 1px solid var(--primary-50);
@@ -67,11 +67,10 @@
     align-items: center;
     justify-content: space-around;
 
-    overflow: hidden;              /* важный момент */
+    overflow: hidden;
     z-index: 1000;
   }
 
-  /* Скрываем пользователя и всё лишнее */
   .sidebar__user {
     display: none;
   }
@@ -442,3 +441,58 @@
   background: rgba(0,0,0,0.05);
 }
 
+.subdir-item--active {
+  background-color: var(--primary-100);
+  border-left: 3px solid #2196f3;
+  flex-direction: column;
+  padding-bottom: 60px;
+}
+
+.subnotes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  margin-left: 20px;
+  border-left: 2px solid #e0e0e0;
+}
+
+.subnote-item {
+  padding: 4px 8px;
+  margin: 2px 0;
+}
+
+.add-note-button,
+.add-subnote-btn {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+
+  background: transparent;
+  border: 1px solid var(--primary-100);
+  border-radius: 6px;
+
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: left;
+
+  cursor: pointer;
+
+
+  transition: all 0.2s ease;
+}
+
+.add-note-button:hover,
+.add-subnote-btn:hover {
+  background: var(--primary-200);
+  border-color: var(--gray-300);
+  color: var(--text-primary);
+}
+
+.add-note-button:active,
+.add-subnote-btn:active {
+  transform: scale(0.98);
+}
+
+.add-subnote-btn {
+  margin-left: 20px;
+}

@@ -57,6 +57,10 @@ export interface Messages {
   messages: Messages[];
 }
 
+export interface Note {
+  parentId?: number | null,
+}
+
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -117,8 +121,12 @@ export const apiClient = {
     });
   },
 
-  async createNote(): Promise<any> {
-    return apiFetch(`/api/notes`, { method: "POST" });
+  async createNote(
+    parentId?: number
+  ): Promise<any> {
+    return apiFetch(`/api/notes`, { 
+      method: "POST",
+    body: JSON.stringify(parentId) });
   },
 
   async deleteNote(noteId: string | number): Promise<void> {

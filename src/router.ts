@@ -60,7 +60,9 @@ class Router {
   public navigate(path: string = ""): this {
     if (this.mode === "history") {
       window.history.pushState(null, "", this.root + this.clearSlashes(path));
+      // document.dispatchEvent(new CustomEvent("routeChanged"));
       this.interval();
+      
     } else {
       window.location.href = `${window.location.href.replace(
         /#(.*)$/,
