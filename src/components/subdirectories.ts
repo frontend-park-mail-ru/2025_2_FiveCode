@@ -361,10 +361,25 @@ export function Subdirectories({
             .querySelector(".delete-subnote")
             ?.addEventListener("click", async () => {
               try {
+                // await apiClient.deleteNote(subId);
+                // document.dispatchEvent(new CustomEvent("notesUpdated"));
+                // menu.remove();
+                // router.navigate("/notes");
+                const deleteModal = createDeleteNoteModal();
+          document.body.appendChild(deleteModal);
+          deleteModal
+            .querySelector(".delete-note-confirm")
+            ?.addEventListener("click", async () => {
+              try {
                 await apiClient.deleteNote(subId);
                 document.dispatchEvent(new CustomEvent("notesUpdated"));
+                deleteModal.remove();
                 menu.remove();
                 router.navigate("/notes");
+              } catch (err) {
+                console.error("Failed to delete note:", err);
+              }
+            });
               } catch (err) {
                 console.error("Failed to delete subnote", err);
               }
