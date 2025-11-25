@@ -41,7 +41,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
 
   const getSubNotes = (id: number) => subNotes.filter(sn => sn.parentId === id);
 
-  // ШАБЛОНЫ
   const folderTemplate = `
     <div class="folder">
       <div class="folder-header">
@@ -101,7 +100,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
     </li>
   `;
 
-  // Распределяем по папкам
   allNotes.forEach(note => {
     if (note.favorite && folders["Избранное"]) {
       folders["Избранное"].push(note);
@@ -111,7 +109,7 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
   });
 
 
-  // обработчик создания подзаметки на конкретный элемент
+  // обработчик создания подзаметки
   const attachAddSubnoteHandler = (noteItemEl: HTMLElement, parentId: number) => {
     const addBtn = noteItemEl.querySelector(".add-subnote-btn") as HTMLElement | null;
     if (!addBtn) return;
@@ -138,7 +136,7 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
       return;
     }
 
-    // Снять активный класс с предыдущей
+    // снятие активного класса с предыдущей
     const prevActive = root.querySelector(".subdir-item--active");
     if (prevActive) {
       prevActive.classList.remove("subdir-item--active");
@@ -150,7 +148,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
       }
     }
 
-    // элемент с noteId === currentId
     let newActive: HTMLElement | null = root.querySelector(`.subdir-item[data-note-id="${currentId}"]`);
 
     // поиск subnote-item с соответствующим id и потом родителя
@@ -286,7 +283,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         });
       });
 
-      // Меню подзаметок
       noteItem.querySelectorAll(".subnote-menu-dots").forEach(button => {
         button.addEventListener("click", (e) => {
           e.preventDefault();
