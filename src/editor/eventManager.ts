@@ -198,7 +198,6 @@ export function setupEventManager({
     if (commandButton) {
       const command = commandButton.getAttribute("data-command")!;
       document.execCommand(command, false);
-      triggerUpdate();
     }
 
     if (dropdownToggle) {
@@ -244,7 +243,6 @@ export function setupEventManager({
 
         display.textContent = dropdownItem.dataset.value || "";
         dropdown?.classList.remove("active");
-        triggerUpdate();
       }
     }
   });
