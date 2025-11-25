@@ -51,19 +51,18 @@ export async function apiFetch(
 ): Promise<any> {
   const url = path.startsWith("http") ? path : API_BASE + path;
 
-  const headers: Record<string, string> = { ...options.headers } as Record<
-    string,
-    string
-    >;
-  
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
+
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
 
   const opts: RequestInit = {
-    headers,
     credentials: "include",
     ...options,
+    headers,
   };
 
   if (
