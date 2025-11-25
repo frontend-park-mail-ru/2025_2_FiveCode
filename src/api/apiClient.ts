@@ -187,18 +187,12 @@ export const apiClient = {
     formData.append("file", file);
 
     const url = `${API_BASE}/api/files/upload`;
-    const res = await apiFetch(url, {
+
+    return apiFetch(url, {
       method: "POST",
       body: formData,
       credentials: "include",
     });
-
-    if (!res.ok) {
-      const errorBody = await res.text();
-      throw new Error(`Upload failed: ${res.statusText} - ${errorBody}`);
-    }
-
-    return res.json();
   },
 
   async createTicket(ticketData: Ticket): Promise<Ticket> {
@@ -221,7 +215,7 @@ export const apiClient = {
     data: { title?: string; description?: string }
   ): Promise<Ticket> {
     const payload = {
-      tittle: data.title,
+      title: data.title,
       description: data.description,
     };
     return apiFetch(`/api/tickets/${ticketId}`, {
