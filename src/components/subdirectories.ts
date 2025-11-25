@@ -26,13 +26,14 @@ interface SubdirectoriesParams {
 export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFragment {
   const fragment = document.createDocumentFragment();
 
-  // Корневой контейнер — важен для поиска DOM после вставки
   const root = document.createElement("div");
   root.className = "subdirectories-root";
 
   const folders: Record<string, Note[]> = {
+    Совместный_доступ: [],
     Избранное: [],
     Заметки: [],
+    
   };
 
   const subNotes = items.filter(n => n.parentId != null);
@@ -51,9 +52,7 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         <span class="folder-title"><%= folderName %></span>
       </div>
       <ul class="folder-list"></ul>
-      <% if (folderName === 'Заметки') { %>
         <div class="add-note-button">+ Добавить новую заметку</div>
-      <% } %>
     </div>
   `;
 
@@ -327,7 +326,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         });
       });
 
-      // favorite button
       const favoriteButton = noteItem.querySelector(".subdir-menu-favorite");
       favoriteButton?.addEventListener("click", async (e) => {
         e.preventDefault();
@@ -354,7 +352,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
       listEl.appendChild(noteItem);
     });
 
-    // Добавление новой основной заметки
     const addButton = folderElement.querySelector(".add-note-button");
     if (addButton) {
       addButton.addEventListener("click", async (e) => {
