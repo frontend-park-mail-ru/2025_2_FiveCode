@@ -19,7 +19,7 @@ interface Note {
   title: string;
   icon: string;
   favorite: boolean;
-  parentId?: number | null;
+  parent_note_id?: number | null;
 }
 
 interface SubdirectoriesParams {
@@ -42,11 +42,11 @@ export function Subdirectories({
     Заметки: [],
   };
 
-  const subNotes = items.filter((n) => n.parentId != null);
-  const allNotes = items.filter((n) => n.parentId == null);
+  const subNotes = items.filter((n) => n.parent_note_id != null);
+  const allNotes = items.filter((n) => n.parent_note_id == null);
 
   const getSubNotes = (id: number) =>
-    subNotes.filter((sn) => sn.parentId === id);
+    subNotes.filter((sn) => sn.parent_note_id === id);
 
   const folderTemplate = `
     <div class="folder">
@@ -86,11 +86,11 @@ export function Subdirectories({
 
       <% if (showSubNotes) { %>
         <ul class="subnotes-list" style="display:block;">
-          <%= subnotesHTML %>
+          <%- subnotesHTML %>
         </ul>
       <% } else if (hasSubNotes) { %>
         <ul class="subnotes-list" style="display:none;">
-          <%= subnotesHTML %>
+          <%- subnotesHTML %>
         </ul>
       <% } %>
     </li>
@@ -111,7 +111,6 @@ export function Subdirectories({
 
   allNotes.forEach((note) => {
     if (currentUserId && note.owner_id !== currentUserId) {
-      // FIX: add optional chaining or non-null assertion
       folders["Совместный_доступ"]?.push(note);
     } else {
       if (note.favorite) {
@@ -121,6 +120,21 @@ export function Subdirectories({
     }
   });
 
+  const createSubNoteHandler = async (parentId: number) => {
+    try {
+      const newNote = await apiClient.createNote(parentId);
+      document.dispatchEvent(
+        new CustomEvent("notesUpdated", { detail: { createdId: newNote.id } })
+      );
+      router.navigate(`/note/${newNote.id}`);
+    } catch (err) {
+      console.error("Ошибка создания подзаметки", err);
+      alert(
+        "Не удалось создать подзаметку. Возможно, достигнут лимит вложенности."
+      );
+    }
+  };
+
   const attachAddSubnoteHandler = (
     noteItemEl: HTMLElement,
     parentId: number
@@ -128,23 +142,16 @@ export function Subdirectories({
     const addBtn = noteItemEl.querySelector(
       ".add-subnote-btn"
     ) as HTMLElement | null;
+
     if (!addBtn) return;
-    addBtn.replaceWith(addBtn.cloneNode(true));
-    const freshBtn = noteItemEl.querySelector(
-      ".add-subnote-btn"
-    ) as HTMLElement | null;
-    freshBtn?.addEventListener("click", async (e) => {
+
+    const newBtn = addBtn.cloneNode(true) as HTMLElement;
+    addBtn.replaceWith(newBtn);
+
+    newBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      try {
-        const newNote = await apiClient.createNote(parentId);
-        document.dispatchEvent(
-          new CustomEvent("notesUpdated", { detail: { createdId: newNote.id } })
-        );
-        router.navigate(`/note/${newNote.id}`);
-      } catch (err) {
-        console.error("Ошибка создания подзаметки", err);
-      }
+      await createSubNoteHandler(parentId);
     });
   };
 
@@ -404,6 +411,9 @@ export function Subdirectories({
     if (addButton) {
       addButton.addEventListener("click", async (e) => {
         e.preventDefault();
+        const btn = e.target as HTMLElement;
+        const originalText = btn.textContent;
+        btn.textContent = "Создание...";
         try {
           const newNote = await apiClient.createNote();
           document.dispatchEvent(
@@ -414,6 +424,7 @@ export function Subdirectories({
           router.navigate(`/note/${newNote.id}`);
         } catch (err) {
           console.error("Ошибка создания заметки", err);
+          btn.textContent = originalText;
         }
       });
     }

@@ -151,7 +151,7 @@ export const apiClient = {
   async createNote(parentId?: number): Promise<any> {
     return apiFetch(`/api/notes`, {
       method: "POST",
-      body: JSON.stringify(parentId),
+      body: JSON.stringify({ parent_note_id: parentId }),
     });
   },
 

@@ -40,12 +40,17 @@ const handleTitleUpdate = (event: Event) => {
   const { noteId, newTitle } = customEvent.detail;
   if (!noteId || typeof newTitle === "undefined") return;
 
-  const noteLinkTitle = document.querySelector(
-    `.sidebar a[href="/note/${noteId}"] .subdir-title`
+  const titleElements = document.querySelectorAll(
+    `.sidebar a[href="/note/${noteId}"] .subdir-title, .sidebar a[href="/note/${noteId}"] .subnote-title`
   );
-  if (noteLinkTitle) {
-    noteLinkTitle.textContent = newTitle;
-  }
+
+  titleElements.forEach((el) => {
+    let displayTitle = newTitle;
+    if (displayTitle.length > 18) {
+      displayTitle = displayTitle.substring(0, 17) + "...";
+    }
+    el.textContent = displayTitle;
+  });
 };
 
 document.removeEventListener("noteTitleUpdated", handleTitleUpdate);
@@ -223,7 +228,6 @@ export function Sidebar({
       (n) => ({ ...n, favorite: n.is_favorite })
     );
     subs.innerHTML = "";
-    // FIX: pass 0 if id is undefined to satisfy exactOptionalPropertyTypes
     const subdirComponent = Subdirectories({
       items: mappedNotes,
       currentUserId: user?.id ?? 0,
