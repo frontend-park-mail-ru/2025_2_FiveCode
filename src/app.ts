@@ -21,6 +21,7 @@ import "./static/css/techsupport/ticket-list.css";
 import "./static/css/techsupport/ticket-detail.css";
 import "./static/css/techsupport/statistics.css";
 import "./static/css/chat.css";
+import "./static/css/collaboration.css"
 
 interface User {
   id?: number;

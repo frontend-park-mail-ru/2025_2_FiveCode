@@ -3,11 +3,13 @@ import { createEditorManager } from "../editor/editorManager";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
 import { createDeleteNoteModal } from "../components/deleteNoteModal";
+import { createCollaboratorsModal } from "../components/createCollaboratorsModal";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
   star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
   clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
+  dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
 };
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
@@ -19,6 +21,8 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <span id="save-status"></span>
       <button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>
       <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
+      <button class="note-editor__header-btn" id="openCollabModal"><img src="${ICONS.dots}" /></button>
+
     </div>
     <div class="formatting-toolbar">
       <div class="format-dropdown" id="font-dropdown">
@@ -75,6 +79,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const favoriteBtn = mainEl.querySelector(
     "#favorite-note-btn"
   ) as HTMLButtonElement;
+  const openCollabBtn = document.querySelector("#openCollabModal");
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
 
   let initialBlocks: Block[] = [];
@@ -154,7 +159,13 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     }
   });
 
-  // Keep favorite button in editor in sync when favorites change elsewhere
+  openCollabBtn?.addEventListener("click", () => {
+    const modal = createCollaboratorsModal([
+    ]);
+
+    document.body.appendChild(modal);
+});
+
   const handleNotesUpdated = (event: Event) => {
     const custom = event as CustomEvent;
     if (!custom?.detail) return;
