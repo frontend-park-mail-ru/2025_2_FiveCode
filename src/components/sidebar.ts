@@ -2,7 +2,11 @@ import ejs from "ejs";
 import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
-import { UserMenu, createExitConfirmationModal, createSearchModal } from "./userMenu";
+import {
+  UserMenu,
+  createExitConfirmationModal,
+  createSearchModal,
+} from "./userMenu";
 import { loadUser } from "../utils/session";
 
 const ICONS = {
@@ -110,14 +114,7 @@ export function Sidebar({
     }
   };
 
-  const searchBtn = el.querySelector('#search-btn');
-
-  // searchBtn?.addEventListener('click', (e) => {
-  //   e.preventDefault();
-  //   if (document.querySelector('#searchModal')) return;
-  //   const searchModal = createSearchModal();
-  //   document.body.appendChild(searchModal);
-  // });
+  const searchBtn = el.querySelector("#search-btn");
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
@@ -160,10 +157,8 @@ export function Sidebar({
               router.navigate("login");
             });
         });
-      
     }
 
-    
     userMenuComponent.style.top = `${rect.bottom + 8}px`;
     userMenuComponent.style.left = `${rect.left < 220 ? 230 : rect.left}px`;
     userMenuComponent.classList.toggle("user-menu--visible");
@@ -183,8 +178,14 @@ export function Sidebar({
     }
   });
 
-  el.querySelector("#sidebar-avatar")?.addEventListener("click", navigateToSettings);
-  el.querySelector("#sidebar-username")?.addEventListener("click", navigateToSettings);
+  el.querySelector("#sidebar-avatar")?.addEventListener(
+    "click",
+    navigateToSettings
+  );
+  el.querySelector("#sidebar-username")?.addEventListener(
+    "click",
+    navigateToSettings
+  );
 
   const handleProfileUpdate = (event: CustomEvent) => {
     const updatedUser = loadUser();
@@ -222,7 +223,11 @@ export function Sidebar({
       (n) => ({ ...n, favorite: n.is_favorite })
     );
     subs.innerHTML = "";
-    const subdirComponent = Subdirectories({ items: mappedNotes });
+    // FIX: pass 0 if id is undefined to satisfy exactOptionalPropertyTypes
+    const subdirComponent = Subdirectories({
+      items: mappedNotes,
+      currentUserId: user?.id ?? 0,
+    });
 
     const addNoteButtons = subdirComponent.querySelectorAll(".add-note-button");
     addNoteButtons.forEach((button) => {

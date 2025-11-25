@@ -58,7 +58,34 @@ export interface Messages {
 }
 
 export interface Note {
-  parentId?: number | null,
+  parentId?: number | null;
+}
+
+export interface Collaborator {
+  permission_id: number;
+  user_id: number;
+  email?: string;
+  username?: string;
+  role: "editor" | "viewer" | "commenter";
+}
+
+export interface CollaboratorsResponse {
+  collaborators: Collaborator[];
+  owner_id: number;
+  total_collaborators: number;
+}
+
+export interface SharingSettingsResponse {
+  note_id: number;
+  owner_id: number;
+  public_access: {
+    note_id: number;
+    access_level: "editor" | "viewer" | "commenter" | null;
+    share_url: string;
+  };
+  collaborators: Collaborator[];
+  total_collaborators: number;
+  is_owner: boolean;
 }
 
 export const apiClient = {
@@ -121,12 +148,11 @@ export const apiClient = {
     });
   },
 
-  async createNote(
-    parentId?: number
-  ): Promise<any> {
-    return apiFetch(`/api/notes`, { 
+  async createNote(parentId?: number): Promise<any> {
+    return apiFetch(`/api/notes`, {
       method: "POST",
-    body: JSON.stringify(parentId) });
+      body: JSON.stringify(parentId),
+    });
   },
 
   async deleteNote(noteId: string | number): Promise<void> {
@@ -250,5 +276,37 @@ export const apiClient = {
 
   async getChatMessages(ticketId: number): Promise<Messages> {
     return apiFetch(`/api/tickets/${ticketId}/messages`, { method: "GET" });
+  },
+
+  async getCollaborators(
+    noteId: number | string
+  ): Promise<CollaboratorsResponse> {
+    return apiFetch(`/api/notes/${noteId}/collaborators`, { method: "GET" });
+  },
+
+  async addCollaborator(
+    noteId: number | string,
+    email: string,
+    role: "editor" | "viewer" | "commenter" = "editor"
+  ): Promise<any> {
+    return apiFetch(`/api/notes/${noteId}/collaborators`, {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    });
+  },
+
+  async removeCollaborator(
+    noteId: number | string,
+    permissionId: number | string
+  ): Promise<void> {
+    return apiFetch(`/api/notes/${noteId}/collaborators/${permissionId}`, {
+      method: "DELETE",
+    });
+  },
+
+  async getSharingSettings(
+    noteId: number | string
+  ): Promise<SharingSettingsResponse> {
+    return apiFetch(`/api/notes/${noteId}/sharing`, { method: "GET" });
   },
 };

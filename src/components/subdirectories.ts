@@ -4,8 +4,10 @@ import { apiClient } from "../api/apiClient";
 import router from "../router";
 
 const ICONS = {
-  icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url).href,
-  icon_favorite: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
+  icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
+    .href,
+  icon_favorite: new URL("../static/svg/icon_favorite.svg", import.meta.url)
+    .href,
   icon_folder: new URL("../static/svg/icon_folder.svg", import.meta.url).href,
   dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
   star: new URL("../static/svg/icon_star.svg", import.meta.url).href,
@@ -13,6 +15,7 @@ const ICONS = {
 
 interface Note {
   id: number;
+  owner_id: number;
   title: string;
   icon: string;
   favorite: boolean;
@@ -21,9 +24,13 @@ interface Note {
 
 interface SubdirectoriesParams {
   items: Note[];
+  currentUserId?: number;
 }
 
-export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFragment {
+export function Subdirectories({
+  items = [],
+  currentUserId,
+}: SubdirectoriesParams): DocumentFragment {
   const fragment = document.createDocumentFragment();
 
   const root = document.createElement("div");
@@ -33,13 +40,13 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
     Совместный_доступ: [],
     Избранное: [],
     Заметки: [],
-    
   };
 
-  const subNotes = items.filter(n => n.parentId != null);
-  const allNotes = items;
+  const subNotes = items.filter((n) => n.parentId != null);
+  const allNotes = items.filter((n) => n.parentId == null);
 
-  const getSubNotes = (id: number) => subNotes.filter(sn => sn.parentId === id);
+  const getSubNotes = (id: number) =>
+    subNotes.filter((sn) => sn.parentId === id);
 
   const folderTemplate = `
     <div class="folder">
@@ -48,10 +55,12 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         <% if (folderIcon) { %>
           <img src="<%= folderIcon %>" class="folder-icon" />
         <% } %>
-        <span class="folder-title"><%= folderName %></span>
+        <span class="folder-title"><%= folderName.replace('_', ' ') %></span>
       </div>
       <ul class="folder-list"></ul>
-        <div class="add-note-button">+ Добавить новую заметку</div>
+        <% if (folderName === "Заметки") { %>
+            <div class="add-note-button">+ Добавить новую заметку</div>
+        <% } %>
     </div>
   `;
 
@@ -71,7 +80,7 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         </span>
       </a>
 
-      <% if (isActive) { %>
+      <% if (isActive && canEdit) { %>
         <button class="add-subnote-btn">+ Добавить подзаметку</button>
       <% } %>
 
@@ -100,29 +109,38 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
     </li>
   `;
 
-  allNotes.forEach(note => {
-    if (note.favorite && folders["Избранное"]) {
-      folders["Избранное"].push(note);
-    } else if (folders["Заметки"]) {
-      folders["Заметки"].push(note);
+  allNotes.forEach((note) => {
+    if (currentUserId && note.owner_id !== currentUserId) {
+      // FIX: add optional chaining or non-null assertion
+      folders["Совместный_доступ"]?.push(note);
+    } else {
+      if (note.favorite) {
+        folders["Избранное"]?.push(note);
+      }
+      folders["Заметки"]?.push(note);
     }
   });
 
-
-  // обработчик создания подзаметки
-  const attachAddSubnoteHandler = (noteItemEl: HTMLElement, parentId: number) => {
-    const addBtn = noteItemEl.querySelector(".add-subnote-btn") as HTMLElement | null;
+  const attachAddSubnoteHandler = (
+    noteItemEl: HTMLElement,
+    parentId: number
+  ) => {
+    const addBtn = noteItemEl.querySelector(
+      ".add-subnote-btn"
+    ) as HTMLElement | null;
     if (!addBtn) return;
     addBtn.replaceWith(addBtn.cloneNode(true));
-    const freshBtn = noteItemEl.querySelector(".add-subnote-btn") as HTMLElement | null;
+    const freshBtn = noteItemEl.querySelector(
+      ".add-subnote-btn"
+    ) as HTMLElement | null;
     freshBtn?.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
       try {
-        const newNote = await apiClient.createNote(
-          parentId,
+        const newNote = await apiClient.createNote(parentId);
+        document.dispatchEvent(
+          new CustomEvent("notesUpdated", { detail: { createdId: newNote.id } })
         );
-        document.dispatchEvent(new CustomEvent("notesUpdated", { detail: { createdId: newNote.id }}));
         router.navigate(`/note/${newNote.id}`);
       } catch (err) {
         console.error("Ошибка создания подзаметки", err);
@@ -136,58 +154,84 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
       return;
     }
 
-    // снятие активного класса с предыдущей
     const prevActive = root.querySelector(".subdir-item--active");
     if (prevActive) {
       prevActive.classList.remove("subdir-item--active");
       const prevBtn = prevActive.querySelector(".add-subnote-btn");
       prevBtn?.remove();
-      const prevSubnotesList = prevActive.querySelector(".subnotes-list") as HTMLElement | null;
+      const prevSubnotesList = prevActive.querySelector(
+        ".subnotes-list"
+      ) as HTMLElement | null;
       if (prevSubnotesList && prevSubnotesList.children.length === 0) {
         prevSubnotesList.style.display = "none";
       }
     }
 
-    let newActive: HTMLElement | null = root.querySelector(`.subdir-item[data-note-id="${currentId}"]`);
+    let newActive: HTMLElement | null = root.querySelector(
+      `.subdir-item[data-note-id="${currentId}"]`
+    );
 
-    // поиск subnote-item с соответствующим id и потом родителя
     if (!newActive) {
-      const subEl = root.querySelector(`.subnote-item[data-subnote-id="${currentId}"]`);
+      const subEl = root.querySelector(
+        `.subnote-item[data-subnote-id="${currentId}"]`
+      );
       if (subEl) {
         newActive = subEl.closest(".subdir-item") as HTMLElement | null;
-        root.querySelectorAll(".subnote-item .subnote-header").forEach(h => h.classList.remove("subnote-header--active"));
-        const subHeader = subEl.querySelector(".subnote-header") as HTMLElement | null;
+        root
+          .querySelectorAll(".subnote-item .subnote-header")
+          .forEach((h) => h.classList.remove("subnote-header--active"));
+        const subHeader = subEl.querySelector(
+          ".subnote-header"
+        ) as HTMLElement | null;
         subHeader?.classList.add("subnote-header--active");
-      } else {
-        // ничего найдено
       }
     } else {
-      root.querySelectorAll(".subnote-item .subnote-header").forEach(h => h.classList.remove("subnote-header--active"));
+      root
+        .querySelectorAll(".subnote-item .subnote-header")
+        .forEach((h) => h.classList.remove("subnote-header--active"));
     }
 
     if (newActive) {
-      // раскрыть подзаметки списка
-      const subnotesList = newActive.querySelector(".subnotes-list") as HTMLElement | null;
+      const subnotesList = newActive.querySelector(
+        ".subnotes-list"
+      ) as HTMLElement | null;
       if (subnotesList) subnotesList.style.display = "block";
       newActive.classList.add("subdir-item--active");
-      if (!newActive.querySelector(".add-subnote-btn")) {
-        const header = newActive.querySelector(".subdir-header") as HTMLElement | null;
-        if (header) {
-          const btn = document.createElement("button");
-          btn.className = "add-subnote-btn";
-          btn.textContent = "+ Добавить подзаметку";
-          header.insertAdjacentElement("afterend", btn);
-          attachAddSubnoteHandler(newActive, Number(newActive.getAttribute("data-note-id")));
+
+      const isSharedFolder =
+        newActive
+          .closest(".folder")
+          ?.querySelector(".folder-title")
+          ?.textContent?.trim() === "Совместный доступ";
+
+      if (!isSharedFolder) {
+        if (!newActive.querySelector(".add-subnote-btn")) {
+          const header = newActive.querySelector(
+            ".subdir-header"
+          ) as HTMLElement | null;
+          if (header) {
+            const btn = document.createElement("button");
+            btn.className = "add-subnote-btn";
+            btn.textContent = "+ Добавить подзаметку";
+            header.insertAdjacentElement("afterend", btn);
+            attachAddSubnoteHandler(
+              newActive,
+              Number(newActive.getAttribute("data-note-id"))
+            );
+          }
+        } else {
+          attachAddSubnoteHandler(
+            newActive,
+            Number(newActive.getAttribute("data-note-id"))
+          );
         }
-      } else {
-        attachAddSubnoteHandler(newActive, Number(newActive.getAttribute("data-note-id")));
       }
     }
   };
 
-  // рендер папок и заметок
   Object.entries(folders).forEach(([folderName, notes]) => {
     if (folderName === "Избранное" && notes.length === 0) return;
+    if (folderName === "Совместный_доступ" && notes.length === 0) return;
 
     const folderHtml = ejs.render(folderTemplate, {
       icon_triangle: ICONS.icon_triangle,
@@ -214,11 +258,14 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
       const itemSubNotes = getSubNotes(item.id);
       const hasSubNotes = itemSubNotes.length > 0;
       const isActive = window.location.pathname === `/note/${item.id}`;
-      const isSubActive = itemSubNotes.some(s => s.id === Number(window.location.pathname.split("/").pop()));
+      const isSubActive = itemSubNotes.some(
+        (s) => s.id === Number(window.location.pathname.split("/").pop())
+      );
       const showSubNotes = isActive || isSubActive;
+      const canEdit = item.owner_id === currentUserId;
 
       let subnotesHTML = "";
-      itemSubNotes.forEach(sub => {
+      itemSubNotes.forEach((sub) => {
         subnotesHTML += ejs.render(subnoteItemTemplate, {
           id: sub.id,
           title: sub.title,
@@ -235,13 +282,13 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         isActive,
         showSubNotes,
         subnotesHTML,
+        canEdit,
       });
 
       const noteWrapper = document.createElement("div");
       noteWrapper.innerHTML = noteHtml;
       const noteItem = noteWrapper.firstElementChild as HTMLElement;
 
-      // Меню точек
       const dotsButton = noteItem.querySelector(".subdir-menu-dots");
       dotsButton?.addEventListener("click", (e) => {
         e.preventDefault();
@@ -261,7 +308,8 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         menu.querySelector(".delete-note")?.addEventListener("click", () => {
           const deleteModal = createDeleteNoteModal();
           document.body.appendChild(deleteModal);
-          deleteModal.querySelector(".delete-note-confirm")
+          deleteModal
+            .querySelector(".delete-note-confirm")
             ?.addEventListener("click", async () => {
               try {
                 await apiClient.deleteNote(item.id);
@@ -283,7 +331,7 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         });
       });
 
-      noteItem.querySelectorAll(".subnote-menu-dots").forEach(button => {
+      noteItem.querySelectorAll(".subnote-menu-dots").forEach((button) => {
         button.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -302,16 +350,18 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
           menu.style.top = rect.bottom + "px";
           menu.style.left = rect.left + "px";
 
-          menu.querySelector(".delete-subnote")?.addEventListener("click", async () => {
-            try {
-              await apiClient.deleteNote(subId);
-              document.dispatchEvent(new CustomEvent("notesUpdated"));
-              menu.remove();
-              router.navigate("/notes");
-            } catch (err) {
-              console.error("Failed to delete subnote", err);
-            }
-          });
+          menu
+            .querySelector(".delete-subnote")
+            ?.addEventListener("click", async () => {
+              try {
+                await apiClient.deleteNote(subId);
+                document.dispatchEvent(new CustomEvent("notesUpdated"));
+                menu.remove();
+                router.navigate("/notes");
+              } catch (err) {
+                console.error("Failed to delete subnote", err);
+              }
+            });
 
           document.addEventListener("click", function close(e) {
             if (!menu.contains(e.target as Node)) {
@@ -330,9 +380,11 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
         try {
           await apiClient.toggleFavorite(item.id as number, newFavoriteStatus);
           favoriteButton.classList.toggle("active", newFavoriteStatus);
-          document.dispatchEvent(new CustomEvent("notesUpdated", {
-            detail: { noteId: item.id, isFavorite: newFavoriteStatus },
-          }));
+          document.dispatchEvent(
+            new CustomEvent("notesUpdated", {
+              detail: { noteId: item.id, isFavorite: newFavoriteStatus },
+            })
+          );
         } catch (err) {
           console.error("Failed to update favorite status:", err);
         }
@@ -353,9 +405,12 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
       addButton.addEventListener("click", async (e) => {
         e.preventDefault();
         try {
-          const newNote = await apiClient.createNote(
+          const newNote = await apiClient.createNote();
+          document.dispatchEvent(
+            new CustomEvent("notesUpdated", {
+              detail: { createdId: newNote.id },
+            })
           );
-          document.dispatchEvent(new CustomEvent("notesUpdated", { detail: { createdId: newNote.id }}));
           router.navigate(`/note/${newNote.id}`);
         } catch (err) {
           console.error("Ошибка создания заметки", err);
@@ -374,7 +429,6 @@ export function Subdirectories({ items = [] }: SubdirectoriesParams): DocumentFr
 
   fragment.appendChild(root);
 
-  // подписка на все события для обновления активночти заметок
   window.addEventListener("popstate", () => {
     setTimeout(updateActiveState, 0);
   });

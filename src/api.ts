@@ -47,7 +47,8 @@ async function getCsrfToken(): Promise<string> {
 
 export async function apiFetch(
   path: string,
-  options: ApiFetchOptions = {}
+  options: ApiFetchOptions = {},
+  isRetry = false
 ): Promise<any> {
   const url = path.startsWith("http") ? path : API_BASE + path;
 
@@ -94,14 +95,20 @@ export async function apiFetch(
   try {
     json = text ? JSON.parse(text) : null;
   } catch (e) {}
+
   if (!res.ok) {
     if (res.status === 403) {
       const errCode = json?.error_code;
       if (
         errCode === "csrf_token_expired" ||
-        errCode === "csrf_token_invalid"
+        errCode === "csrf_token_invalid" ||
+        errCode === "csrf_token_missing"
       ) {
         clearCsrfToken();
+        if (!isRetry) {
+            console.log("CSRF issues detected, refreshing token and retrying...");
+            return apiFetch(path, options, true);
+        }
       }
     }
     const err = new Error(json?.error || res.statusText || "API Error");

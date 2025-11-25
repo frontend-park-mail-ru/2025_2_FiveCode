@@ -4,6 +4,7 @@ import router from "../router";
 import { apiClient } from "../api/apiClient";
 import { createDeleteNoteModal } from "../components/deleteNoteModal";
 import { createCollaboratorsModal } from "../components/createCollaboratorsModal";
+import { WsClient, ServerMessage } from "../api/wsClient";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -12,9 +13,17 @@ const ICONS = {
   dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
 };
 
+let activeWsClient: WsClient | null = null;
+
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
+  if (activeWsClient) {
+    activeWsClient.close();
+    activeWsClient = null;
+  }
+
   const mainEl = document.getElementById("main-content");
   if (!mainEl) return;
+  
   mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
     <div class="note-editor__header">
@@ -103,7 +112,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       favoriteBtn.classList.add("active");
     }
   } catch (e) {
-    console.error("Не удалось загрузить заметку.", e);
+    console.error("Error loading note data:", e);
     router.navigate("notes");
     return;
   }
@@ -121,6 +130,25 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   });
 
   editorManager.render();
+
+  activeWsClient = new WsClient(noteId);
+  activeWsClient.connect((msg: ServerMessage) => {
+    if (msg.type === "note_update") {
+      if (msg.title) {
+        titleInput.value = msg.title;
+      }
+      
+      if (msg.blocks) {
+        const cleanBlocks = msg.blocks.map((block: any): Block => {
+          if (block.type === "attachment") {
+            block.type = "image";
+          }
+          return block as Block;
+        });
+        editorManager.syncBlocks(cleanBlocks);
+      }
+    }
+  });
 
   if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
@@ -160,11 +188,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   });
 
   openCollabBtn?.addEventListener("click", () => {
-    const modal = createCollaboratorsModal([
-    ]);
-
+    const id = typeof noteId === 'string' ? parseInt(noteId) : noteId;
+    const modal = createCollaboratorsModal(id);
     document.body.appendChild(modal);
-});
+  });
 
   const handleNotesUpdated = (event: Event) => {
     const custom = event as CustomEvent;
