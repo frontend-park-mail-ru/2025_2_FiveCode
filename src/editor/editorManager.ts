@@ -69,7 +69,7 @@ export function createEditorManager({
     }
   };
 
-  const debouncedSaveTitle = debounce(saveTitle, 1000);
+  const debouncedSaveTitle = debounce(saveTitle, 500);
 
   const saveBlock = async (blockId: string | number) => {
     if (readOnly) return;
@@ -133,7 +133,7 @@ export function createEditorManager({
       }
 
       if (!debouncedSaves.has(blockId)) {
-        const debouncedSave = debounce(() => saveBlock(blockId), 1000);
+        const debouncedSave = debounce(() => saveBlock(blockId), 500);
         debouncedSaves.set(blockId, debouncedSave);
       }
 

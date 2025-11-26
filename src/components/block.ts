@@ -201,7 +201,7 @@ function renderCodeBlock(
         code: contentElement.innerText,
         language: languageSelect.value,
       });
-    }, 1000);
+    }, 500);
 
     const onInput = (e: Event) => {
       if ((e as InputEvent).inputType === "insertParagraph") {

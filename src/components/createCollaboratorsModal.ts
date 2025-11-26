@@ -193,7 +193,6 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
   const loadCollaborators = async () => {
     try {
       const data = await apiClient.getSharingSettings(noteId);
-
       const isOwner = data.is_owner;
 
       renderList(data.collaborators, data.owner_id, isOwner);
@@ -202,15 +201,15 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
         input.disabled = true;
         roleSelect.disabled = true;
         inviteBtn.style.display = "none";
-        generalAccessSelect.disabled = true;
         const addBlock = modal.querySelector(
           ".collab-add-block"
         ) as HTMLElement;
         if (addBlock) addBlock.style.display = "none";
-        const accessBlock = modal.querySelector(
-          ".collab-access-block"
-        ) as HTMLElement;
-        if (accessBlock) accessBlock.style.opacity = "0.6";
+
+        generalAccessSelect.disabled = true;
+        generalAccessSelect.style.opacity = "0.5";
+        generalAccessSelect.style.backgroundColor = "var(--gray-100, #f1f3f5)";
+        generalAccessSelect.style.cursor = "not-allowed";
       }
 
       updateLinkVisibility(
