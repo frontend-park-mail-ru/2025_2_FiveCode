@@ -3,6 +3,8 @@ import { loadUser, saveUser } from "../utils/session";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
 import { createDeleteAccountModal } from "../components/deleteAccountModal";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "../components/notification";
 
 const ICONS = {
   userIcon: new URL("../static/svg/icon_account_gray.svg", import.meta.url)
@@ -64,14 +66,9 @@ export async function renderSettingsPage(): Promise<void> {
   const avatarPreview = settingsComponent.querySelector(
     "#avatar-preview"
   ) as HTMLImageElement;
-  const errorSaveMessage = settingsComponent.querySelector(
-    "#saveError"
-  ) as HTMLElement;
-  const avatarErrorMessage = settingsComponent.querySelector(
-    "#avatarError"
-  ) as HTMLElement;
-  avatarErrorMessage.classList.remove("status-message--visible");
-  errorSaveMessage.classList.remove("status-message--visible");
+
+  const statusElements = settingsComponent.querySelectorAll(".status-message");
+  statusElements.forEach((el) => el.remove()); // Удаляем старые статус-бары
 
   let initialName = user?.username || user?.email?.split("@")[0] || "Имя";
 
@@ -81,15 +78,9 @@ export async function renderSettingsPage(): Promise<void> {
 
   avatarFileInput?.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
-    avatarErrorMessage.textContent = " ";
-    errorSaveMessage.textContent = " ";
-    avatarErrorMessage.classList.remove("status-message--visible");
-    errorSaveMessage.classList.remove("status-message--visible");
     if (!file) return;
     if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
-      avatarErrorMessage.classList.remove("complete--visible");
-      avatarErrorMessage.textContent = "Недопустимый формат файла";
-      avatarErrorMessage.classList.add("error--visible");
+      showNotification("Недопустимый формат файла", "error");
       return;
     }
     try {
@@ -105,14 +96,9 @@ export async function renderSettingsPage(): Promise<void> {
           detail: { newAvatarUrl: uploadedFile.url },
         })
       );
-      avatarErrorMessage.classList.remove("error--visible");
-      avatarErrorMessage.textContent = "Аватар успешно загружен";
-      avatarErrorMessage.classList.add("complete--visible");
+      showNotification("Аватар успешно загружен", "success");
     } catch (error) {
-      avatarErrorMessage.classList.remove("complete--visible");
-      avatarErrorMessage.textContent = "Ошибка при загрузке аватара";
-      avatarErrorMessage.classList.add("error--visible");
-      console.error("Failed to upload avatar:", error);
+      handleError(error, "Ошибка при загрузке аватара");
     }
   });
 
@@ -121,10 +107,7 @@ export async function renderSettingsPage(): Promise<void> {
     if (!newName || newName === initialName) {
       return;
     }
-    avatarErrorMessage.textContent = " ";
-    errorSaveMessage.textContent = " ";
-    avatarErrorMessage.classList.remove("status-message--visible");
-    errorSaveMessage.classList.remove("status-message--visible");
+
     const originalButtonText = saveButton.textContent;
     saveButton.textContent = "Сохранение...";
     saveButton.disabled = true;
@@ -134,18 +117,14 @@ export async function renderSettingsPage(): Promise<void> {
       saveUser(updatedUser);
       initialName = updatedUser.username || initialName;
       document.dispatchEvent(new CustomEvent("userProfileUpdated"));
-      errorSaveMessage.classList.remove("error--visible");
-      errorSaveMessage.textContent = "Логин успешно изменен";
-      errorSaveMessage.classList.add("complete--visible");
+      showNotification("Профиль обновлен", "success");
     } catch (error) {
-      errorSaveMessage.classList.remove("complete--visible");
-      errorSaveMessage.textContent = "Ошибка при сохранении изменений";
-      errorSaveMessage.classList.add("error--visible");
+      handleError(error, "Ошибка при сохранении изменений");
     } finally {
       setTimeout(() => {
         saveButton.textContent = originalButtonText;
         saveButton.disabled = false;
-      }, 1000);
+      }, 500);
     }
   });
 
@@ -158,19 +137,19 @@ export async function renderSettingsPage(): Promise<void> {
     const deleteModal = createDeleteAccountModal();
     document.body.appendChild(deleteModal);
 
-    deleteModal.querySelector(".delete-account-confirm")?.addEventListener(
-      "click",
-      async () => {
+    deleteModal
+      .querySelector(".delete-account-confirm")
+      ?.addEventListener("click", async () => {
         try {
           await apiClient.deleteUser();
           await apiClient.logout();
           deleteModal.remove();
           router.navigate("login");
+          showNotification("Аккаунт удален", "success");
         } catch (error) {
-          console.error("Failed to delete account:", error);
+          handleError(error, "Не удалось удалить аккаунт");
         }
-      }
-    );
+      });
   });
 
   closeButton?.addEventListener("click", () => {

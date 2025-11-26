@@ -1,4 +1,6 @@
 import { apiClient, UploadedFile } from "../api/apiClient";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "./notification";
 
 export function createImageModal(): Promise<UploadedFile | null> {
   return new Promise((resolve) => {
@@ -16,8 +18,6 @@ export function createImageModal(): Promise<UploadedFile | null> {
               <label for="imageUpload">Выберите файл или перетащите сюда / вставьте из буфера</label>
               <input type="file" id="imageUpload" />
               <div class="drop-hint">Перетащите файл сюда или нажмите Ctrl+V, чтобы вставить</div>
-              <span class="status-message" id="uploadError">&nbsp;</span>
-
               </div>
           </div>
         </div>
@@ -43,9 +43,6 @@ export function createImageModal(): Promise<UploadedFile | null> {
     const dropZone = modalOverlay.querySelector(
       "#imageDropZone"
     ) as HTMLElement;
-    const uploadErrorMessage = modalOverlay.querySelector(
-      "#uploadError"
-    ) as HTMLElement;
 
     const close = (value: UploadedFile | null) => {
       document.body.removeChild(modalOverlay);
@@ -53,15 +50,10 @@ export function createImageModal(): Promise<UploadedFile | null> {
     };
 
     confirmBtn.addEventListener("click", async () => {
-      uploadErrorMessage.textContent = " ";
-      uploadErrorMessage.classList.remove("status-message--visible");
       const file = fileInput.files?.[0];
-      if (!file) return;      
-      console.log(file.type);
+      if (!file) return;
       if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
-        uploadErrorMessage.classList.remove("complete--visible");
-        uploadErrorMessage.textContent = "Недопустимый формат файла";
-        uploadErrorMessage.classList.add("error--visible");
+        showNotification("Недопустимый формат файла", "error");
         return;
       }
       if (file) {
@@ -71,7 +63,7 @@ export function createImageModal(): Promise<UploadedFile | null> {
           const response = await apiClient.uploadFile(file);
           close(response);
         } catch (error) {
-          console.error("Не удалось загрузить файл.", error);
+          handleError(error, "Не удалось загрузить файл");
           confirmBtn.disabled = false;
           confirmBtn.textContent = "Вставить";
         }
@@ -89,12 +81,9 @@ export function createImageModal(): Promise<UploadedFile | null> {
     });
 
     const handleFileAndClose = async (file: File | null) => {
-      if (!file) return;      
-      console.log(file.type);
+      if (!file) return;
       if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
-        uploadErrorMessage.classList.remove("complete--visible");
-        uploadErrorMessage.textContent = "Недопустимый формат файла";
-        uploadErrorMessage.classList.add("error--visible");
+        showNotification("Недопустимый формат файла", "error");
         return;
       }
       confirmBtn.disabled = true;
@@ -103,7 +92,7 @@ export function createImageModal(): Promise<UploadedFile | null> {
         const response = await apiClient.uploadFile(file);
         close(response);
       } catch (error) {
-        console.error("Не удалось загрузить файл.", error);
+        handleError(error, "Не удалось загрузить файл");
         confirmBtn.disabled = false;
         confirmBtn.textContent = "Вставить";
       }
@@ -147,9 +136,9 @@ export function createImageModal(): Promise<UploadedFile | null> {
         if (!item || !item.type) continue;
         const blob = item.getAsFile?.();
         if (blob) {
-            ev.preventDefault();
-            handleFileAndClose(blob);
-            return;
+          ev.preventDefault();
+          handleFileAndClose(blob);
+          return;
         }
       }
     });

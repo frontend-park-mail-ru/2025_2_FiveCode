@@ -5,6 +5,8 @@ import { apiClient } from "../api/apiClient";
 import { createDeleteNoteModal } from "../components/deleteNoteModal";
 import { createCollaboratorsModal } from "../components/createCollaboratorsModal";
 import { WsClient, ServerMessage } from "../api/wsClient";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "../components/notification";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -23,7 +25,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   const mainEl = document.getElementById("main-content");
   if (!mainEl) return;
-  
+
   mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
     <div class="note-editor__header">
@@ -112,7 +114,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       favoriteBtn.classList.add("active");
     }
   } catch (e) {
-    console.error("Error loading note data:", e);
+    handleError(e, "Ошибка загрузки заметки");
     router.navigate("notes");
     return;
   }
@@ -137,7 +139,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       if (msg.title) {
         titleInput.value = msg.title;
       }
-      
+
       if (msg.blocks) {
         const cleanBlocks = msg.blocks.map((block: any): Block => {
           if (block.type === "attachment") {
@@ -164,9 +166,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
         try {
           await apiClient.deleteNote(noteId as number);
           document.dispatchEvent(new CustomEvent("notesUpdated"));
+          showNotification("Заметка удалена", "success");
           router.navigate("notes");
         } catch (err) {
-          console.error("Failed to delete note:", err);
+          handleError(err, "Не удалось удалить заметку");
         }
         deleteModal.remove();
       });
@@ -182,13 +185,17 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           detail: { noteId: noteId, isFavorite: newFavoriteStatus },
         })
       );
+      showNotification(
+        newFavoriteStatus ? "Добавлено в избранное" : "Удалено из избранного",
+        "info"
+      );
     } catch (err) {
-      console.error("Failed to update favorite status:", err);
+      handleError(err, "Ошибка обновления избранного");
     }
   });
 
   openCollabBtn?.addEventListener("click", () => {
-    const id = typeof noteId === 'string' ? parseInt(noteId) : noteId;
+    const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
     const modal = createCollaboratorsModal(id);
     document.body.appendChild(modal);
   });

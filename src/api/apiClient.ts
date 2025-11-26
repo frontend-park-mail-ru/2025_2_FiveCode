@@ -88,6 +88,17 @@ export interface SharingSettingsResponse {
   is_owner: boolean;
 }
 
+export interface ActivateAccessResponse {
+  note_id: number;
+  access_granted: boolean;
+  access_info: {
+    role: string;
+    can_edit: boolean;
+    is_owner: boolean;
+    has_access: boolean;
+  };
+}
+
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -308,5 +319,21 @@ export const apiClient = {
     noteId: number | string
   ): Promise<SharingSettingsResponse> {
     return apiFetch(`/api/notes/${noteId}/sharing`, { method: "GET" });
+  },
+
+  async activateSharedLink(
+    shareUuid: string
+  ): Promise<ActivateAccessResponse> {
+    return apiFetch(`/api/notes/activate/${shareUuid}`, { method: "POST" });
+  },
+
+  async setPublicAccess(
+    noteId: number | string,
+    accessLevel: "editor" | "viewer" | "commenter" | null
+  ): Promise<any> {
+    return apiFetch(`/api/notes/${noteId}/public-access`, {
+        method: "PUT",
+        body: JSON.stringify({ access_level: accessLevel }),
+    });
   },
 };

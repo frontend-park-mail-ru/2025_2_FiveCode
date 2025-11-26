@@ -2,6 +2,8 @@ import ejs from "ejs";
 import { NoteCard } from "../components/notecard";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "../components/notification";
 
 const ICONS = {
   add_new: new URL("../static/svg/icon_add_new.svg", import.meta.url).href,
@@ -69,10 +71,11 @@ export async function renderNotes(): Promise<void> {
           e.preventDefault();
           try {
             const newNote = await apiClient.createNote();
+            showNotification("Заметка создана", "success");
             router.navigate(`note/${newNote.id}`);
             document.dispatchEvent(new CustomEvent("notesUpdated"));
           } catch (error) {
-            console.error("Failed to create new note", error);
+            handleError(error, "Не удалось создать заметку");
           }
         });
 
@@ -86,12 +89,13 @@ export async function renderNotes(): Promise<void> {
       main.appendChild(section);
     });
   } catch (error) {
-    console.error("Failed to render notes page:", error);
+    handleError(error, "Не удалось загрузить заметки");
     if (
       window.location.pathname === "/notes" ||
       window.location.pathname === "/"
     ) {
-      main.innerHTML = "<p>Не удалось загрузить заметки.</p>";
+      main.innerHTML =
+        "<p style='text-align:center; margin-top:20px; color:gray;'>Не удалось загрузить заметки.</p>";
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   createSearchModal,
 } from "./userMenu";
 import { loadUser } from "../utils/session";
+import { handleError } from "../utils/errorHandler";
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,
@@ -147,10 +148,13 @@ export function Sidebar({
           exitModal
             .querySelector(".exit-modal-button")
             ?.addEventListener("click", async () => {
-              await apiClient.logout();
-              exitModal.remove();
-
-              router.navigate("login");
+              try {
+                await apiClient.logout();
+                exitModal.remove();
+                router.navigate("login");
+              } catch (err) {
+                handleError(err, "Ошибка выхода из системы");
+              }
             });
         });
     }
@@ -232,7 +236,7 @@ export function Sidebar({
       .getNotesForUser()
       .then(renderSubdirectories)
       .catch((err) => {
-        console.error("Failed to refresh notes for sidebar", err);
+        handleError(err, "Ошибка обновления списка заметок");
       });
   };
 

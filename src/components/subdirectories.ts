@@ -2,6 +2,8 @@ import ejs from "ejs";
 import { createDeleteNoteModal } from "../components/deleteNoteModal";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "./notification";
 
 const ICONS = {
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
@@ -127,8 +129,9 @@ export function Subdirectories({
         new CustomEvent("notesUpdated", { detail: { createdId: newNote.id } })
       );
       router.navigate(`/note/${newNote.id}`);
+      showNotification("Подзаметка создана", "success");
     } catch (err) {
-      console.error("Ошибка создания подзаметки", err);
+      handleError(err, "Ошибка создания подзаметки");
     }
   };
 
@@ -317,7 +320,7 @@ export function Subdirectories({
             ?.addEventListener("click", async () => {
               try {
                 await apiClient.deleteNote(item.id);
-                
+
                 const currentPath = window.location.pathname;
                 if (currentPath === `/note/${item.id}`) {
                   document.dispatchEvent(new CustomEvent("notesUpdated"));
@@ -325,11 +328,11 @@ export function Subdirectories({
                 } else {
                   document.dispatchEvent(new CustomEvent("notesUpdated"));
                 }
-                
+                showNotification("Заметка удалена", "success");
                 deleteModal.remove();
                 menu.remove();
               } catch (err) {
-                console.error("Failed to delete note:", err);
+                handleError(err, "Не удалось удалить заметку");
               }
             });
         });
@@ -371,7 +374,7 @@ export function Subdirectories({
                 ?.addEventListener("click", async () => {
                   try {
                     await apiClient.deleteNote(subId);
-                    
+
                     const currentPath = window.location.pathname;
                     if (currentPath === `/note/${subId}`) {
                       router.navigate(`/note/${item.id}`);
@@ -384,11 +387,11 @@ export function Subdirectories({
                         parentList.style.display = "none";
                       }
                     }
-
+                    showNotification("Подзаметка удалена", "success");
                     deleteModal.remove();
                     menu.remove();
                   } catch (err) {
-                    console.error("Failed to delete subnote:", err);
+                    handleError(err, "Не удалось удалить подзаметку");
                   }
                 });
             });
@@ -415,8 +418,14 @@ export function Subdirectories({
               detail: { noteId: item.id, isFavorite: newFavoriteStatus },
             })
           );
+          showNotification(
+            newFavoriteStatus
+              ? "Добавлено в избранное"
+              : "Удалено из избранного",
+            "info"
+          );
         } catch (err) {
-          console.error("Failed to update favorite status:", err);
+          handleError(err, "Ошибка обновления избранного");
         }
       });
       if (folderName === "Избранное") {
@@ -445,8 +454,9 @@ export function Subdirectories({
             })
           );
           router.navigate(`/note/${newNote.id}`);
+          showNotification("Заметка создана", "success");
         } catch (err) {
-          console.error("Ошибка создания заметки", err);
+          handleError(err, "Ошибка создания заметки");
           btn.textContent = originalText;
         }
       });

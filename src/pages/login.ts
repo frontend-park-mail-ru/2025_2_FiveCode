@@ -3,7 +3,7 @@ import { Header } from "../components/header";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { renderAppLayout } from "../layout";
-import { techSupportWrapper } from "../components/techsupportdutton";
+import { handleError } from "../utils/errorHandler";
 
 const ICONS = {
   Icon: new URL("../static/svg/icon_goose.svg", import.meta.url).href,
@@ -44,10 +44,6 @@ function validateForm(form: HTMLElement) {
     errors.password = "Обязательное поле";
   } else if (password.length < 8) {
     errors.password = "Пароль должен быть не короче 8 символов";
-  } else if (!/^[A-Za-z0-9!@#$%^&*]+$/.test(password)) {
-    errors.password = "Пароль содержит недопустимые символы";
-  } else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-    errors.password = "Пароль должен содержать буквы и цифры";
   }
 
   return errors;
@@ -58,10 +54,8 @@ export function renderLogin(app: HTMLElement): void {
   const pageTemplate = `<div class="page"></div>`;
   const el = document.createElement("div");
   el.innerHTML = pageTemplate;
-  
-  const pageEl = el.firstElementChild as HTMLElement;
 
-  
+  const pageEl = el.firstElementChild as HTMLElement;
 
   let headerEl = Header({ user: null, app });
   if (headerEl) {
@@ -73,33 +67,17 @@ export function renderLogin(app: HTMLElement): void {
       <a class="modal__icon-container"><img src="<%= icon %>" class="modal__icon"></a>
       <h2 class="modal__icon-container">Вход</h2>
       <form class="modal__form">
-        <label class="modal__text">Почта<span class="validation-icon">?
-            <div class="tooltip">
-              Формат email: <br>
-              • латинские буквы и цифры<br>
-              • символ "@" и домен (например: test@mail.com)
-            </div>
-          </span>
-        </label>
+        <label class="modal__text">Почта</label>
         <div class="input-wrapper">
           <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
         </div>
         <span class="error-message" id="emailError">&nbsp;</span>
-        <label class="modal__text">Пароль<span class="validation-icon">?
-            <div class="tooltip">
-              Пароль должен содержать:<br>
-              • минимум 8 символов<br>
-              • хотя бы одну цифру<br>
-              • хотя бы одну букву<br>
-            </div>
-          </span>
-        </label>
+        <label class="modal__text">Пароль</label>
         <div class="input-wrapper">
           <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
           <span class="toggle-password" id="togglePassword"><img src="<%= eye %>"></span>
         </div>
         <span class="error-message" id="passwordError">&nbsp;</span>
-        <span class="error-message" id="loginError">&nbsp;</span>
         <div class="modal__buttons">
           <button type="submit" class="btn">Войти</button>
           <a href="/register" class="btn modal__btn--secondary" data-link>Создать аккаунт</a>
@@ -119,16 +97,13 @@ export function renderLogin(app: HTMLElement): void {
   const form = loginModal.querySelector<HTMLFormElement>(".modal__form")!;
   const emailErrorEl = loginModal.querySelector("#emailError")!;
   const passwordErrorEl = loginModal.querySelector("#passwordError")!;
-  const loginErrorEl = loginModal.querySelector("#loginError")!;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     emailErrorEl.textContent = "";
     passwordErrorEl.textContent = "";
-    loginErrorEl.textContent = "";
     emailErrorEl.classList.remove("error-message--visible");
     passwordErrorEl.classList.remove("error-message--visible");
-    loginErrorEl.classList.remove("error-message--visible");
 
     const errors = validateForm(form);
     if (Object.keys(errors).length > 0) {
@@ -154,8 +129,7 @@ export function renderLogin(app: HTMLElement): void {
       await renderAppLayout(app);
       router.navigate("notes");
     } catch (err) {
-      loginErrorEl.textContent = "Логин или пароль неверный";
-      loginErrorEl.classList.add("error-message--visible");
+      handleError(err, "Ошибка входа");
     }
   });
 
@@ -176,6 +150,5 @@ export function renderLogin(app: HTMLElement): void {
   }
 
   pageEl.appendChild(loginModal);
-  // app.appendChild(techSupportWrapper());
   app.appendChild(pageEl);
 }

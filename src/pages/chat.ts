@@ -1,6 +1,7 @@
 import ejs from "ejs";
 import { apiClient } from "../api/apiClient";
 import { loadUser } from "../utils/session";
+import { handleError } from "../utils/errorHandler";
 
 const ICONS = {
   close: new URL("../static/svg/icon_close.svg", import.meta.url).href,
@@ -96,8 +97,7 @@ export async function renderChatPage(ticketId: number): Promise<void> {
         chatInput.value = "";
         renderChatPage(ticketId);
       } catch (error) {
-        console.error("Ошибка отправки сообщения:", error);
-        alert("Не удалось отправить сообщение. Попробуйте снова.");
+        handleError(error, "Не удалось отправить сообщение");
       }
     });
 
@@ -106,9 +106,8 @@ export async function renderChatPage(ticketId: number): Promise<void> {
         sendButton?.click();
       }
     });
-
   } catch (error) {
-    console.error(`Ошибка загрузки чата для обращения ${ticketId}:`, error);
+    handleError(error, `Ошибка загрузки чата для обращения ${ticketId}`);
     page.innerHTML = `
       <p>Не удалось загрузить чат.
         <a href="#" id="back-to-list-link">Назад к списку обращений</a>

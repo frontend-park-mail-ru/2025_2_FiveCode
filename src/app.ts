@@ -21,7 +21,8 @@ import "./static/css/techsupport/ticket-list.css";
 import "./static/css/techsupport/ticket-detail.css";
 import "./static/css/techsupport/statistics.css";
 import "./static/css/chat.css";
-import "./static/css/collaboration.css"
+import "./static/css/collaboration.css";
+import "./static/css/notification.css";
 
 interface User {
   id?: number;
@@ -34,7 +35,6 @@ const ICONS = {
   Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
 };
 
-
 async function initializeApp(): Promise<void> {
   const app = document.getElementById("app");
   if (!app) {
@@ -44,11 +44,11 @@ async function initializeApp(): Promise<void> {
   const faviconTemplate = `
       <link rel="icon" type="image/x-icon" href="<%= icon %>" />
     `;
-    const faviconHtml = ejs.render(faviconTemplate, {icon: ICONS.Icon});
-    const faviconEl = document.createElement("link");
-    faviconEl.innerHTML = faviconHtml;
-    const favicon = faviconEl.firstElementChild as HTMLLinkElement;
-    document.head.appendChild(favicon);
+  const faviconHtml = ejs.render(faviconTemplate, { icon: ICONS.Icon });
+  const faviconEl = document.createElement("link");
+  faviconEl.innerHTML = faviconHtml;
+  const favicon = faviconEl.firstElementChild as HTMLLinkElement;
+  document.head.appendChild(favicon);
   const path = window.location.pathname;
   const isAuthPage = path === "/login" || path === "/register";
   const techsupportPath = path === "/techsupport";
@@ -63,7 +63,6 @@ async function initializeApp(): Promise<void> {
   }
 
   if (user) {
-    
     await renderAppLayout(app);
     if (isAuthPage) {
       router.navigate("notes");

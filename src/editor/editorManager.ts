@@ -10,6 +10,7 @@ import {
 import { createImageModal } from "../components/imageModal";
 import { debounce } from "../utils/debounce";
 import { setupEventManager } from "./eventManager";
+import { handleError } from "../utils/errorHandler";
 
 interface EditorManagerConfig {
   container: HTMLElement;
@@ -61,6 +62,7 @@ export function createEditorManager({
       );
     } catch (err) {
       saveStatusEl.textContent = "Ошибка сохранения";
+      handleError(err, "Не удалось сохранить заголовок");
     }
   };
 
@@ -105,6 +107,7 @@ export function createEditorManager({
       saveStatusEl.textContent = "Сохранено";
     } catch (err) {
       saveStatusEl.textContent = "Ошибка сохранения";
+      handleError(err, "Не удалось сохранить блок");
     }
   };
 
@@ -150,29 +153,33 @@ export function createEditorManager({
 
     let newBlock: Block;
 
-    if (type === "image") {
-      const uploadedFile = await createImageModal();
-      if (!uploadedFile) return;
+    try {
+      if (type === "image") {
+        const uploadedFile = await createImageModal();
+        if (!uploadedFile) return;
 
-      newBlock = await apiClient.createBlock(noteId, {
-        type: "attachment",
-        file_id: uploadedFile.id,
-        before_block_id: beforeBlockId as number,
-      });
-    } else {
-      newBlock = await apiClient.createBlock(noteId, {
-        type: type,
-        before_block_id: beforeBlockId as number,
-      });
-    }
+        newBlock = await apiClient.createBlock(noteId, {
+          type: "attachment",
+          file_id: uploadedFile.id,
+          before_block_id: beforeBlockId as number,
+        });
+      } else {
+        newBlock = await apiClient.createBlock(noteId, {
+          type: type,
+          before_block_id: beforeBlockId as number,
+        });
+      }
 
-    if (currentIndex === -1) {
-      blocks.push(newBlock);
-    } else {
-      blocks.splice(currentIndex + 1, 0, newBlock);
+      if (currentIndex === -1) {
+        blocks.push(newBlock);
+      } else {
+        blocks.splice(currentIndex + 1, 0, newBlock);
+      }
+      render();
+      setTimeout(() => focusBlock(newBlock.id), 0);
+    } catch (err) {
+      handleError(err, "Ошибка при создании блока");
     }
-    render();
-    setTimeout(() => focusBlock(newBlock.id), 0);
   };
 
   const syncBlocks = (newBlocks: Block[]) => {
@@ -292,7 +299,7 @@ export function createEditorManager({
       blocks.splice(idx, 1);
       render();
     } catch (err) {
-      console.error(err);
+      handleError(err, "Не удалось удалить блок");
     }
   }
 
@@ -318,6 +325,7 @@ export function createEditorManager({
       blocks.splice(newIndex, 1);
       blocks.splice(idx, 0, movedBlock);
       render();
+      handleError(err, "Ошибка при перемещении блока");
     }
   }
 
