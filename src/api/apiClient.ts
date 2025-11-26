@@ -306,6 +306,17 @@ export const apiClient = {
     });
   },
 
+  async updateCollaboratorRole(
+    noteId: number | string,
+    permissionId: number | string,
+    role: "editor" | "viewer" | "commenter"
+  ): Promise<any> {
+    return apiFetch(`/api/notes/${noteId}/collaborators/${permissionId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    });
+  },
+
   async removeCollaborator(
     noteId: number | string,
     permissionId: number | string
@@ -321,9 +332,7 @@ export const apiClient = {
     return apiFetch(`/api/notes/${noteId}/sharing`, { method: "GET" });
   },
 
-  async activateSharedLink(
-    shareUuid: string
-  ): Promise<ActivateAccessResponse> {
+  async activateSharedLink(shareUuid: string): Promise<ActivateAccessResponse> {
     return apiFetch(`/api/notes/activate/${shareUuid}`, { method: "POST" });
   },
 
@@ -332,8 +341,8 @@ export const apiClient = {
     accessLevel: "editor" | "viewer" | "commenter" | null
   ): Promise<any> {
     return apiFetch(`/api/notes/${noteId}/public-access`, {
-        method: "PUT",
-        body: JSON.stringify({ access_level: accessLevel }),
+      method: "PUT",
+      body: JSON.stringify({ access_level: accessLevel }),
     });
   },
 };

@@ -73,9 +73,11 @@ export function Subdirectories({
           <%= title.length > 18 ? title.substring(0,17) + '...' : title %>
         </span>
         <span class="subdir-buttons">
+          <% if (canEdit) { %>
           <button class="subdir-menu-dots" style="display:none;">
             <img src="<%= dots %>" />
           </button>
+          <% } %>
           <button class="subdir-menu-favorite" style="display:none;">
             <img src="<%= star %>" />
           </button>
@@ -296,54 +298,56 @@ export function Subdirectories({
       noteWrapper.innerHTML = noteHtml;
       const noteItem = noteWrapper.firstElementChild as HTMLElement;
 
-      const dotsButton = noteItem.querySelector(".subdir-menu-dots");
-      dotsButton?.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      if (canEdit) {
+        const dotsButton = noteItem.querySelector(".subdir-menu-dots");
+        dotsButton?.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
 
-        const existingMenu = document.querySelector(".note-menu");
-        if (existingMenu) existingMenu.remove();
+          const existingMenu = document.querySelector(".note-menu");
+          if (existingMenu) existingMenu.remove();
 
-        const menu = document.createElement("div");
-        menu.className = "note-menu";
-        menu.innerHTML = `<button class="delete-note" data-note-id="${item.id}">Удалить</button>`;
-        document.body.appendChild(menu);
-        const rect = (dotsButton as HTMLElement).getBoundingClientRect();
-        menu.style.top = rect.bottom + "px";
-        menu.style.left = rect.left + "px";
+          const menu = document.createElement("div");
+          menu.className = "note-menu";
+          menu.innerHTML = `<button class="delete-note" data-note-id="${item.id}">Удалить</button>`;
+          document.body.appendChild(menu);
+          const rect = (dotsButton as HTMLElement).getBoundingClientRect();
+          menu.style.top = rect.bottom + "px";
+          menu.style.left = rect.left + "px";
 
-        menu.querySelector(".delete-note")?.addEventListener("click", () => {
-          const deleteModal = createDeleteNoteModal();
-          document.body.appendChild(deleteModal);
-          deleteModal
-            .querySelector(".delete-note-confirm")
-            ?.addEventListener("click", async () => {
-              try {
-                await apiClient.deleteNote(item.id);
+          menu.querySelector(".delete-note")?.addEventListener("click", () => {
+            const deleteModal = createDeleteNoteModal();
+            document.body.appendChild(deleteModal);
+            deleteModal
+              .querySelector(".delete-note-confirm")
+              ?.addEventListener("click", async () => {
+                try {
+                  await apiClient.deleteNote(item.id);
 
-                const currentPath = window.location.pathname;
-                if (currentPath === `/note/${item.id}`) {
-                  document.dispatchEvent(new CustomEvent("notesUpdated"));
-                  router.navigate("/notes");
-                } else {
-                  document.dispatchEvent(new CustomEvent("notesUpdated"));
+                  const currentPath = window.location.pathname;
+                  if (currentPath === `/note/${item.id}`) {
+                    document.dispatchEvent(new CustomEvent("notesUpdated"));
+                    router.navigate("/notes");
+                  } else {
+                    document.dispatchEvent(new CustomEvent("notesUpdated"));
+                  }
+                  showNotification("Заметка удалена", "success");
+                  deleteModal.remove();
+                  menu.remove();
+                } catch (err) {
+                  handleError(err, "Не удалось удалить заметку");
                 }
-                showNotification("Заметка удалена", "success");
-                deleteModal.remove();
-                menu.remove();
-              } catch (err) {
-                handleError(err, "Не удалось удалить заметку");
-              }
-            });
-        });
+              });
+          });
 
-        document.addEventListener("click", function closeMenu(ev) {
-          if (!menu.contains(ev.target as Node)) {
-            menu.remove();
-            document.removeEventListener("click", closeMenu);
-          }
+          document.addEventListener("click", function closeMenu(ev) {
+            if (!menu.contains(ev.target as Node)) {
+              menu.remove();
+              document.removeEventListener("click", closeMenu);
+            }
+          });
         });
-      });
+      }
 
       noteItem.querySelectorAll(".subnote-menu-dots").forEach((button) => {
         button.addEventListener("click", (e) => {

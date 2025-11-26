@@ -20,6 +20,7 @@ interface EditorManagerConfig {
   titleInput: HTMLInputElement;
   noteId: string | number;
   saveStatusEl: HTMLElement;
+  readOnly?: boolean;
 }
 
 export interface EditorManager {
@@ -41,6 +42,7 @@ export function createEditorManager({
   titleInput,
   noteId,
   saveStatusEl,
+  readOnly = false,
 }: EditorManagerConfig): EditorManager {
   let blocks: Block[] = [...initialBlocks];
   const emptyStateEl = document.querySelector(
@@ -50,6 +52,7 @@ export function createEditorManager({
   const debouncedSaves = new Map<string | number, () => void>();
 
   const saveTitle = async () => {
+    if (readOnly) return;
     saveStatusEl.textContent = "Сохранение...";
     try {
       const newTitle = titleInput.value;
@@ -69,6 +72,7 @@ export function createEditorManager({
   const debouncedSaveTitle = debounce(saveTitle, 1000);
 
   const saveBlock = async (blockId: string | number) => {
+    if (readOnly) return;
     saveStatusEl.textContent = "Сохранение...";
     try {
       const blockToSave = blocks.find(
@@ -115,6 +119,7 @@ export function createEditorManager({
     blockId: string | number,
     data: BlockUpdateData
   ) => {
+    if (readOnly) return;
     const block = blocks.find((b) => b.id.toString() === blockId.toString());
     if (block) {
       if (block.type === "text") {
@@ -143,6 +148,7 @@ export function createEditorManager({
     currentBlockId: string | number | undefined,
     type: Block["type"]
   ) => {
+    if (readOnly) return;
     const currentIndex =
       currentBlockId !== undefined
         ? blocks.findIndex((b) => b.id.toString() === currentBlockId.toString())
@@ -211,12 +217,16 @@ export function createEditorManager({
 
       if (domElement) {
         if (!isFocused) {
-          const newBlockElement = renderBlock(block, updateBlockContent);
+          const newBlockElement = renderBlock(
+            block,
+            updateBlockContent,
+            readOnly
+          );
           domElement.replaceWith(newBlockElement);
           domElement = newBlockElement;
         }
       } else {
-        domElement = renderBlock(block, updateBlockContent);
+        domElement = renderBlock(block, updateBlockContent, readOnly);
         if (previousElement) {
           previousElement.after(domElement);
         } else {
@@ -237,7 +247,8 @@ export function createEditorManager({
     });
 
     if (emptyStateEl) {
-      emptyStateEl.style.display = blocks.length === 0 ? "block" : "none";
+      emptyStateEl.style.display =
+        blocks.length === 0 && !readOnly ? "block" : "none";
     }
   };
 
@@ -249,12 +260,13 @@ export function createEditorManager({
 
     container.innerHTML = "";
     blocks.forEach((block) => {
-      const blockElement = renderBlock(block, updateBlockContent);
+      const blockElement = renderBlock(block, updateBlockContent, readOnly);
       container.appendChild(blockElement);
     });
 
     if (emptyStateEl) {
-      emptyStateEl.style.display = blocks.length === 0 ? "block" : "none";
+      emptyStateEl.style.display =
+        blocks.length === 0 && !readOnly ? "block" : "none";
     }
 
     if (activeBlockId) {
@@ -263,6 +275,7 @@ export function createEditorManager({
   };
 
   const focusBlock = (blockId: string | number) => {
+    if (readOnly) return;
     const blockContainerElement = container.querySelector<HTMLElement>(
       `[data-block-id="${blockId}"]`
     );
@@ -287,9 +300,14 @@ export function createEditorManager({
     }
   };
 
-  titleInput.addEventListener("input", debouncedSaveTitle);
+  if (!readOnly) {
+    titleInput.addEventListener("input", debouncedSaveTitle);
+  } else {
+    titleInput.setAttribute("readonly", "true");
+  }
 
   async function deleteBlock(blockId: string | number) {
+    if (readOnly) return;
     const idx = blocks.findIndex((b) => b.id.toString() === blockId.toString());
     if (idx === -1) return;
     const toDelete = blocks[idx];
@@ -304,6 +322,7 @@ export function createEditorManager({
   }
 
   async function moveBlock(blockId: string | number, direction: "up" | "down") {
+    if (readOnly) return;
     const idx = blocks.findIndex((b) => b.id.toString() === blockId.toString());
     if (idx === -1) return;
     const newIndex = direction === "up" ? idx - 1 : idx + 1;
@@ -329,15 +348,17 @@ export function createEditorManager({
     }
   }
 
-  setupEventManager({
-    container,
-    toolbar,
-    addBlockMenu,
-    addNewBlock,
-    updateBlockContent,
-    deleteBlock,
-    moveBlock,
-  });
+  if (!readOnly) {
+    setupEventManager({
+      container,
+      toolbar,
+      addBlockMenu,
+      addNewBlock,
+      updateBlockContent,
+      deleteBlock,
+      moveBlock,
+    });
+  }
 
   return {
     render,

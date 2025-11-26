@@ -44,6 +44,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
                         <select id="collabRoleSelect" class="collab-input" style="width: 120px; margin-bottom:0;">
                             <option value="editor">Редактор</option>
                             <option value="viewer">Читатель</option>
+                            <option value="commenter">Комментатор</option>
                         </select>
                         <button class="collab-invite-btn" id="inviteEditorBtn">
                             +
@@ -85,7 +86,11 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
   ) as HTMLSelectElement;
   const linkContainer = modal.querySelector("#linkContainer") as HTMLElement;
 
-  const renderList = (collaborators: Collaborator[], ownerId: number) => {
+  const renderList = (
+    collaborators: Collaborator[],
+    ownerId: number,
+    isOwner: boolean
+  ) => {
     list.innerHTML = "";
     if (collaborators.length === 0) {
       list.innerHTML = `<li class="collab-list-item" style="justify-content:center;">Нет участников</li>`;
@@ -96,31 +101,73 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
       const li = document.createElement("li");
       li.className = "collab-list-item";
       const displayName = c.email || c.username || `ID: ${c.user_id}`;
+      const isTargetOwner = c.user_id === ownerId;
 
-      let roleName = "Читатель";
-      if (c.role === "editor") roleName = "Редактор";
-      if (c.role === "commenter") roleName = "Комментатор";
-      if (c.user_id === ownerId) roleName = "Владелец";
+      let roleDisplay = "";
+
+      if (isTargetOwner) {
+        roleDisplay = `<span style="font-size:12px; color:gray; padding: 4px;">Владелец</span>`;
+      } else if (isOwner) {
+        roleDisplay = `
+          <select class="collab-role-change" data-permission-id="${c.permission_id}" style="font-size:12px; padding: 2px;">
+            <option value="editor" ${c.role === "editor" ? "selected" : ""}>Редактор</option>
+            <option value="viewer" ${c.role === "viewer" ? "selected" : ""}>Читатель</option>
+            <option value="commenter" ${c.role === "commenter" ? "selected" : ""}>Комментатор</option>
+          </select>
+        `;
+      } else {
+        const roleMap: Record<string, string> = {
+          editor: "Редактор",
+          viewer: "Читатель",
+          commenter: "Комментатор",
+        };
+        roleDisplay = `<span style="font-size:12px; color:gray;">${roleMap[c.role] || c.role}</span>`;
+      }
 
       li.innerHTML = `
                 <div style="display:flex; flex-direction:column;">
                     <span style="font-weight:500;">${displayName}</span>
-                    <span style="font-size:12px; color:gray;">${roleName}</span>
                 </div>
-                ${c.user_id !== ownerId ? `<button class="collab-remove-btn" data-id="${c.permission_id}" style="font-size:18px;">×</button>` : ""}
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    ${roleDisplay}
+                    ${isOwner && !isTargetOwner ? `<button class="collab-remove-btn" data-id="${c.permission_id}" style="font-size:18px;">×</button>` : ""}
+                </div>
             `;
 
-      const removeBtn = li.querySelector(".collab-remove-btn");
-      removeBtn?.addEventListener("click", async () => {
-        if (!confirm("Удалить участника?")) return;
-        try {
-          await apiClient.removeCollaborator(noteId, c.permission_id);
-          showNotification("Участник удален", "success");
-          loadCollaborators();
-        } catch (e) {
-          handleError(e, "Ошибка при удалении участника");
-        }
-      });
+      if (isOwner && !isTargetOwner) {
+        const removeBtn = li.querySelector(".collab-remove-btn");
+        removeBtn?.addEventListener("click", async () => {
+          if (!confirm("Удалить участника?")) return;
+          try {
+            await apiClient.removeCollaborator(noteId, c.permission_id);
+            showNotification("Участник удален", "success");
+            loadCollaborators();
+          } catch (e) {
+            handleError(e, "Ошибка при удалении участника");
+          }
+        });
+
+        const roleChangeSelect = li.querySelector(
+          ".collab-role-change"
+        ) as HTMLSelectElement;
+        roleChangeSelect?.addEventListener("change", async (e) => {
+          const newRole = roleChangeSelect.value as
+            | "editor"
+            | "viewer"
+            | "commenter";
+          try {
+            await apiClient.updateCollaboratorRole(
+              noteId,
+              c.permission_id,
+              newRole
+            );
+            showNotification("Роль обновлена", "success");
+          } catch (err) {
+            handleError(err, "Не удалось обновить роль");
+            roleChangeSelect.value = c.role;
+          }
+        });
+      }
 
       list.appendChild(li);
     });
@@ -146,7 +193,26 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
   const loadCollaborators = async () => {
     try {
       const data = await apiClient.getSharingSettings(noteId);
-      renderList(data.collaborators, data.owner_id);
+
+      const isOwner = data.is_owner;
+
+      renderList(data.collaborators, data.owner_id, isOwner);
+
+      if (!isOwner) {
+        input.disabled = true;
+        roleSelect.disabled = true;
+        inviteBtn.style.display = "none";
+        generalAccessSelect.disabled = true;
+        const addBlock = modal.querySelector(
+          ".collab-add-block"
+        ) as HTMLElement;
+        if (addBlock) addBlock.style.display = "none";
+        const accessBlock = modal.querySelector(
+          ".collab-access-block"
+        ) as HTMLElement;
+        if (accessBlock) accessBlock.style.opacity = "0.6";
+      }
+
       updateLinkVisibility(
         data.public_access?.access_level,
         data.public_access?.share_url

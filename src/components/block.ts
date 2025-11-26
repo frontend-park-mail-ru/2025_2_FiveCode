@@ -56,12 +56,13 @@ export type UpdateCallback = (
 
 export function renderBlock(
   block: Block,
-  updateCallback: UpdateCallback
+  updateCallback: UpdateCallback,
+  readOnly: boolean = false
 ): HTMLElement {
   let element: HTMLElement;
   switch (block.type) {
     case "code":
-      element = renderCodeBlock(block, updateCallback);
+      element = renderCodeBlock(block, updateCallback, readOnly);
       break;
     case "image":
     case "attachment":
@@ -76,67 +77,78 @@ export function renderBlock(
       break;
     case "text":
     default:
-      element = renderTextBlock(block, updateCallback);
+      element = renderTextBlock(block, updateCallback, readOnly);
       break;
   }
 
   const container = document.createElement("div");
   container.className = "block-container";
   container.dataset.blockId = String(block.id);
-  const handle = document.createElement("div");
-  handle.className = "block-handle";
-  const plus = document.createElement("div");
-  plus.className = "button-plus";
-  plus.innerHTML = "+";
-  const actions = document.createElement("div");
-  actions.className = "block-actions";
 
-  const btnUp = document.createElement("button");
-  btnUp.className = "block-action-btn";
-  btnUp.setAttribute("data-action", "move-up");
-  btnUp.textContent = "↑";
-  const btnDown = document.createElement("button");
-  btnDown.className = "block-action-btn";
-  btnDown.setAttribute("data-action", "move-down");
-  btnDown.textContent = "↓";
-  const btnDelete = document.createElement("button");
-  btnDelete.className = "block-action-btn block-action-delete";
-  btnDelete.setAttribute("data-action", "delete");
-  btnDelete.textContent = "✕";
+  if (!readOnly) {
+    const handle = document.createElement("div");
+    handle.className = "block-handle";
+    const plus = document.createElement("div");
+    plus.className = "button-plus";
+    plus.innerHTML = "+";
+    const actions = document.createElement("div");
+    actions.className = "block-actions";
 
-  actions.appendChild(btnUp);
-  actions.appendChild(btnDown);
-  actions.appendChild(btnDelete);
-  handle.appendChild(plus);
-  container.appendChild(handle);
+    const btnUp = document.createElement("button");
+    btnUp.className = "block-action-btn";
+    btnUp.setAttribute("data-action", "move-up");
+    btnUp.textContent = "↑";
+    const btnDown = document.createElement("button");
+    btnDown.className = "block-action-btn";
+    btnDown.setAttribute("data-action", "move-down");
+    btnDown.textContent = "↓";
+    const btnDelete = document.createElement("button");
+    btnDelete.className = "block-action-btn block-action-delete";
+    btnDelete.setAttribute("data-action", "delete");
+    btnDelete.textContent = "✕";
+
+    actions.appendChild(btnUp);
+    actions.appendChild(btnDown);
+    actions.appendChild(btnDelete);
+    handle.appendChild(plus);
+    container.appendChild(handle);
+    container.appendChild(actions);
+  }
+
   container.appendChild(element);
-  container.appendChild(actions);
 
   return container;
 }
 
 function renderTextBlock(
   block: Block,
-  updateCallback: UpdateCallback
+  updateCallback: UpdateCallback,
+  readOnly: boolean
 ): HTMLElement {
   const content = block.content as TextContent;
-  const template = `<div class="block block--text" data-block-id="${block.id}" contenteditable="true" spellcheck="false"><%- content %></div>`;
+  const template = `<div class="block block--text" data-block-id="${block.id}" contenteditable="<%= editable %>" spellcheck="false"><%- content %></div>`;
   const htmlContent = reconstructHtmlFromFormats(content.text, content.formats);
-  const html = ejs.render(template, { content: htmlContent });
+  const html = ejs.render(template, {
+    content: htmlContent,
+    editable: !readOnly,
+  });
   const doc = new DOMParser().parseFromString(html, "text/html");
   const element = doc.body.firstChild as HTMLElement;
 
-  element.addEventListener("input", () => {
-    const { text, formats } = parseHtmlToTextAndFormats(element);
-    updateCallback(block.id, { text, formats });
-  });
+  if (!readOnly) {
+    element.addEventListener("input", () => {
+      const { text, formats } = parseHtmlToTextAndFormats(element);
+      updateCallback(block.id, { text, formats });
+    });
+  }
 
   return element;
 }
 
 function renderCodeBlock(
   block: Block,
-  updateCallback: UpdateCallback
+  updateCallback: UpdateCallback,
+  readOnly: boolean
 ): HTMLElement {
   const content = block.content as CodeContent;
 
@@ -145,107 +157,114 @@ function renderCodeBlock(
   const template = `
     <div class="block block--code" data-block-id="${block.id}">
       <div class="code-toolbar">
-        <select class="code-language">
+        <select class="code-language" <%= disabled ? 'disabled' : '' %>>
           <option value="sql" ${content.language === "sql" ? "selected" : ""}>SQL</option>
           <option value="javascript" ${content.language === "javascript" ? "selected" : ""}>JavaScript</option>
           <option value="text" ${content.language === "text" ? "selected" : ""}>Plain Text</option>
         </select>
       </div>
-      <div class="code-content" contenteditable="true" spellcheck="false"><%- content %></div>
+      <div class="code-content" contenteditable="<%= editable %>" spellcheck="false"><%- content %></div>
     </div>
   `;
 
   const html = ejs.render(template, {
     content: highlightedCode,
     language: content.language,
+    editable: !readOnly,
+    disabled: readOnly,
   });
 
   const doc = new DOMParser().parseFromString(html, "text/html");
   const element = doc.body.firstChild as HTMLElement;
-  const contentElement = element.querySelector(".code-content") as HTMLElement;
-  const languageSelect = element.querySelector(
-    ".code-language"
-  ) as HTMLSelectElement;
 
-  const applyHighlighting = () => {
-    const currentPos = getCaretPosition(contentElement);
-    const rawCode = contentElement.innerText;
-    const newHtml = highlightCode(rawCode, languageSelect.value);
+  if (!readOnly) {
+    const contentElement = element.querySelector(
+      ".code-content"
+    ) as HTMLElement;
+    const languageSelect = element.querySelector(
+      ".code-language"
+    ) as HTMLSelectElement;
 
-    if (contentElement.innerHTML !== newHtml) {
-      contentElement.innerHTML = newHtml;
-      setCaretPosition(contentElement, currentPos);
-    }
-  };
+    const applyHighlighting = () => {
+      const currentPos = getCaretPosition(contentElement);
+      const rawCode = contentElement.innerText;
+      const newHtml = highlightCode(rawCode, languageSelect.value);
 
-  const debouncedSave = debounce(() => {
-    updateCallback(block.id, {
-      code: contentElement.innerText,
-      language: languageSelect.value,
-    });
-  }, 1000);
+      if (contentElement.innerHTML !== newHtml) {
+        contentElement.innerHTML = newHtml;
+        setCaretPosition(contentElement, currentPos);
+      }
+    };
 
-  const onInput = (e: Event) => {
-    if ((e as InputEvent).inputType === "insertParagraph") {
-      return;
-    }
-    applyHighlighting();
-    debouncedSave();
-  };
+    const debouncedSave = debounce(() => {
+      updateCallback(block.id, {
+        code: contentElement.innerText,
+        language: languageSelect.value,
+      });
+    }, 1000);
 
-  contentElement.addEventListener("input", onInput);
-
-  contentElement.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      const textNode = document.createTextNode("\n");
-
-      range.deleteContents();
-      range.insertNode(textNode);
-
-      range.setStartAfter(textNode);
-      range.setEndAfter(textNode);
-      selection.removeAllRanges();
-      selection.addRange(range);
-
+    const onInput = (e: Event) => {
+      if ((e as InputEvent).inputType === "insertParagraph") {
+        return;
+      }
       applyHighlighting();
       debouncedSave();
-    }
+    };
 
-    if (e.key === "Tab") {
-      e.preventDefault();
+    contentElement.addEventListener("input", onInput);
 
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
+    contentElement.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
 
-      const range = selection.getRangeAt(0);
-      const textNode = document.createTextNode("  ");
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
 
-      range.deleteContents();
-      range.insertNode(textNode);
+        const range = selection.getRangeAt(0);
+        const textNode = document.createTextNode("\n");
 
-      range.setStartAfter(textNode);
-      range.setEndAfter(textNode);
-      selection.removeAllRanges();
-      selection.addRange(range);
+        range.deleteContents();
+        range.insertNode(textNode);
 
-      applyHighlighting();
-      debouncedSave();
-    }
-  });
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
 
-  languageSelect.addEventListener("change", () => {
-    updateCallback(block.id, {
-      code: contentElement.innerText,
-      language: languageSelect.value,
+        applyHighlighting();
+        debouncedSave();
+      }
+
+      if (e.key === "Tab") {
+        e.preventDefault();
+
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+        const textNode = document.createTextNode("  ");
+
+        range.deleteContents();
+        range.insertNode(textNode);
+
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        applyHighlighting();
+        debouncedSave();
+      }
     });
-    applyHighlighting();
-  });
+
+    languageSelect.addEventListener("change", () => {
+      updateCallback(block.id, {
+        code: contentElement.innerText,
+        language: languageSelect.value,
+      });
+      applyHighlighting();
+    });
+  }
 
   return element;
 }
