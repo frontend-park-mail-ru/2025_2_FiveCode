@@ -200,11 +200,33 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
   });
 
   const copyBtn = modal.querySelector("#copyLinkBtn") as HTMLElement;
-  copyBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(linkInput.value);
-    copyBtn.textContent = "Скопировано!";
-    showNotification("Ссылка скопирована в буфер обмена", "success");
-    setTimeout(() => (copyBtn.textContent = "Копировать"), 1200);
+  copyBtn.addEventListener("click", async () => {
+    const text = linkInput.value;
+
+    const copyToClipboard = async (str: string) => {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(str);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = str;
+        textArea.style.position = "absolute";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+    };
+
+    try {
+      await copyToClipboard(text);
+      copyBtn.textContent = "Скопировано!";
+      showNotification("Ссылка скопирована в буфер обмена", "success");
+      setTimeout(() => (copyBtn.textContent = "Копировать"), 1200);
+    } catch (err) {
+      console.error(err);
+      showNotification("Не удалось скопировать ссылку", "error");
+    }
   });
 
   loadCollaborators();
