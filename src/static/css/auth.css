@@ -177,33 +177,73 @@
 }
 
 .validation-icon {
-  margin-left: 3px;
-  cursor: pointer;
-  position: absolute;
-  padding-bottom: 10px;
-  font-size: 14px;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  background-color: rgba(255, 255, 255, 0.5);
+  color: var(--text-noraml);
+  border: 1px solid var(--primary-300);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: help;
+  position: relative;
+  vertical-align: middle;
+  transition: all 0.2s;
+}
+
+.validation-icon:hover {
+  background-color: var(--primary-300);
+  color: white;
 }
 
 .tooltip {
   visibility: hidden;
   opacity: 0;
-  width: 220px;
+  width: 260px;
   background: #333;
   color: #fff;
   text-align: left;
   border-radius: 6px;
-  padding: 8px;
+  padding: 10px;
   position: absolute;
-  z-index: 10;
-  top: -5px;
-  left: 110%;
-  transition: opacity 0.3s;
+  z-index: 100;
+  bottom: 135%;
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  transition: opacity 0.3s, transform 0.3s;
   font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
 }
 
 .validation-icon:hover .tooltip {
   visibility: visible;
   opacity: 1;
-  margin-left: 4px;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip ul {
+  margin: 4px 0 0 0;
+  padding-left: 16px;
+}
+
+.tooltip li {
+  margin-bottom: 2px;
 }

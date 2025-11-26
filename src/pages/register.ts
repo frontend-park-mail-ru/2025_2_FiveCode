@@ -72,13 +72,33 @@ export function renderRegister(app: HTMLElement): void {
       <h2 class="modal__icon-container"> Регистрация</h2>
       <form class="modal__form">
 
-        <label class="modal__text">Почта</label>
+        <label class="modal__text">
+            Почта
+            <div class="validation-icon">?
+                <div class="tooltip">
+                    Введите корректный Email адрес.<br>
+                    Пример: <strong>name@example.com</strong>
+                </div>
+            </div>
+        </label>
         <div class="input-wrapper">
           <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
         </div>
         <span class="error-message" id="emailError">&nbsp;</span>
 
-        <label class="modal__text">Пароль</label>
+        <label class="modal__text">
+            Пароль
+            <div class="validation-icon">?
+                <div class="tooltip">
+                    Пароль должен содержать:
+                    <ul>
+                        <li>Минимум 8 символов</li>
+                        <li>Хотя бы одну букву</li>
+                        <li>Хотя бы одну цифру</li>
+                    </ul>
+                </div>
+            </div>
+        </label>
         <div class="input-wrapper">
           <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
           <span class="toggle-password" id="togglePassword"><img src="<%= eye %>"></span>
