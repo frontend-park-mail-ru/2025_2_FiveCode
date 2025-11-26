@@ -83,8 +83,6 @@ export function Sidebar({
     `;
 
   const isHomeActive = window.location.pathname === `/notes`;
-  // const isSearchActive = window.location.pathname === `/search`;
-
 
   const html = ejs.render(template, {
     user: user,
@@ -111,19 +109,6 @@ export function Sidebar({
   };
 
   document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
-
-  const handleCreateNewNote = async (event: Event) => {
-    event.preventDefault();
-    const button = event.currentTarget as HTMLElement;
-    button.textContent = "Создание...";
-    try {
-      const newNote = await apiClient.createNote();
-      document.dispatchEvent(new CustomEvent("notesUpdated"));
-      router.navigate(`note/${newNote.id}`);
-    } catch (error) {
-      console.error("Failed to create new note", error);
-    }
-  };
 
   const searchBtn = el.querySelector("#search-btn");
 
@@ -237,11 +222,6 @@ export function Sidebar({
     const subdirComponent = Subdirectories({
       items: mappedNotes,
       currentUserId: user?.id ?? 0,
-    });
-
-    const addNoteButtons = subdirComponent.querySelectorAll(".add-note-button");
-    addNoteButtons.forEach((button) => {
-      button.addEventListener("click", handleCreateNewNote as EventListener);
     });
 
     subs.appendChild(subdirComponent);
