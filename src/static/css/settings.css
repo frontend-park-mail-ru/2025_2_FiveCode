@@ -161,4 +161,6 @@
   padding: 8px 12px;
   background: var(--danger-400);
   border-radius: 6px;
+  margin-top: 12px;
+  transition: opacity 0.8s ease;
 }

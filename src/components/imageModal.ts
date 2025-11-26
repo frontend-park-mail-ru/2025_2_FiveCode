@@ -16,7 +16,9 @@ export function createImageModal(): Promise<UploadedFile | null> {
               <label for="imageUpload">Выберите файл или перетащите сюда / вставьте из буфера</label>
               <input type="file" id="imageUpload" />
               <div class="drop-hint">Перетащите файл сюда или нажмите Ctrl+V, чтобы вставить</div>
-            </div>
+              <span class="status-message" id="uploadError">&nbsp;</span>
+
+              </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -41,6 +43,9 @@ export function createImageModal(): Promise<UploadedFile | null> {
     const dropZone = modalOverlay.querySelector(
       "#imageDropZone"
     ) as HTMLElement;
+    const uploadErrorMessage = modalOverlay.querySelector(
+      "#uploadError"
+    ) as HTMLElement;
 
     const close = (value: UploadedFile | null) => {
       document.body.removeChild(modalOverlay);
@@ -48,7 +53,17 @@ export function createImageModal(): Promise<UploadedFile | null> {
     };
 
     confirmBtn.addEventListener("click", async () => {
+      uploadErrorMessage.textContent = " ";
+      uploadErrorMessage.classList.remove("status-message--visible");
       const file = fileInput.files?.[0];
+      if (!file) return;      
+      console.log(file.type);
+      if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+        uploadErrorMessage.classList.remove("complete--visible");
+        uploadErrorMessage.textContent = "Недопустимый формат файла";
+        uploadErrorMessage.classList.add("error--visible");
+        return;
+      }
       if (file) {
         confirmBtn.disabled = true;
         confirmBtn.textContent = "Загрузка...";
@@ -74,7 +89,14 @@ export function createImageModal(): Promise<UploadedFile | null> {
     });
 
     const handleFileAndClose = async (file: File | null) => {
-      if (!file) return;
+      if (!file) return;      
+      console.log(file.type);
+      if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+        uploadErrorMessage.classList.remove("complete--visible");
+        uploadErrorMessage.textContent = "Недопустимый формат файла";
+        uploadErrorMessage.classList.add("error--visible");
+        return;
+      }
       confirmBtn.disabled = true;
       confirmBtn.textContent = "Загрузка...";
       try {
