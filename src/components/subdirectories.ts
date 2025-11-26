@@ -129,9 +129,6 @@ export function Subdirectories({
       router.navigate(`/note/${newNote.id}`);
     } catch (err) {
       console.error("Ошибка создания подзаметки", err);
-      alert(
-        "Не удалось создать подзаметку. Возможно, достигнут лимит вложенности."
-      );
     }
   };
 

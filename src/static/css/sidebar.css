@@ -51,6 +51,7 @@
   min-height: 32px;
 }
 
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
@@ -111,7 +112,8 @@
 .sidebar__icon {
   width: 22px;
   height: 22px;
-  margin-right: 12px;
+  margin-right: 8px;
+  margin-left: 4px;
   opacity: 0.8;
 }
 

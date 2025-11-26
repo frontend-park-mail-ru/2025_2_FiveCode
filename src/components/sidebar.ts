@@ -73,14 +73,18 @@ export function Sidebar({
                 </button>
             </div>
             <nav class="sidebar__nav">
-                <a href="/notes" class="sidebar__item" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
-                <a class="sidebar__item" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
+                <a href="/notes" class="sidebar__item <%= isHomeActive ? 'sidebar-item--active' : '' %>" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
+                <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
             <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
         </aside>
     `;
+
+  const isHomeActive = window.location.pathname === `/notes`;
+  // const isSearchActive = window.location.pathname === `/search`;
+
 
   const html = ejs.render(template, {
     user: user,
@@ -92,6 +96,8 @@ export function Sidebar({
     dots: ICONS.dots,
     avatarUrl: avatarUrl,
     collapse: ICONS.collapse,
+    isHomeActive: isHomeActive,
+    isSearchActive: false,
   });
   const container = document.createElement("div");
   container.innerHTML = html;
