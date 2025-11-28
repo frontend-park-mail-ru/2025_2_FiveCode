@@ -207,6 +207,28 @@ export function createEditorManager({
 
     let previousElement: HTMLElement | null = null;
 
+    const processExistingDomElement = (domElement: HTMLElement, block: Block, isFocused: boolean) => {
+      if (!isFocused) {
+        const newBlockElement = renderBlock(block, updateBlockContent, readOnly);
+        domElement.replaceWith(newBlockElement);
+        return newBlockElement;
+      }
+      return domElement;
+    };
+
+    const createAndInsertNewDomElement = (
+      block: Block,
+      previousElement: HTMLElement | null
+    ) => {
+      const domElement = renderBlock(block, updateBlockContent, readOnly);
+      if (previousElement) {
+        previousElement.after(domElement);
+      } else {
+        container.prepend(domElement);
+      }
+      return domElement;
+    };
+
     newBlocks.forEach((block) => {
       const blockIdStr = String(block.id);
       let domElement = container.querySelector(
@@ -216,23 +238,11 @@ export function createEditorManager({
       const isFocused = activeBlockId === blockIdStr;
 
       if (domElement) {
-        if (!isFocused) {
-          const newBlockElement = renderBlock(
-            block,
-            updateBlockContent,
-            readOnly
-          );
-          domElement.replaceWith(newBlockElement);
-          domElement = newBlockElement;
-        }
+        domElement = processExistingDomElement(domElement, block, isFocused);
       } else {
-        domElement = renderBlock(block, updateBlockContent, readOnly);
-        if (previousElement) {
-          previousElement.after(domElement);
-        } else {
-          container.prepend(domElement);
-        }
+        domElement = createAndInsertNewDomElement(block, previousElement);
       }
+
       if (previousElement) {
         if (previousElement.nextElementSibling !== domElement) {
           previousElement.after(domElement);

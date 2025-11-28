@@ -212,7 +212,6 @@ export function createSearchModal(): HTMLElement {
             return;
         }
 
-        // Пример отображения результатов
         searchResults.innerHTML = `
             <p style="font-size:14px; padding:6px 0;">Результаты для: <b>${query}</b></p>
             <ul class="search-results-list">

@@ -68,7 +68,7 @@ export async function renderSettingsPage(): Promise<void> {
   ) as HTMLImageElement;
 
   const statusElements = settingsComponent.querySelectorAll(".status-message");
-  statusElements.forEach((el) => el.remove()); // Удаляем старые статус-бары
+  statusElements.forEach((el) => el.remove());
 
   let initialName = user?.username || user?.email?.split("@")[0] || "Имя";
 
