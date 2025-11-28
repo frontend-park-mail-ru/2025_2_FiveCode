@@ -1,6 +1,7 @@
 import { apiClient, Collaborator } from "../api/apiClient";
 import { handleError } from "../utils/errorHandler";
 import { showNotification } from "./notification";
+import { deleteCollaboratorModal } from "./deleteCollaboratorModal";
 
 export function createCollaboratorsModal(noteId: number): HTMLElement {
   const modalTemplate = `
@@ -137,14 +138,20 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
       if (isOwner && !isTargetOwner) {
         const removeBtn = li.querySelector(".collab-remove-btn");
         removeBtn?.addEventListener("click", async () => {
-          if (!confirm("Удалить участника?")) return;
-          try {
-            await apiClient.removeCollaborator(noteId, c.permission_id);
-            showNotification("Участник удален", "success");
-            loadCollaborators();
-          } catch (e) {
-            handleError(e, "Ошибка при удалении участника");
-          }
+          const deleteModal = deleteCollaboratorModal();
+          document.body.appendChild(deleteModal);
+          deleteModal
+            .querySelector(".delete-collaborator-confirm")
+            ?.addEventListener("click", async () => {
+              try {
+                await apiClient.removeCollaborator(noteId, c.permission_id);
+                deleteModal.remove();
+                showNotification("Участник удален", "success");
+                loadCollaborators();
+              } catch (e) {
+                handleError(e, "Ошибка при удалении участника");
+              }
+          });
         });
 
         const roleChangeSelect = li.querySelector(
