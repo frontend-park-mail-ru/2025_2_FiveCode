@@ -21,6 +21,17 @@
     margin-bottom: 8px;
 }
 
+.collab-role-change {
+    border: 1px solid var(--primary-200);
+    border-radius: 6px;
+    padding: 6px;
+    background: var(--primary-400);
+    color: var(--gray-100);
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
 .collab-invite-btn,
 .collab-copy-btn {
     padding: 8px 12px;

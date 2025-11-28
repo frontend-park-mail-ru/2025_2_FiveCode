@@ -110,7 +110,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
         roleDisplay = `<span style="font-size:12px; color:gray; padding: 4px;">Владелец</span>`;
       } else if (isOwner) {
         roleDisplay = `
-          <select class="collab-role-change" data-permission-id="${c.permission_id}" style="font-size:12px; padding: 2px;">
+          <select class="collab-role-change" data-permission-id="${c.permission_id}" style="padding: 3px;">
             <option value="editor" ${c.role === "editor" ? "selected" : ""}>Редактор</option>
             <option value="viewer" ${c.role === "viewer" ? "selected" : ""}>Читатель</option>
             <option value="commenter" ${c.role === "commenter" ? "selected" : ""}>Комментатор</option>
