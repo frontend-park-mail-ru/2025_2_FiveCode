@@ -175,29 +175,32 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   editorManager.render();
 
-  activeWsClient = new WsClient(noteId);
-  activeWsClient.connect((msg: ServerMessage) => {
-    if (msg.type === "note_update") {
-      if (msg.title) {
-        titleInput.value = msg.title;
-        document.dispatchEvent(
-          new CustomEvent("noteTitleUpdated", {
-            detail: { noteId: noteId, newTitle: msg.title },
-          })
-        );
-      }
+  const sharingSettings = await apiClient.getSharingSettings(noteId as number);
+  if (sharingSettings.collaborators.length > 1 || sharingSettings.public_access.access_level) {
+    activeWsClient = new WsClient(noteId);
+    activeWsClient.connect((msg: ServerMessage) => {
+      if (msg.type === "note_update") {
+        if (msg.title) {
+          titleInput.value = msg.title;
+          document.dispatchEvent(
+            new CustomEvent("noteTitleUpdated", {
+              detail: { noteId: noteId, newTitle: msg.title },
+            })
+          );
+        }
 
-      if (msg.blocks) {
-        const cleanBlocks = msg.blocks.map((block: any): Block => {
-          if (block.type === "attachment") {
-            block.type = "image";
-          }
-          return block as Block;
-        });
-        editorManager.syncBlocks(cleanBlocks);
+        if (msg.blocks) {
+          const cleanBlocks = msg.blocks.map((block: any): Block => {
+            if (block.type === "attachment") {
+              block.type = "image";
+            }
+            return block as Block;
+          });
+          editorManager.syncBlocks(cleanBlocks);
+        }
       }
-    }
-  });
+    });
+  }
 
   if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
