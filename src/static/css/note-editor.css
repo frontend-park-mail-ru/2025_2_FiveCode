@@ -61,6 +61,18 @@
   height: 20px;
 }
 
+@media (max-width: 768px) {
+  .note-editor__header-btn img {
+    width: 32px !important;
+    height: 32px !important;
+
+  }
+  .note-editor__header {
+    padding-bottom: 6px;
+    gap: 24px;
+  }
+}
+
 .note-editor__title {
   width: 100%;
   padding: 12px 0;

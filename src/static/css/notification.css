@@ -9,6 +9,13 @@
   pointer-events: none;
 }
 
+@media (max-width: 768px) {
+  .notification-container {
+    bottom: 80px;
+    right: 20px;
+  }
+}
+
 .notification-toast {
   min-width: 250px;
   max-width: 350px;

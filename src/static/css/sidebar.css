@@ -71,9 +71,11 @@
     z-index: 1000;
   }
 
-  .sidebar__user {
-    display: none;
+  .sidebar__user-info,
+  .sidebar__user-dots {
+    display: none !important;;
   }
+
 
   .sidebar__nav {
     margin: 0;
@@ -84,7 +86,8 @@
     justify-content: space-around;
   }
 
-  .sidebar__item {
+  .sidebar__item,
+  .sidebar__user {
     flex: 1;
     justify-content: center;
     align-items: center;
