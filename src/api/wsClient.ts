@@ -25,8 +25,6 @@ export class WsClient {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = config.API_BASE_URL.replace(/^https?:\/\//, "");
     this.url = `${protocol}//${host}/api/ws/notes/${noteId}`;
-    // console.log("WSClient initialized with URL:", this.url);
-    // showNotification("", "info");
   }
 
   public connect(onMessage: (msg: ServerMessage) => void) {
@@ -39,7 +37,6 @@ export class WsClient {
     }
 
     this.socket.onopen = () => {
-      console.log("WS Connected");
       showNotification("Совместный доступ подключён", "success");
     };
 
@@ -48,17 +45,14 @@ export class WsClient {
         const data: ServerMessage = JSON.parse(event.data);
         onMessage(data);
       } catch (e) {
-        // console.error("WS message parsing error:", e, event.data);
         showNotification("Ошибка в получении данных совместного доступа", "error");
       }
     };
 
     this.socket.onclose = (event) => {
-      // console.log("WS Closed:", event.code, event.reason);
       showNotification("Соединение совместного доступа закрыто", "info");
       if (this.shouldReconnect) {
         setTimeout(() => {
-            // console.log("Reconnecting WS...");
             showNotification("Повторное подключение к совместному доступу...", "info");
             this.connect(onMessage);
         }, this.reconnectInterval);
@@ -67,13 +61,11 @@ export class WsClient {
 
     this.socket.onerror = (err) => {
       showNotification("Ошибка в соединении совместного доступа", "error");
-      // console.error("WS Error:", err);
       this.socket?.close();
     };
   }
 
   public close() {
-    // console.log("Closing WS connection manually");
     showNotification("Отключение совместного доступа...", "info");
     this.shouldReconnect = false;
     this.socket?.close();

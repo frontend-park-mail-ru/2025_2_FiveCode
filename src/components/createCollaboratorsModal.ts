@@ -282,7 +282,6 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
         const textArea = document.createElement("textarea");
         textArea.value = str;
         textArea.style.position = "absolute";
-        textArea.style.left = "-9999px";
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand("copy");

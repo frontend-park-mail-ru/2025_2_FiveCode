@@ -106,7 +106,6 @@ export async function apiFetch(
       ) {
         clearCsrfToken();
         if (!isRetry) {
-            console.log("CSRF issues detected, refreshing token and retrying...");
             return apiFetch(path, options, true);
         }
       }

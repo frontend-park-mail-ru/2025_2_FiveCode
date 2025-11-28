@@ -302,6 +302,15 @@ export function createEditorManager({
 
   if (!readOnly) {
     titleInput.addEventListener("input", debouncedSaveTitle);
+
+    titleInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (titleInput.selectionStart === titleInput.value.length) {
+          await addNewBlock(undefined, "text");
+        }
+      }
+    });
   } else {
     titleInput.setAttribute("readonly", "true");
   }
@@ -315,6 +324,9 @@ export function createEditorManager({
     try {
       await apiClient.deleteBlock(toDelete.id);
       blocks.splice(idx, 1);
+      if (blocks.length === 0) {
+        await addNewBlock(undefined, "text");
+      }
       render();
     } catch (err) {
       handleError(err, "Не удалось удалить блок");
