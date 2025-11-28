@@ -14,6 +14,7 @@ const ICONS = {
   star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
   clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
   dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  share: new URL("../static/svg/icon_share.svg", import.meta.url).href,
 };
 
 let activeWsClient: WsClient | null = null;
@@ -88,7 +89,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <span id="save-status"></span>
       ${isOwner ? `<button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>` : ""}
       <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
-      <button class="note-editor__header-btn" id="openCollabModal"><img src="${ICONS.dots}" /></button>
+      <button class="note-editor__header-btn" id="openCollabModal" ><img src="${ICONS.share}" style="width: 22px; height: 22px;"/></button>
 
     </div>
     ${
@@ -243,6 +244,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   });
 
   openCollabBtn?.addEventListener("click", () => {
+
     const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
     const modal = createCollaboratorsModal(id);
     document.body.appendChild(modal);
