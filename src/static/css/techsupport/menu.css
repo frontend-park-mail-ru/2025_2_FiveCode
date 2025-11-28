@@ -1,0 +1,46 @@
+.tech-support-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    background-color: var(--bg-default);
+    border: 1px solid var(--primary-200);
+    position: relative;
+}
+
+.tech-support-menu h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-button {
+    background-color: var(--primary-400);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    width: 100%;
+}
+
+.menu-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.menu-button:active {
+    transform: translateY(0);
+}

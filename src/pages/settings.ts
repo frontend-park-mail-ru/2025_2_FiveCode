@@ -3,6 +3,8 @@ import { loadUser, saveUser } from "../utils/session";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
 import { createDeleteAccountModal } from "../components/deleteAccountModal";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "../components/notification";
 
 const ICONS = {
   userIcon: new URL("../static/svg/icon_account_gray.svg", import.meta.url)
@@ -65,6 +67,9 @@ export async function renderSettingsPage(): Promise<void> {
     "#avatar-preview"
   ) as HTMLImageElement;
 
+  const statusElements = settingsComponent.querySelectorAll(".status-message");
+  statusElements.forEach((el) => el.remove());
+
   let initialName = user?.username || user?.email?.split("@")[0] || "Имя";
 
   avatarUploadTrigger?.addEventListener("click", () => {
@@ -74,7 +79,10 @@ export async function renderSettingsPage(): Promise<void> {
   avatarFileInput?.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
     if (!file) return;
-
+    if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+      showNotification("Недопустимый формат файла", "error");
+      return;
+    }
     try {
       const uploadedFile = await apiClient.uploadFile(file);
       const updatedUser = await apiClient.updateUser({
@@ -88,8 +96,9 @@ export async function renderSettingsPage(): Promise<void> {
           detail: { newAvatarUrl: uploadedFile.url },
         })
       );
+      showNotification("Аватар успешно загружен", "success");
     } catch (error) {
-      console.error("Failed to upload avatar:", error);
+      handleError(error, "Ошибка при загрузке аватара");
     }
   });
 
@@ -108,13 +117,14 @@ export async function renderSettingsPage(): Promise<void> {
       saveUser(updatedUser);
       initialName = updatedUser.username || initialName;
       document.dispatchEvent(new CustomEvent("userProfileUpdated"));
+      showNotification("Профиль обновлен", "success");
     } catch (error) {
-      console.error("Failed to update user:", error);
+      handleError(error, "Ошибка при сохранении изменений");
     } finally {
       setTimeout(() => {
         saveButton.textContent = originalButtonText;
         saveButton.disabled = false;
-      }, 1000);
+      }, 500);
     }
   });
 
@@ -127,19 +137,19 @@ export async function renderSettingsPage(): Promise<void> {
     const deleteModal = createDeleteAccountModal();
     document.body.appendChild(deleteModal);
 
-    deleteModal.querySelector(".delete-account-confirm")?.addEventListener(
-      "click",
-      async () => {
+    deleteModal
+      .querySelector(".delete-account-confirm")
+      ?.addEventListener("click", async () => {
         try {
           await apiClient.deleteUser();
           await apiClient.logout();
           deleteModal.remove();
           router.navigate("login");
+          showNotification("Аккаунт удален", "success");
         } catch (error) {
-          console.error("Failed to delete account:", error);
+          handleError(error, "Не удалось удалить аккаунт");
         }
-      }
-    );
+      });
   });
 
   closeButton?.addEventListener("click", () => {

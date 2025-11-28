@@ -1,0 +1,89 @@
+.collab-add-block,
+.collab-list-block,
+.collab-access-block {
+    margin-top: 15px;
+}
+
+.collab-label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.collab-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--primary-200);
+    background: var(--gray-50);
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.collab-role-change {
+    border: 1px solid var(--primary-200);
+    border-radius: 6px;
+    padding: 6px;
+    background: var(--primary-400);
+    color: var(--gray-100);
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.collab-invite-btn,
+.collab-copy-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary-400);
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.collab-invite-btn:hover,
+.collab-copy-btn:hover {
+    background: var(--primary-400);
+}
+
+.collab-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.collab-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: var(--gray-50);
+    border-radius: 5px;
+    margin-bottom: 6px;
+}
+
+.collab-remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger-500);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.collab-link-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--primary-100);
+    background: var(--gray-50);
+    color: var(--text-primary);
+    margin-right: 10px;
+}
+
+.collab-access-row {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+}

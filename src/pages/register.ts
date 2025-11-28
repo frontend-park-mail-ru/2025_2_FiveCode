@@ -3,6 +3,7 @@ import { Header } from "../components/header";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { renderAppLayout } from "../layout";
+import { handleError } from "../utils/errorHandler";
 
 interface ValidationErrors {
   email?: string;
@@ -42,10 +43,6 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
     errors.password = "Обязательное поле";
   } else if (password.length < 8) {
     errors.password = "Пароль должен быть не короче 8 символов";
-  } else if (!/^[A-Za-z0-9!@#$%^&*]+$/.test(password)) {
-    errors.password = "Пароль содержит недопустимые символы";
-  } else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-    errors.password = "Пароль должен содержать буквы и цифры";
   }
 
   if (!confirmPassword) {
@@ -75,33 +72,37 @@ export function renderRegister(app: HTMLElement): void {
       <h2 class="modal__icon-container"> Регистрация</h2>
       <form class="modal__form">
 
-        <label class="modal__text">Почта<span class="validation-icon">?
-            <div class="tooltip">
-              Формат email: <br>
-              • латинские буквы и цифры<br>
-              • символ "@" и домен (например: test@mail.com)
+        <label class="modal__text">
+            Почта
+            <div class="validation-icon">?
+                <div class="tooltip">
+                    Введите корректный Email адрес.<br>
+                    Пример: <strong>name@example.com</strong>
+                </div>
             </div>
-          </span>
+        </label>
         <div class="input-wrapper">
           <input type="text" name="email" placeholder="введите почту" class="input" id="email"/>
-        </div></label>
+        </div>
         <span class="error-message" id="emailError">&nbsp;</span>
 
-        <label class="modal__text">Пароль<span class="validation-icon">?
-            <div class="tooltip">
-              Пароль должен содержать:<br>
-              • минимум 8 символов<br>
-              • хотя бы одну цифру<br>
-              • хотя бы одну букву<br>
-              • спецсимволы (!@#$%^&*)
+        <label class="modal__text">
+            Пароль
+            <div class="validation-icon">?
+                <div class="tooltip">
+                    Пароль должен содержать:
+                    <ul>
+                        <li>Минимум 8 символов</li>
+                        <li>Хотя бы одну букву</li>
+                        <li>Хотя бы одну цифру</li>
+                    </ul>
+                </div>
             </div>
-          </span></label>
+        </label>
         <div class="input-wrapper">
           <input type="password" name="password" placeholder="введите пароль" class="input" id="password"/>
           <span class="toggle-password" id="togglePassword"><img src="<%= eye %>"></span>
         </div>
-        </span>
-
         <span class="error-message" id="passwordError">&nbsp;</span>
 
         <label class="modal__text">Подтвердите пароль</label>
@@ -169,19 +170,11 @@ export function renderRegister(app: HTMLElement): void {
         password: data.password,
         confirm_password: data.confirmPassword,
       });
+      await apiClient.login(data);
       await renderAppLayout(app);
       router.navigate("notes");
     } catch (err) {
-      if (err instanceof Error && confirmPasswordErrorEl) {
-        const body = (err as any).body;
-        if (body && body.error) {
-          confirmPasswordErrorEl.textContent = body.error;
-        } else {
-          confirmPasswordErrorEl.textContent = err.message;
-        }
-        confirmPasswordErrorEl.classList.add("error-message--visible");
-      }
-      console.error("Ошибка регистрации: ", err);
+      handleError(err, "Ошибка регистрации");
     }
   });
 

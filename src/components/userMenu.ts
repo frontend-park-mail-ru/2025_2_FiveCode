@@ -48,7 +48,13 @@ export function UserMenu({
                 <button class="user-menu__btn user-menu__btn--settings" style="border: 1px var(--primary-300) solid;">
                     <img src="<%= settingsIcon %>" style="width: 20px; height: 20px;"> Настройки</button>
                 <button class="user-menu__btn user-menu__btn--logout" style="border: 1px var(--danger-500) solid;">
-                    <img src="<%= logoutIcon %>" style="width: 20px; height: 20px;"> Выйти</button>
+                  <svg class="logout_icon" width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_252_993)">
+                      <path d="M22.6665 9.33333L20.7865 11.2133L24.2265 14.6667H10.6665V17.3333H24.2265L20.7865 20.7733L22.6665 22.6667L29.3332 16L22.6665 9.33333ZM5.33317 6.66667H15.9998V4H5.33317C3.8665 4 2.6665 5.2 2.6665 6.66667V25.3333C2.6665 26.8 3.8665 28 5.33317 28H15.9998V25.3333H5.33317V6.66667Z" />
+                    </g>
+                    </svg>
+
+                     Выйти</button>
             </div>
         </div>
     `;
@@ -80,7 +86,7 @@ export function AccountSettings({
   avatarUrl,
 }: AccountSettingsParams): HTMLElement {
   const template = `
-        <div class="account-settings">
+      <div class="account-settings">
         <div class="account-settings-header">
             <h2>Настройки аккаунта</h2>
             <button class="close-button"><img src="<%= close %>"></button>
@@ -91,12 +97,14 @@ export function AccountSettings({
             <p>Аватар</p>
             <div class="avatar-placeholder">
                 <div class="avatar" id="avatar-upload-trigger" style="cursor: pointer;">
-                  <img src="<%= avatarUrl || userIcon %>" id="avatar-preview">
+                  <img class="sidebar__usericon" src="<%= avatarUrl || userIcon %>" id="avatar-preview" style="margin-right: 0px; width: 92px; height: 92px; border-radius: 20%;">
                 </div>
                 <input type="file" id="avatar-file-input" accept="image/png, image/jpeg, image/gif" style="display: none;" />
             </div>
-            </div>
+            
 
+            </div>
+            <span class="status-message" id="avatarError">&nbsp;</span>
             <div class="name-section">
             <p>Имя</p>
             <input type="text" value="<%= user?.username || user?.email?.split('@')[0] || 'Имя' %>" placeholder="Имя" />
@@ -106,7 +114,7 @@ export function AccountSettings({
             <p>Ваша почта</p>
             <input type="email" value="<%= user?.email %>" readonly />
             </div>
-
+            <span class="status-message" id="saveError">&nbsp;</span>
             <div class="actions">
             <button class="save-button">Сохранить</button>
             <button class="cancel-button">Отменить изменения</button>
@@ -155,6 +163,62 @@ export function createExitConfirmationModal(): HTMLElement {
         if (e.target === modal) {
             modal.remove();
         }
+    });
+
+    return modal;
+}
+
+export function createSearchModal(): HTMLElement {
+    const modalTemplate = `
+        <div id="searchModal" class="search-modal-overlay">
+            <div class="search-modal-content">
+                <span id="closeSearchModal" class="search-modal-close">×</span>
+                <p class="search-modal-title">Поиск заметок</p>
+                <input 
+                    id="searchInput" 
+                    type="text" 
+                    class="search-modal-input" 
+                    placeholder="Введите текст для поиска..." 
+                    autofocus
+                />
+                <div id="searchResults" class="search-modal-results">
+                    <p style="color: var(--gray-500); font-size: 14px; text-align:center; margin-top:10px;">
+                        Результаты появятся здесь
+                    </p>
+                </div>
+                <button id="searchButton" class="search-modal-button">Искать</button>
+            </div>
+        </div>
+    `;
+
+    const container = document.createElement('div');
+    container.innerHTML = modalTemplate;
+    const modal = container.firstElementChild as HTMLElement;
+
+    const closeBtn = modal.querySelector('#closeSearchModal');
+    const searchBtn = modal.querySelector('#searchButton');
+    const searchInput = modal.querySelector('#searchInput') as HTMLInputElement;
+    const searchResults = modal.querySelector('#searchResults') as HTMLElement;
+
+    closeBtn?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+
+    searchBtn?.addEventListener('click', () => {
+        const query = searchInput.value.trim();
+        if (!query) {
+            searchResults.innerHTML = `<p style="color: var(--gray-500); text-align:center;">Введите запрос для поиска</p>`;
+            return;
+        }
+
+        searchResults.innerHTML = `
+            <p style="font-size:14px; padding:6px 0;">Результаты для: <b>${query}</b></p>
+            <ul class="search-results-list">
+                <li>Найденная заметка 1</li>
+                <li>Найденная заметка 2</li>
+            </ul>
+        `;
     });
 
     return modal;

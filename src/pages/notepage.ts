@@ -3,22 +3,98 @@ import { createEditorManager } from "../editor/editorManager";
 import router from "../router";
 import { apiClient } from "../api/apiClient";
 import { createDeleteNoteModal } from "../components/deleteNoteModal";
+import { createCollaboratorsModal } from "../components/createCollaboratorsModal";
+import { WsClient, ServerMessage } from "../api/wsClient";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "../components/notification";
+import { loadUser } from "../utils/session";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
   star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
+  clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
+  dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  share: new URL("../static/svg/icon_share.svg", import.meta.url).href,
 };
 
+let activeWsClient: WsClient | null = null;
+
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
+  if (activeWsClient) {
+    activeWsClient.close();
+    activeWsClient = null;
+  }
+
   const mainEl = document.getElementById("main-content");
   if (!mainEl) return;
+
+  let initialBlocks: Block[] = [];
+  let initialTitle = "Загрузка...";
+  let isFavorite = false;
+
+  let isReadOnly = true;
+  let isOwner = false;
+
+  try {
+    const note = await apiClient.getNote(noteId as number);
+    const blocksData = await apiClient.getBlocksForNote(noteId as number);
+    initialTitle = note.title;
+    isFavorite = note.is_favorite || false;
+
+    initialBlocks = (blocksData.blocks || []).map((block: any): Block => {
+      if (block.type === "attachment") {
+        block.type = "image";
+      }
+      return block as Block;
+    });
+
+    const sharingSettings = await apiClient.getSharingSettings(
+      noteId as number
+    );
+    const currentUser = loadUser();
+    isOwner = sharingSettings.is_owner;
+
+    if (isOwner) {
+      isReadOnly = false;
+    } else {
+      const myPermission = sharingSettings.collaborators.find(
+        (c) => c.user_id === currentUser?.id
+      );
+      if (myPermission) {
+        if (
+          myPermission.role === "viewer" ||
+          myPermission.role === "commenter"
+        ) {
+          isReadOnly = true;
+        } else {
+          isReadOnly = false;
+        }
+      } else {
+        if (sharingSettings.public_access?.access_level === "editor") {
+          isReadOnly = false;
+        } else {
+          isReadOnly = true;
+        }
+      }
+    }
+  } catch (e) {
+    handleError(e, "Ошибка загрузки заметки");
+    router.navigate("notes");
+    return;
+  }
+
   mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
     <div class="note-editor__header">
       <span id="save-status"></span>
-      <button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>
+      ${isOwner ? `<button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>` : ""}
       <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
+      <button class="note-editor__header-btn" id="openCollabModal" ><img src="${ICONS.share}" style="width: 22px; height: 22px;"/></button>
+
     </div>
+    ${
+      !isReadOnly
+        ? `
     <div class="formatting-toolbar">
       <div class="format-dropdown" id="font-dropdown">
         <button class="dropdown-toggle">
@@ -47,17 +123,20 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           <div class="dropdown-item" data-value="36">36</div>
         </div>
       </div>
-      <button class="format-btn" data-command="bold">B</button>
-      <button class="format-btn" data-command="italic"><i>I</i></button>
-      <button class="format-btn" data-command="underline"><u>U</u></button>
-      <button class="format-btn" data-command="strikeThrough"><s>S</s></button>
-      <button class="format-btn format-btn-code" data-command="convertToCode">&lt;/&gt;</button>
+    <button class="format-btn" data-command="bold" title="Жирный (Ctrl/Cmd+B)">B</button>
+    <button class="format-btn" data-command="italic" title="Курсив (Ctrl/Cmd+I)"><i>I</i></button>
+    <button class="format-btn" data-command="underline" title="Подчёркнутый (Ctrl/Cmd+U)"><u>U</u></button>
+    <button class="format-btn" data-command="strikeThrough" title="Зачёркнуть"><s>S</s></button>
+    <button class="format-btn" data-command="removeFormat" title="Очистить форматирование" aria-label="Очистить форматирование"><img src="${ICONS.clear}" alt="Clear"/></button>
     </div>
     <div class="add-block-menu">
       <div class="menu-item" data-type="text">Текст</div>
       <div class="menu-item" data-type="code">Код</div>
       <div class="menu-item" data-type="image">Изображение</div>
     </div>
+    `
+        : ""
+    }
     <input class="note-editor__title" placeholder="Загрузка..." value="" />
     <div class="block-editor">Загрузка блоков...</div>
   `;
@@ -74,37 +153,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const favoriteBtn = mainEl.querySelector(
     "#favorite-note-btn"
   ) as HTMLButtonElement;
+  const openCollabBtn = document.querySelector("#openCollabModal");
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
 
-  let initialBlocks: Block[] = [];
-  let initialTitle = "Загрузка...";
-  let isFavorite = false;
-
-  try {
-    const note = await apiClient.getNote(noteId as number);
-    const blocksData = await apiClient.getBlocksForNote(noteId as number);
-    initialTitle = note.title;
-    isFavorite = note.is_favorite || false;
-    const backendBlocks = blocksData?.blocks || [];
-
-    initialBlocks = backendBlocks.map((block: any): Block => {
-      if (block.type === "attachment") {
-        return {
-          id: block.id,
-          type: "image",
-          url: block.text,
-        };
-      }
-      return block as Block;
-    });
-
-    if (isFavorite) {
-      favoriteBtn.classList.add("active");
-    }
-  } catch (e) {
-    console.error("Не удалось загрузить заметку.", e);
-    router.navigate("notes");
-    return;
+  if (isFavorite) {
+    favoriteBtn.classList.add("active");
   }
 
   titleInput.value = initialTitle;
@@ -117,37 +170,101 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     titleInput: titleInput,
     noteId: noteId,
     saveStatusEl: saveStatusEl,
+    readOnly: isReadOnly,
   });
 
   editorManager.render();
+
+  activeWsClient = new WsClient(noteId);
+  activeWsClient.connect((msg: ServerMessage) => {
+    if (msg.type === "note_update") {
+      if (msg.title) {
+        titleInput.value = msg.title;
+        document.dispatchEvent(
+          new CustomEvent("noteTitleUpdated", {
+            detail: { noteId: noteId, newTitle: msg.title },
+          })
+        );
+      }
+
+      if (msg.blocks) {
+        const cleanBlocks = msg.blocks.map((block: any): Block => {
+          if (block.type === "attachment") {
+            block.type = "image";
+          }
+          return block as Block;
+        });
+        editorManager.syncBlocks(cleanBlocks);
+      }
+    }
+  });
 
   if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
   }
 
-  deleteBtn.addEventListener("click", () => {
-    const deleteModal = createDeleteNoteModal();
-    document.body.appendChild(deleteModal);
-    
-    deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
-      try {
-        await apiClient.deleteNote(noteId as number);
-        document.dispatchEvent(new CustomEvent("notesUpdated"));
-        router.navigate("notes");
-      } catch (err) {
-        console.error("Failed to delete note:", err);
-      }
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", () => {
+      const deleteModal = createDeleteNoteModal();
+      document.body.appendChild(deleteModal);
+
+      deleteModal
+        .querySelector(".delete-note-confirm")
+        ?.addEventListener("click", async () => {
+          try {
+            await apiClient.deleteNote(noteId as number);
+            document.dispatchEvent(new CustomEvent("notesUpdated"));
+            showNotification("Заметка удалена", "success");
+            router.navigate("notes");
+          } catch (err) {
+            handleError(err, "Не удалось удалить заметку");
+          }
+          deleteModal.remove();
+        });
     });
-  });
+  }
 
   favoriteBtn.addEventListener("click", async () => {
     const newFavoriteStatus = !favoriteBtn.classList.contains("active");
     try {
       await apiClient.toggleFavorite(noteId as number, newFavoriteStatus);
       favoriteBtn.classList.toggle("active", newFavoriteStatus);
-      document.dispatchEvent(new CustomEvent("notesUpdated"));
+      document.dispatchEvent(
+        new CustomEvent("notesUpdated", {
+          detail: { noteId: noteId, isFavorite: newFavoriteStatus },
+        })
+      );
+      showNotification(
+        newFavoriteStatus ? "Добавлено в избранное" : "Удалено из избранного",
+        "info"
+      );
     } catch (err) {
-      console.error("Failed to update favorite status:", err);
+      handleError(err, "Ошибка обновления избранного");
     }
   });
+
+  openCollabBtn?.addEventListener("click", () => {
+
+    const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
+    const modal = createCollaboratorsModal(id);
+    document.body.appendChild(modal);
+  });
+
+  const handleNotesUpdated = (event: Event) => {
+    const custom = event as CustomEvent;
+    if (!custom?.detail) return;
+    const { noteId: updatedId, isFavorite } = custom.detail;
+    if (String(updatedId) === String(noteId)) {
+      favoriteBtn.classList.toggle("active", Boolean(isFavorite));
+    }
+  };
+
+  document.removeEventListener(
+    "notesUpdated",
+    handleNotesUpdated as EventListener
+  );
+  document.addEventListener(
+    "notesUpdated",
+    handleNotesUpdated as EventListener
+  );
 }

@@ -1,7 +1,7 @@
-import { apiFetch, API_BASE } from "../api";
-import { login, register, logout, checkSession } from "../auth";
+import { apiFetch, API_BASE, clearCsrfToken } from "../api";
+import { login, register, logout as authLogout, checkSession } from "../auth";
 import { saveUser, clearUser } from "../utils/session";
-import { Block, BlockTextFormat } from "../components/block";
+import { Block, TextContent, CodeContent } from "../components/block";
 
 interface User {
   id?: number;
@@ -9,6 +9,7 @@ interface User {
   password?: string;
   email?: string;
   avatar_file_id?: number;
+  is_admin?: boolean;
 }
 
 interface AuthResponse {
@@ -20,6 +21,82 @@ export interface UploadedFile {
   url: string;
   mime_type: string;
   size_bytes: number;
+}
+
+export interface Ticket {
+  id?: number;
+  email: string;
+  full_name: string;
+  category: string;
+  status?: string;
+  title: string;
+  description: string;
+  file_id?: number | null;
+  created_at?: string;
+}
+
+export interface StatisticForCategory {
+  category: string;
+  total_tickets: number;
+  open_tickets: number;
+  closed_tickets: number;
+  in_progress_tickets: number;
+}
+
+export interface Statistics {
+  statistics: StatisticForCategory[];
+}
+
+export interface Message {
+  text: string;
+  sender: User;
+  created_at: number;
+}
+
+export interface Messages {
+  messages: Messages[];
+}
+
+export interface Note {
+  parentId?: number | null;
+}
+
+export interface Collaborator {
+  permission_id: number;
+  user_id: number;
+  email?: string;
+  username?: string;
+  role: "editor" | "viewer" | "commenter";
+}
+
+export interface CollaboratorsResponse {
+  collaborators: Collaborator[];
+  owner_id: number;
+  total_collaborators: number;
+}
+
+export interface SharingSettingsResponse {
+  note_id: number;
+  owner_id: number;
+  public_access: {
+    note_id: number;
+    access_level: "editor" | "viewer" | "commenter" | null;
+    share_url: string;
+  };
+  collaborators: Collaborator[];
+  total_collaborators: number;
+  is_owner: boolean;
+}
+
+export interface ActivateAccessResponse {
+  note_id: number;
+  access_granted: boolean;
+  access_info: {
+    role: string;
+    can_edit: boolean;
+    is_owner: boolean;
+    has_access: boolean;
+  };
 }
 
 export const apiClient = {
@@ -35,8 +112,9 @@ export const apiClient = {
   },
 
   async logout(): Promise<void> {
-    await logout();
+    await authLogout();
     clearUser();
+    clearCsrfToken();
   },
 
   async me(): Promise<User | null> {
@@ -81,8 +159,11 @@ export const apiClient = {
     });
   },
 
-  async createNote(): Promise<any> {
-    return apiFetch(`/api/notes`, { method: "POST" });
+  async createNote(parentId?: number): Promise<any> {
+    return apiFetch(`/api/notes`, {
+      method: "POST",
+      body: JSON.stringify({ parent_note_id: parentId }),
+    });
   },
 
   async deleteNote(noteId: string | number): Promise<void> {
@@ -116,16 +197,11 @@ export const apiClient = {
 
   async updateBlock(
     blockId: string | number,
-    data: {
-      text?: string;
-      formats?: BlockTextFormat[];
-      language?: string;
-      code_text?: string;
-    }
+    payload: { type: string; content: Partial<TextContent | CodeContent> }
   ): Promise<Block> {
     return apiFetch(`/api/blocks/${blockId}`, {
       method: "PATCH",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   },
 
@@ -148,17 +224,125 @@ export const apiClient = {
     formData.append("file", file);
 
     const url = `${API_BASE}/api/files/upload`;
-    const res = await fetch(url, {
+
+    return apiFetch(url, {
       method: "POST",
       body: formData,
       credentials: "include",
     });
+  },
 
-    if (!res.ok) {
-      const errorBody = await res.text();
-      throw new Error(`Upload failed: ${res.statusText} - ${errorBody}`);
-    }
+  async createTicket(ticketData: Ticket): Promise<Ticket> {
+    return apiFetch(`/api/tickets`, {
+      method: "POST",
+      body: JSON.stringify(ticketData),
+    });
+  },
 
-    return res.json();
+  async getMyTickets(): Promise<Ticket[]> {
+    return apiFetch(`/api/tickets`, { method: "GET" });
+  },
+
+  async getTicketById(ticketId: number): Promise<Ticket> {
+    return apiFetch(`/api/tickets/${ticketId}`, { method: "GET" });
+  },
+
+  async updateTicket(
+    ticketId: number,
+    data: { title?: string; description?: string }
+  ): Promise<Ticket> {
+    const payload = {
+      title: data.title,
+      description: data.description,
+    };
+    return apiFetch(`/api/tickets/${ticketId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getTicketStatistics(): Promise<Statistics> {
+    return apiFetch(`/api/admin/statistics`, { method: "GET" });
+  },
+  async getAllTickets(): Promise<Ticket[]> {
+    return apiFetch(`/api/admin/tickets`, { method: "GET" });
+  },
+
+  async updateTicketStatus(ticketId: number, status: string): Promise<Ticket> {
+    return apiFetch(`/api/admin/tickets/${ticketId}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  async sendChatMessage(
+    ticketId: number,
+    messageText: string
+  ): Promise<Message> {
+    return apiFetch(`/api/tickets/${ticketId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body: messageText }),
+    });
+  },
+
+  async getChatMessages(ticketId: number): Promise<Messages> {
+    return apiFetch(`/api/tickets/${ticketId}/messages`, { method: "GET" });
+  },
+
+  async getCollaborators(
+    noteId: number | string
+  ): Promise<CollaboratorsResponse> {
+    return apiFetch(`/api/notes/${noteId}/collaborators`, { method: "GET" });
+  },
+
+  async addCollaborator(
+    noteId: number | string,
+    email: string,
+    role: "editor" | "viewer" | "commenter" = "editor"
+  ): Promise<any> {
+    return apiFetch(`/api/notes/${noteId}/collaborators`, {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    });
+  },
+
+  async updateCollaboratorRole(
+    noteId: number | string,
+    permissionId: number | string,
+    role: "editor" | "viewer" | "commenter"
+  ): Promise<any> {
+    return apiFetch(`/api/notes/${noteId}/collaborators/${permissionId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  async removeCollaborator(
+    noteId: number | string,
+    permissionId: number | string
+  ): Promise<void> {
+    return apiFetch(`/api/notes/${noteId}/collaborators/${permissionId}`, {
+      method: "DELETE",
+    });
+  },
+
+  async getSharingSettings(
+    noteId: number | string
+  ): Promise<SharingSettingsResponse> {
+    return apiFetch(`/api/notes/${noteId}/sharing`, { method: "GET" });
+  },
+
+  async activateSharedLink(shareUuid: string): Promise<ActivateAccessResponse> {
+    return apiFetch(`/api/notes/activate/${shareUuid}`, { method: "POST" });
+  },
+
+  async setPublicAccess(
+    noteId: number | string,
+    accessLevel: "editor" | "viewer" | "commenter" | null
+  ): Promise<any> {
+    return apiFetch(`/api/notes/${noteId}/public-access`, {
+      method: "PUT",
+      body: JSON.stringify({ access_level: accessLevel }),
+    });
   },
 };

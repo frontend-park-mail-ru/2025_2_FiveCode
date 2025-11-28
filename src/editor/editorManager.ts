@@ -2,13 +2,15 @@ import { apiClient } from "../api/apiClient";
 import {
   Block,
   renderBlock,
-  BlockTextFormat,
   UpdateCallback,
   BlockUpdateData,
+  TextContent,
+  CodeContent,
 } from "../components/block";
 import { createImageModal } from "../components/imageModal";
 import { debounce } from "../utils/debounce";
 import { setupEventManager } from "./eventManager";
+import { handleError } from "../utils/errorHandler";
 
 interface EditorManagerConfig {
   container: HTMLElement;
@@ -18,6 +20,7 @@ interface EditorManagerConfig {
   titleInput: HTMLInputElement;
   noteId: string | number;
   saveStatusEl: HTMLElement;
+  readOnly?: boolean;
 }
 
 export interface EditorManager {
@@ -28,6 +31,7 @@ export interface EditorManager {
     currentBlockId: string | number | undefined,
     type: Block["type"]
   ) => void;
+  syncBlocks: (newBlocks: Block[]) => void;
 }
 
 export function createEditorManager({
@@ -38,6 +42,7 @@ export function createEditorManager({
   titleInput,
   noteId,
   saveStatusEl,
+  readOnly = false,
 }: EditorManagerConfig): EditorManager {
   let blocks: Block[] = [...initialBlocks];
   const emptyStateEl = document.querySelector(
@@ -47,6 +52,7 @@ export function createEditorManager({
   const debouncedSaves = new Map<string | number, () => void>();
 
   const saveTitle = async () => {
+    if (readOnly) return;
     saveStatusEl.textContent = "Сохранение...";
     try {
       const newTitle = titleInput.value;
@@ -59,12 +65,14 @@ export function createEditorManager({
       );
     } catch (err) {
       saveStatusEl.textContent = "Ошибка сохранения";
+      handleError(err, "Не удалось сохранить заголовок");
     }
   };
 
-  const debouncedSaveTitle = debounce(saveTitle, 1500);
+  const debouncedSaveTitle = debounce(saveTitle, 500);
 
   const saveBlock = async (blockId: string | number) => {
+    if (readOnly) return;
     saveStatusEl.textContent = "Сохранение...";
     try {
       const blockToSave = blocks.find(
@@ -74,25 +82,36 @@ export function createEditorManager({
         return;
       }
 
-      let payload: any = {};
+      let payload: { type: string; content: any };
+
       if (blockToSave.type === "code") {
+        const content = blockToSave.content as CodeContent;
         payload = {
-          language: blockToSave.language,
-          code_text: blockToSave.text,
+          type: "code",
+          content: {
+            language: content.language,
+            code: content.code,
+          },
+        };
+      } else if (blockToSave.type === "text") {
+        const content = blockToSave.content as TextContent;
+        payload = {
+          type: "text",
+          content: {
+            text: content.text || "",
+            formats: content.formats || [],
+          },
         };
       } else {
-        payload = {
-          text: blockToSave.text || "",
-          formats: blockToSave.formats || [],
-        };
+        return;
       }
 
       await apiClient.updateBlock(blockToSave.id, payload);
 
       saveStatusEl.textContent = "Сохранено";
     } catch (err) {
-      console.error("Save block error:", err);
       saveStatusEl.textContent = "Ошибка сохранения";
+      handleError(err, "Не удалось сохранить блок");
     }
   };
 
@@ -100,12 +119,21 @@ export function createEditorManager({
     blockId: string | number,
     data: BlockUpdateData
   ) => {
+    if (readOnly) return;
     const block = blocks.find((b) => b.id.toString() === blockId.toString());
     if (block) {
-      Object.assign(block, data);
+      if (block.type === "text") {
+        const content = block.content as TextContent;
+        if (data.text !== undefined) content.text = data.text;
+        if (data.formats !== undefined) content.formats = data.formats;
+      } else if (block.type === "code") {
+        const content = block.content as CodeContent;
+        if (data.code !== undefined) content.code = data.code;
+        if (data.language !== undefined) content.language = data.language;
+      }
 
       if (!debouncedSaves.has(blockId)) {
-        const debouncedSave = debounce(() => saveBlock(blockId), 1500);
+        const debouncedSave = debounce(() => saveBlock(blockId), 500);
         debouncedSaves.set(blockId, debouncedSave);
       }
 
@@ -120,6 +148,7 @@ export function createEditorManager({
     currentBlockId: string | number | undefined,
     type: Block["type"]
   ) => {
+    if (readOnly) return;
     const currentIndex =
       currentBlockId !== undefined
         ? blocks.findIndex((b) => b.id.toString() === currentBlockId.toString())
@@ -128,47 +157,109 @@ export function createEditorManager({
     const beforeBlock = blocks[currentIndex + 1];
     const beforeBlockId = beforeBlock ? beforeBlock.id : undefined;
 
-    let newBlockData;
     let newBlock: Block;
 
-    if (type === "image") {
-      const uploadedFile = await createImageModal();
-      if (!uploadedFile) return;
+    try {
+      if (type === "image") {
+        const uploadedFile = await createImageModal();
+        if (!uploadedFile) return;
 
-      newBlockData = await apiClient.createBlock(noteId, {
-        type: "attachment",
-        file_id: uploadedFile.id,
-        before_block_id: beforeBlockId as number,
-      });
+        newBlock = await apiClient.createBlock(noteId, {
+          type: "attachment",
+          file_id: uploadedFile.id,
+          before_block_id: beforeBlockId as number,
+        });
+      } else {
+        newBlock = await apiClient.createBlock(noteId, {
+          type: type,
+          before_block_id: beforeBlockId as number,
+        });
+      }
 
-      newBlock = {
-        id: newBlockData.id,
-        type: "image",
-        url: newBlockData.text || "",
-        file_id: uploadedFile.id,
-      };
-    } else {
-      newBlockData = await apiClient.createBlock(noteId, {
-        type: type,
-        before_block_id: beforeBlockId as number,
-      });
-
-      newBlock = {
-        id: newBlockData.id,
-        type: type,
-        text: newBlockData.text || "",
-        language: newBlockData.language || "",
-        formats: [],
-      };
+      if (currentIndex === -1) {
+        blocks.push(newBlock);
+      } else {
+        blocks.splice(currentIndex + 1, 0, newBlock);
+      }
+      render();
+      setTimeout(() => focusBlock(newBlock.id), 0);
+    } catch (err) {
+      handleError(err, "Ошибка при создании блока");
     }
+  };
 
-    if (currentIndex === -1) {
-      blocks.push(newBlock);
-    } else {
-      blocks.splice(currentIndex + 1, 0, newBlock);
+  const syncBlocks = (newBlocks: Block[]) => {
+    blocks = newBlocks;
+    const activeElement = document.activeElement as HTMLElement;
+    const activeBlockId = activeElement
+      ?.closest(".block-container")
+      ?.getAttribute("data-block-id");
+
+    const newBlockMap = new Map(newBlocks.map((b) => [String(b.id), b]));
+    const currentDomBlocks = Array.from(container.children) as HTMLElement[];
+
+    currentDomBlocks.forEach((el) => {
+      const id = el.dataset.blockId;
+      if (id && !newBlockMap.has(id)) {
+        el.remove();
+      }
+    });
+
+    let previousElement: HTMLElement | null = null;
+
+    const processExistingDomElement = (domElement: HTMLElement, block: Block, isFocused: boolean) => {
+      if (!isFocused) {
+        const newBlockElement = renderBlock(block, updateBlockContent, readOnly);
+        domElement.replaceWith(newBlockElement);
+        return newBlockElement;
+      }
+      return domElement;
+    };
+
+    const createAndInsertNewDomElement = (
+      block: Block,
+      previousElement: HTMLElement | null
+    ) => {
+      const domElement = renderBlock(block, updateBlockContent, readOnly);
+      if (previousElement) {
+        previousElement.after(domElement);
+      } else {
+        container.prepend(domElement);
+      }
+      return domElement;
+    };
+
+    newBlocks.forEach((block) => {
+      const blockIdStr = String(block.id);
+      let domElement = container.querySelector(
+        `.block-container[data-block-id="${blockIdStr}"]`
+      ) as HTMLElement;
+
+      const isFocused = activeBlockId === blockIdStr;
+
+      if (domElement) {
+        domElement = processExistingDomElement(domElement, block, isFocused);
+      } else {
+        domElement = createAndInsertNewDomElement(block, previousElement);
+      }
+
+      if (previousElement) {
+        if (previousElement.nextElementSibling !== domElement) {
+          previousElement.after(domElement);
+        }
+      } else {
+        if (container.firstElementChild !== domElement) {
+          container.prepend(domElement);
+        }
+      }
+
+      previousElement = domElement;
+    });
+
+    if (emptyStateEl) {
+      emptyStateEl.style.display =
+        blocks.length === 0 && !readOnly ? "block" : "none";
     }
-    render();
-    setTimeout(() => focusBlock(newBlock.id), 0);
   };
 
   const render = () => {
@@ -179,12 +270,13 @@ export function createEditorManager({
 
     container.innerHTML = "";
     blocks.forEach((block) => {
-      const blockElement = renderBlock(block, updateBlockContent);
+      const blockElement = renderBlock(block, updateBlockContent, readOnly);
       container.appendChild(blockElement);
     });
 
     if (emptyStateEl) {
-      emptyStateEl.style.display = blocks.length === 0 ? "block" : "none";
+      emptyStateEl.style.display =
+        blocks.length === 0 && !readOnly ? "block" : "none";
     }
 
     if (activeBlockId) {
@@ -193,6 +285,7 @@ export function createEditorManager({
   };
 
   const focusBlock = (blockId: string | number) => {
+    if (readOnly) return;
     const blockContainerElement = container.querySelector<HTMLElement>(
       `[data-block-id="${blockId}"]`
     );
@@ -207,13 +300,33 @@ export function createEditorManager({
     const blockToFocus =
       blockContainerElement?.querySelector<HTMLElement>(".block");
     if (blockToFocus) {
-      blockToFocus.focus();
+      setTimeout(() => {
+        if (blockToFocus.classList.contains("block--text")) {
+          blockToFocus.focus();
+        } else {
+          blockToFocus.focus();
+        }
+      }, 0);
     }
   };
 
-  titleInput.addEventListener("input", debouncedSaveTitle);
+  if (!readOnly) {
+    titleInput.addEventListener("input", debouncedSaveTitle);
+
+    titleInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (titleInput.selectionStart === titleInput.value.length) {
+          await addNewBlock(undefined, "text");
+        }
+      }
+    });
+  } else {
+    titleInput.setAttribute("readonly", "true");
+  }
 
   async function deleteBlock(blockId: string | number) {
+    if (readOnly) return;
     const idx = blocks.findIndex((b) => b.id.toString() === blockId.toString());
     if (idx === -1) return;
     const toDelete = blocks[idx];
@@ -221,13 +334,17 @@ export function createEditorManager({
     try {
       await apiClient.deleteBlock(toDelete.id);
       blocks.splice(idx, 1);
+      if (blocks.length === 0) {
+        await addNewBlock(undefined, "text");
+      }
       render();
     } catch (err) {
-      console.error("deleteBlock error", err);
+      handleError(err, "Не удалось удалить блок");
     }
   }
 
   async function moveBlock(blockId: string | number, direction: "up" | "down") {
+    if (readOnly) return;
     const idx = blocks.findIndex((b) => b.id.toString() === blockId.toString());
     if (idx === -1) return;
     const newIndex = direction === "up" ? idx - 1 : idx + 1;
@@ -246,27 +363,30 @@ export function createEditorManager({
       });
       render();
     } catch (err) {
-      console.error("moveBlock api error", err);
       blocks.splice(newIndex, 1);
       blocks.splice(idx, 0, movedBlock);
       render();
+      handleError(err, "Ошибка при перемещении блока");
     }
   }
 
-  setupEventManager({
-    container,
-    toolbar,
-    addBlockMenu,
-    addNewBlock,
-    updateBlockContent,
-    deleteBlock,
-    moveBlock,
-  });
+  if (!readOnly) {
+    setupEventManager({
+      container,
+      toolbar,
+      addBlockMenu,
+      addNewBlock,
+      updateBlockContent,
+      deleteBlock,
+      moveBlock,
+    });
+  }
 
   return {
     render,
     getBlocks: () => blocks,
     focusBlock,
     addNewBlock,
+    syncBlocks,
   };
 }

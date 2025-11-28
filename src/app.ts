@@ -1,5 +1,6 @@
 import { apiClient } from "./api/apiClient";
 import { saveUser } from "./utils/session";
+import ejs from "ejs";
 import router from "./router";
 import { renderAppLayout } from "./layout";
 import "../styles.css";
@@ -12,6 +13,16 @@ import "./static/css/note-editor.css";
 import "./static/css/modal.css";
 import "./static/css/settings.css";
 import "./static/css/note-menu.css";
+import "./static/css/user-menu.css";
+import "./static/css/search.css";
+import "./static/css/techsupport.css";
+import "./static/css/techsupport/menu.css";
+import "./static/css/techsupport/ticket-list.css";
+import "./static/css/techsupport/ticket-detail.css";
+import "./static/css/techsupport/statistics.css";
+import "./static/css/chat.css";
+import "./static/css/collaboration.css";
+import "./static/css/notification.css";
 
 interface User {
   id?: number;
@@ -20,16 +31,27 @@ interface User {
   email?: string;
 }
 
+const ICONS = {
+  Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
+};
+
 async function initializeApp(): Promise<void> {
   const app = document.getElementById("app");
   if (!app) {
     console.error("Could not find app container");
     return;
   }
-
+  const faviconTemplate = `
+      <link rel="icon" type="image/x-icon" href="<%= icon %>" />
+    `;
+  const faviconHtml = ejs.render(faviconTemplate, { icon: ICONS.Icon });
+  const faviconEl = document.createElement("link");
+  faviconEl.innerHTML = faviconHtml;
+  const favicon = faviconEl.firstElementChild as HTMLLinkElement;
+  document.head.appendChild(favicon);
   const path = window.location.pathname;
   const isAuthPage = path === "/login" || path === "/register";
-
+  const techsupportPath = path === "/techsupport";
   let user: User | null = null;
   try {
     user = await apiClient.me();
@@ -46,6 +68,10 @@ async function initializeApp(): Promise<void> {
       router.navigate("notes");
     }
   } else {
+    if (techsupportPath) {
+      router.navigate("techsupport");
+      return;
+    }
     if (!isAuthPage) {
       router.navigate("login");
     }

@@ -2,9 +2,13 @@ import ejs from "ejs";
 import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
-import { UserMenu, createExitConfirmationModal } from "./userMenu";
+import {
+  UserMenu,
+  createExitConfirmationModal,
+  createSearchModal,
+} from "./userMenu";
 import { loadUser } from "../utils/session";
-import { exit } from "process";
+import { handleError } from "../utils/errorHandler";
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,
@@ -14,6 +18,7 @@ const ICONS = {
   account: new URL("../static/svg/icon_account_gray.svg", import.meta.url).href,
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
   dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  collapse: new URL("../static/svg/icon_arrow.svg", import.meta.url).href,
 };
 
 interface User {
@@ -36,12 +41,17 @@ const handleTitleUpdate = (event: Event) => {
   const { noteId, newTitle } = customEvent.detail;
   if (!noteId || typeof newTitle === "undefined") return;
 
-  const noteLinkTitle = document.querySelector(
-    `.sidebar a[href="/note/${noteId}"] .subdir-title`
+  const titleElements = document.querySelectorAll(
+    `.sidebar a[href="/note/${noteId}"] .subdir-title, .sidebar a[href="/note/${noteId}"] .subnote-title`
   );
-  if (noteLinkTitle) {
-    noteLinkTitle.textContent = newTitle;
-  }
+
+  titleElements.forEach((el) => {
+    let displayTitle = newTitle;
+    if (displayTitle.length > 18) {
+      displayTitle = displayTitle.substring(0, 17) + "...";
+    }
+    el.textContent = displayTitle;
+  });
 };
 
 document.removeEventListener("noteTitleUpdated", handleTitleUpdate);
@@ -64,14 +74,16 @@ export function Sidebar({
                 </button>
             </div>
             <nav class="sidebar__nav">
-                <a href="/notes" class="sidebar__item" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
-                <a class="sidebar__item" data-link> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
+                <a href="/notes" class="sidebar__item <%= isHomeActive ? 'sidebar-item--active' : '' %>" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
+                <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
             <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
         </aside>
     `;
+
+  const isHomeActive = window.location.pathname === `/notes`;
 
   const html = ejs.render(template, {
     user: user,
@@ -82,26 +94,24 @@ export function Sidebar({
     search: ICONS.search,
     dots: ICONS.dots,
     avatarUrl: avatarUrl,
+    collapse: ICONS.collapse,
+    isHomeActive: isHomeActive,
+    isSearchActive: false,
   });
   const container = document.createElement("div");
   container.innerHTML = html;
   const el = container.firstElementChild as HTMLElement;
   let userMenuComponent: HTMLElement | null = null;
 
+  const navigateToSettings = (event?: Event) => {
+    event?.preventDefault();
+    userMenuComponent?.classList.remove("user-menu--visible");
+    router.navigate("settings");
+  };
+
   document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
 
-  const handleCreateNewNote = async (event: Event) => {
-    event.preventDefault();
-    const button = event.currentTarget as HTMLElement;
-    button.textContent = "Создание...";
-    try {
-      const newNote = await apiClient.createNote();
-      document.dispatchEvent(new CustomEvent("notesUpdated"));
-      router.navigate(`note/${newNote.id}`);
-    } catch (error) {
-      console.error("Failed to create new note", error);
-    }
-  };
+  const searchBtn = el.querySelector("#search-btn");
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
@@ -138,10 +148,13 @@ export function Sidebar({
           exitModal
             .querySelector(".exit-modal-button")
             ?.addEventListener("click", async () => {
-              await apiClient.logout();
-              exitModal.remove();
-
-              router.navigate("login");
+              try {
+                await apiClient.logout();
+                exitModal.remove();
+                router.navigate("login");
+              } catch (err) {
+                handleError(err, "Ошибка выхода из системы");
+              }
             });
         });
     }
@@ -164,6 +177,15 @@ export function Sidebar({
       userMenuComponent.classList.remove("user-menu--visible");
     }
   });
+
+  el.querySelector("#sidebar-avatar")?.addEventListener(
+    "click",
+    navigateToSettings
+  );
+  el.querySelector("#sidebar-username")?.addEventListener(
+    "click",
+    navigateToSettings
+  );
 
   const handleProfileUpdate = (event: CustomEvent) => {
     const updatedUser = loadUser();
@@ -201,11 +223,9 @@ export function Sidebar({
       (n) => ({ ...n, favorite: n.is_favorite })
     );
     subs.innerHTML = "";
-    const subdirComponent = Subdirectories({ items: mappedNotes });
-
-    const addNoteButtons = subdirComponent.querySelectorAll(".add-note-button");
-    addNoteButtons.forEach((button) => {
-      button.addEventListener("click", handleCreateNewNote as EventListener);
+    const subdirComponent = Subdirectories({
+      items: mappedNotes,
+      currentUserId: user?.id ?? 0,
     });
 
     subs.appendChild(subdirComponent);
@@ -216,7 +236,7 @@ export function Sidebar({
       .getNotesForUser()
       .then(renderSubdirectories)
       .catch((err) => {
-        console.error("Failed to refresh notes for sidebar", err);
+        handleError(err, "Ошибка обновления списка заметок");
       });
   };
 
@@ -239,7 +259,6 @@ type MenuLinkElement = HTMLAnchorElement & {
 };
 
 function highlightActiveMenuLink(): void {
-  console.log("highlightActiveMenuLink called");
   const currentPath: string = window.location.pathname;
   const currentPage: string = currentPath.split("/").pop() || "";
   const menuLinks: NodeListOf<MenuLinkElement> =

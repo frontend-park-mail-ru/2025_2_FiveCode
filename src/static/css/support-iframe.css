@@ -1,0 +1,243 @@
+.tech-support {
+  max-width: 900px;
+  width: 100%;
+  padding: 24px;
+  background-color: var(--bg-default);
+  border: 1px solid var(--primary-200);
+  border-radius: 8px;
+  color: var(--text-noraml);
+}
+
+.menu-options{
+  display: grid;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--primary-200);
+}
+
+.tech-support-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    background-color: var(--bg-default);
+  border: 1px solid var(--primary-200);
+}
+
+.tech-support-menu h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-button {
+    background-color: var(--primary-400);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    width: 100%;
+}
+
+.menu-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.menu-button:active {
+    transform: translateY(0);
+}
+
+.tech-support-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--primary-200);
+  margin-top: 24px;
+}
+
+.tech-support-header h2 {
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.close-button, .back-to-menu-button{
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.close-button img {
+  width: 12px;
+  height: 12px;
+}
+
+.back-to-menu-button img {
+  width: 22px;
+  height: 22px;
+}
+
+.tech-support-content p {
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-noraml);
+}
+
+.tech-support-content input,
+.tech-support-content textarea,
+.tech-support-content select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--primary-300);
+  color: var(--text-noraml);
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-family: inherit;
+}
+
+.messageContent {
+  resize: vertical;
+}
+
+.send-form-btn {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.send-form-btn button {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.submit-button {
+  background: var(--primary-300);
+  color: var(--text-noraml);
+}
+
+.submit-button:hover {
+  background: var(--primary-400);
+}
+
+.submit-button:disabled {
+  background: var(--gray-300);
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background: var(--primary-50);
+  color: var(--text-noraml);
+}
+
+.cancel-button:hover {
+  background: var(--primary-100);
+}
+
+.file-attachment-section {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#attach-file-btn {
+  padding: 10px 15px;
+  background: var(--primary-300);
+  color: var(--text-noraml);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+#attach-file-btn:hover {
+  background: var(--primary-400);
+}
+
+#file-attachment-status {
+  font-size: 14px;
+  color: var(--text-caption);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: var(--danger-500);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.tech-support-wrapper {
+  width: 52px;
+  height: 52px;
+  background: rgb(0, 119, 255);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.2s ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: rgba(0, 119, 255, 0.5) 0px 0px 20px 1px;
+  z-index: 1000;
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+}
+
+.tech-support .sidebar,
+.tech-support .tech-support-wrapper {
+  display: none !important;
+}
+
+.form-status-message {
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 12px;
+    visibility: hidden;
+}
+
+.form-status-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    visibility: visible;
+}
+
+.form-status-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    visibility: visible;
+}

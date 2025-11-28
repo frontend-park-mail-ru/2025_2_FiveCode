@@ -2,6 +2,8 @@ import ejs from "ejs";
 import { NoteCard } from "../components/notecard";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "../components/notification";
 
 const ICONS = {
   add_new: new URL("../static/svg/icon_add_new.svg", import.meta.url).href,
@@ -10,10 +12,16 @@ const ICONS = {
 export async function renderNotes(): Promise<void> {
   const main = document.getElementById("main-content");
   if (!main) return;
+
   main.innerHTML = "";
 
   try {
     const allNotes = await apiClient.getNotesForUser();
+
+    const currentPath = window.location.pathname;
+    if (currentPath !== "/notes" && currentPath !== "/") {
+      return;
+    }
 
     const categories = [
       { key: "favorites", title: "Избранное" },
@@ -53,7 +61,7 @@ export async function renderNotes(): Promise<void> {
       if (key === "recent") {
         const addCard = NoteCard({
           id: 0,
-          title: "Новая заметка",
+          title: "Создать заметку",
           text: "",
           icon: ICONS.add_new,
           favorite: false,
@@ -63,10 +71,11 @@ export async function renderNotes(): Promise<void> {
           e.preventDefault();
           try {
             const newNote = await apiClient.createNote();
-            document.dispatchEvent(new CustomEvent("notesUpdated"));
+            showNotification("Заметка создана", "success");
             router.navigate(`note/${newNote.id}`);
+            document.dispatchEvent(new CustomEvent("notesUpdated"));
           } catch (error) {
-            console.error("Failed to create new note", error);
+            handleError(error, "Не удалось создать заметку");
           }
         });
 
@@ -80,7 +89,23 @@ export async function renderNotes(): Promise<void> {
       main.appendChild(section);
     });
   } catch (error) {
-    console.error("Failed to render notes page:", error);
-    main.innerHTML = "<p>Не удалось загрузить заметки.</p>";
+    handleError(error, "Не удалось загрузить заметки");
+    if (
+      window.location.pathname === "/notes" ||
+      window.location.pathname === "/"
+    ) {
+      main.innerHTML =
+        "<p style='text-align:center; margin-top:20px; color:gray;'>Не удалось загрузить заметки.</p>";
+    }
   }
 }
+
+document.removeEventListener("notesUpdated", renderNotes as EventListener);
+document.addEventListener("notesUpdated", () => {
+  const currentPath = window.location.pathname;
+  if (currentPath === "/notes" || currentPath === "/") {
+    renderNotes().catch((err) =>
+      console.error("Failed to refresh notes after update:", err)
+    );
+  }
+});

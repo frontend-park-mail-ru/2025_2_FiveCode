@@ -3,6 +3,8 @@ import { renderRegister } from "./pages/register";
 import { renderNotes } from "./pages/notes";
 import { renderNoteEditor } from "./pages/notepage";
 import { renderSettingsPage } from "./pages/settings";
+import { renderTechSupportPage } from "./pages/techsupport";
+import { handleSharedLink } from "./pages/shared";
 
 interface Route {
   path: RegExp;
@@ -60,6 +62,7 @@ class Router {
     if (this.mode === "history") {
       window.history.pushState(null, "", this.root + this.clearSlashes(path));
       this.interval();
+      
     } else {
       window.location.href = `${window.location.href.replace(
         /#(.*)$/,
@@ -120,6 +123,8 @@ router
   .add(/^register$/, () => renderRegister(document.getElementById("app")!))
   .add(/^notes$/, () => renderNotes())
   .add(/^note\/(\d+)$/, (id: string) => renderNoteEditor(Number(id)))
-  .add(/^settings$/, () => renderSettingsPage());
+  .add(/^settings$/, () => renderSettingsPage())
+  .add(/^techsupport$/, () => renderTechSupportPage())
+  .add(/^shared\/([a-zA-Z0-9-]+)$/, (uuid: string) => handleSharedLink(uuid));
 
 export default router;

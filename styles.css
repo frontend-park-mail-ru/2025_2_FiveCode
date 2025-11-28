@@ -9,8 +9,16 @@
   --text-noraml: #212529;
   --gradient-color: #ff6666;
   --error: #DC3545;
+  --danger-100: #F8D7DA;
+  --danger-200: #F5C6CB;
+  --danger-300: #F1AEB5;
+  --danger-400: #E55353;
   --danger-500: #DC3545;
-  --success: #28A745;
+  --success-100: #D4EDDA;
+  --success-200: #A9DFBF;
+  --success-300: #7DCEA0;
+  --success-400: #52BE80;
+  --success-500: #28A745;
   --black: #1e1e1e;
   --warning: #FFC107;
   --info: #17A2B8;

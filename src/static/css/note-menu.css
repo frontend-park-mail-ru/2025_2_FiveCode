@@ -2,15 +2,14 @@
   position: relative;
 }
 
-.subdir-header:hover .subdir-menu-dots {
+.subdir-header:hover .subdir-menu-dots,
+.subdir-header:hover .subdir-menu-favorite {
   display: block !important;
 }
 
-.subdir-menu-dots {
-  position: absolute;
+.subdir-menu-dots, .subnote-menu-dots {
   right: 8px;
   top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
@@ -24,9 +23,10 @@
 
 .note-menu {
   position: absolute;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background: rgba(var(--primary-600), 0.9);
+  border: 1px solid var(--primary-100);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   z-index: 1000;
   padding: 8px 0;
@@ -43,9 +43,11 @@
 }
 
 .note-menu button:hover {
-  background-color: #f5f5f5;
+  background-color: var(--primary-100);
 }
 
 .user-menu--visible {
   display: block;
 }
+
+

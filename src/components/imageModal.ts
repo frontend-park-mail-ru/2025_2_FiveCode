@@ -1,4 +1,6 @@
 import { apiClient, UploadedFile } from "../api/apiClient";
+import { handleError } from "../utils/errorHandler";
+import { showNotification } from "./notification";
 
 export function createImageModal(): Promise<UploadedFile | null> {
   return new Promise((resolve) => {
@@ -14,9 +16,9 @@ export function createImageModal(): Promise<UploadedFile | null> {
           <div class="modal-tab-panel active" data-panel="upload">
             <div class="input-group drop-zone" id="imageDropZone">
               <label for="imageUpload">Выберите файл или перетащите сюда / вставьте из буфера</label>
-              <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/gif" />
-              <div class="drop-hint">Перетащите изображение сюда или нажмите Ctrl+V, чтобы вставить</div>
-            </div>
+              <input type="file" id="imageUpload" />
+              <div class="drop-hint">Перетащите файл сюда или нажмите Ctrl+V, чтобы вставить</div>
+              </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -49,6 +51,11 @@ export function createImageModal(): Promise<UploadedFile | null> {
 
     confirmBtn.addEventListener("click", async () => {
       const file = fileInput.files?.[0];
+      if (!file) return;
+      if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+        showNotification("Недопустимый формат файла", "error");
+        return;
+      }
       if (file) {
         confirmBtn.disabled = true;
         confirmBtn.textContent = "Загрузка...";
@@ -56,7 +63,7 @@ export function createImageModal(): Promise<UploadedFile | null> {
           const response = await apiClient.uploadFile(file);
           close(response);
         } catch (error) {
-          console.error("Не удалось загрузить файл.", error);
+          handleError(error, "Не удалось загрузить файл");
           confirmBtn.disabled = false;
           confirmBtn.textContent = "Вставить";
         }
@@ -75,13 +82,17 @@ export function createImageModal(): Promise<UploadedFile | null> {
 
     const handleFileAndClose = async (file: File | null) => {
       if (!file) return;
+      if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
+        showNotification("Недопустимый формат файла", "error");
+        return;
+      }
       confirmBtn.disabled = true;
       confirmBtn.textContent = "Загрузка...";
       try {
         const response = await apiClient.uploadFile(file);
         close(response);
       } catch (error) {
-        console.error("Не удалось загрузить файл.", error);
+        handleError(error, "Не удалось загрузить файл");
         confirmBtn.disabled = false;
         confirmBtn.textContent = "Вставить";
       }
@@ -123,13 +134,11 @@ export function createImageModal(): Promise<UploadedFile | null> {
       for (let i = 0; i < clipboardItems.length; i++) {
         const item = clipboardItems[i];
         if (!item || !item.type) continue;
-        if (item.type.indexOf("image") !== -1) {
-          const blob = item.getAsFile?.();
-          if (blob) {
-            ev.preventDefault();
-            handleFileAndClose(blob);
-            return;
-          }
+        const blob = item.getAsFile?.();
+        if (blob) {
+          ev.preventDefault();
+          handleFileAndClose(blob);
+          return;
         }
       }
     });

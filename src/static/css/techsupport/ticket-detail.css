@@ -1,0 +1,84 @@
+.send-form-btn {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.send-form-btn button {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.submit-button {
+  background: var(--primary-300);
+  color: var(--text-noraml);
+}
+
+.submit-button:hover {
+  background: var(--primary-400);
+}
+
+.submit-button:disabled {
+  background: var(--gray-300);
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background: var(--primary-50);
+  color: var(--text-noraml);
+}
+
+.cancel-button:hover {
+  background: var(--primary-100);
+}
+
+.file-attachment-section {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#attach-file-btn {
+  padding: 10px 15px;
+  background: var(--primary-300);
+  color: var(--text-noraml);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+#attach-file-btn:hover {
+  background: var(--primary-400);
+}
+
+#file-attachment-status {
+  font-size: 14px;
+  color: var(--text-caption);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: var(--danger-500);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.ticket-image-attachment img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--primary-300);
+  margin-top: 8px;
+}
