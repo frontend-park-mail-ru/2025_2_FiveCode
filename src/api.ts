@@ -50,7 +50,7 @@ export async function apiFetch(
   options: ApiFetchOptions = {},
   isRetry = false
 ): Promise<any> {
-  const url = path.startsWith("http") ? path : API_BASE + path;
+  const url = path.startsWith("/api") ? path : API_BASE + path;
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
