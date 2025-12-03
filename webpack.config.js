@@ -2,6 +2,7 @@ import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
@@ -61,6 +62,40 @@ export default {
     minimizer: [
       "...",
       new CssMinimizerPlugin(),
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminMinify,
+          options: {
+            plugins: [
+              ["gifsicle", { interlaced: true }],
+              ["mozjpeg", { quality: 75 }],
+              ["pngquant", { quality: [0.6, 0.8] }],
+              [
+                "svgo",
+                {
+                  plugins: [
+                    {
+                      name: "preset-default",
+                      params: {
+                        overrides: {
+                          removeViewBox: false,
+                          addAttributesToSVGElement: {
+                            params: {
+                              attributes: [
+                                { xmlns: "http://www.w3.org/2000/svg" },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
     ],
   },
   devServer: {
