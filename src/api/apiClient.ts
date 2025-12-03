@@ -125,27 +125,27 @@ export const apiClient = {
     username?: string;
     avatar_file_id?: number;
   }): Promise<User> {
-    return apiFetch(`/api/profile`, {
+    return apiFetch(`/profile`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   async deleteUser(): Promise<void> {
-    return apiFetch(`/api/profile`, { method: "DELETE" });
+    return apiFetch(`/profile`, { method: "DELETE" });
   },
 
   async getFile(fileId: number): Promise<UploadedFile> {
-    return apiFetch(`/api/files/${fileId}`, { method: "GET" });
+    return apiFetch(`/files/${fileId}`, { method: "GET" });
   },
 
   async getNotesForUser(): Promise<Array<any>> {
-    return apiFetch(`/api/notes`, { method: "GET" });
+    return apiFetch(`/notes`, { method: "GET" });
   },
 
   async getNote(noteId: string | number): Promise<any> {
     if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, { method: "GET" });
+    return apiFetch(`/notes/${noteId}`, { method: "GET" });
   },
 
   async updateNote(
@@ -153,14 +153,14 @@ export const apiClient = {
     data: { title: string }
   ): Promise<any> {
     if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, {
+    return apiFetch(`/notes/${noteId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   async createNote(parentId?: number): Promise<any> {
-    return apiFetch(`/api/notes`, {
+    return apiFetch(`/notes`, {
       method: "POST",
       body: JSON.stringify({ parent_note_id: parentId }),
     });
@@ -168,7 +168,7 @@ export const apiClient = {
 
   async deleteNote(noteId: string | number): Promise<void> {
     if (!noteId) throw new Error("noteId required");
-    return apiFetch(`/api/notes/${noteId}`, { method: "DELETE" });
+    return apiFetch(`/notes/${noteId}`, { method: "DELETE" });
   },
 
   async toggleFavorite(
@@ -176,20 +176,20 @@ export const apiClient = {
     isFavorite: boolean
   ): Promise<void> {
     const method = isFavorite ? "POST" : "DELETE";
-    return apiFetch(`/api/notes/${noteId}/favorite`, { method });
+    return apiFetch(`/notes/${noteId}/favorite`, { method });
   },
 
   async getBlocksForNote(
     noteId: string | number
   ): Promise<{ blocks: Block[] }> {
-    return apiFetch(`/api/notes/${noteId}/blocks`, { method: "GET" });
+    return apiFetch(`/notes/${noteId}/blocks`, { method: "GET" });
   },
 
   async createBlock(
     noteId: string | number,
     data: { type: string; before_block_id?: string | number; file_id?: number }
   ): Promise<Block> {
-    return apiFetch(`/api/notes/${noteId}/blocks`, {
+    return apiFetch(`/notes/${noteId}/blocks`, {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -199,7 +199,7 @@ export const apiClient = {
     blockId: string | number,
     payload: { type: string; content: Partial<TextContent | CodeContent> }
   ): Promise<Block> {
-    return apiFetch(`/api/blocks/${blockId}`, {
+    return apiFetch(`/blocks/${blockId}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
@@ -209,21 +209,21 @@ export const apiClient = {
     blockId: string | number,
     data: { before_block_id?: string | number }
   ): Promise<Block> {
-    return apiFetch(`/api/blocks/${blockId}/position`, {
+    return apiFetch(`/blocks/${blockId}/position`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   async deleteBlock(blockId: string | number): Promise<void> {
-    return apiFetch(`/api/blocks/${blockId}`, { method: "DELETE" });
+    return apiFetch(`/blocks/${blockId}`, { method: "DELETE" });
   },
 
   async uploadFile(file: File): Promise<UploadedFile> {
     const formData = new FormData();
     formData.append("file", file);
 
-    const url = `${API_BASE}/api/files/upload`;
+    const url = `${API_BASE}/files/upload`;
 
     return apiFetch(url, {
       method: "POST",
@@ -233,18 +233,18 @@ export const apiClient = {
   },
 
   async createTicket(ticketData: Ticket): Promise<Ticket> {
-    return apiFetch(`/api/tickets`, {
+    return apiFetch(`/tickets`, {
       method: "POST",
       body: JSON.stringify(ticketData),
     });
   },
 
   async getMyTickets(): Promise<Ticket[]> {
-    return apiFetch(`/api/tickets`, { method: "GET" });
+    return apiFetch(`/tickets`, { method: "GET" });
   },
 
   async getTicketById(ticketId: number): Promise<Ticket> {
-    return apiFetch(`/api/tickets/${ticketId}`, { method: "GET" });
+    return apiFetch(`/tickets/${ticketId}`, { method: "GET" });
   },
 
   async updateTicket(
@@ -255,21 +255,21 @@ export const apiClient = {
       title: data.title,
       description: data.description,
     };
-    return apiFetch(`/api/tickets/${ticketId}`, {
+    return apiFetch(`/tickets/${ticketId}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     });
   },
 
   async getTicketStatistics(): Promise<Statistics> {
-    return apiFetch(`/api/admin/statistics`, { method: "GET" });
+    return apiFetch(`/admin/statistics`, { method: "GET" });
   },
   async getAllTickets(): Promise<Ticket[]> {
-    return apiFetch(`/api/admin/tickets`, { method: "GET" });
+    return apiFetch(`/admin/tickets`, { method: "GET" });
   },
 
   async updateTicketStatus(ticketId: number, status: string): Promise<Ticket> {
-    return apiFetch(`/api/admin/tickets/${ticketId}`, {
+    return apiFetch(`/admin/tickets/${ticketId}`, {
       method: "PUT",
       body: JSON.stringify({ status }),
     });
@@ -279,20 +279,20 @@ export const apiClient = {
     ticketId: number,
     messageText: string
   ): Promise<Message> {
-    return apiFetch(`/api/tickets/${ticketId}/messages`, {
+    return apiFetch(`/tickets/${ticketId}/messages`, {
       method: "POST",
       body: JSON.stringify({ body: messageText }),
     });
   },
 
   async getChatMessages(ticketId: number): Promise<Messages> {
-    return apiFetch(`/api/tickets/${ticketId}/messages`, { method: "GET" });
+    return apiFetch(`/tickets/${ticketId}/messages`, { method: "GET" });
   },
 
   async getCollaborators(
     noteId: number | string
   ): Promise<CollaboratorsResponse> {
-    return apiFetch(`/api/notes/${noteId}/collaborators`, { method: "GET" });
+    return apiFetch(`/notes/${noteId}/collaborators`, { method: "GET" });
   },
 
   async addCollaborator(
@@ -300,7 +300,7 @@ export const apiClient = {
     email: string,
     role: "editor" | "viewer" | "commenter" = "editor"
   ): Promise<any> {
-    return apiFetch(`/api/notes/${noteId}/collaborators`, {
+    return apiFetch(`/notes/${noteId}/collaborators`, {
       method: "POST",
       body: JSON.stringify({ email, role }),
     });
@@ -311,7 +311,7 @@ export const apiClient = {
     permissionId: number | string,
     role: "editor" | "viewer" | "commenter"
   ): Promise<any> {
-    return apiFetch(`/api/notes/${noteId}/collaborators/${permissionId}`, {
+    return apiFetch(`/notes/${noteId}/collaborators/${permissionId}`, {
       method: "PATCH",
       body: JSON.stringify({ role }),
     });
@@ -321,7 +321,7 @@ export const apiClient = {
     noteId: number | string,
     permissionId: number | string
   ): Promise<void> {
-    return apiFetch(`/api/notes/${noteId}/collaborators/${permissionId}`, {
+    return apiFetch(`/notes/${noteId}/collaborators/${permissionId}`, {
       method: "DELETE",
     });
   },
@@ -329,18 +329,18 @@ export const apiClient = {
   async getSharingSettings(
     noteId: number | string
   ): Promise<SharingSettingsResponse> {
-    return apiFetch(`/api/notes/${noteId}/sharing`, { method: "GET" });
+    return apiFetch(`/notes/${noteId}/sharing`, { method: "GET" });
   },
 
   async activateSharedLink(shareUuid: string): Promise<ActivateAccessResponse> {
-    return apiFetch(`/api/notes/activate/${shareUuid}`, { method: "POST" });
+    return apiFetch(`/notes/activate/${shareUuid}`, { method: "POST" });
   },
 
   async setPublicAccess(
     noteId: number | string,
     accessLevel: "editor" | "viewer" | "commenter" | null
   ): Promise<any> {
-    return apiFetch(`/api/notes/${noteId}/public-access`, {
+    return apiFetch(`/notes/${noteId}/public-access`, {
       method: "PUT",
       body: JSON.stringify({ access_level: accessLevel }),
     });

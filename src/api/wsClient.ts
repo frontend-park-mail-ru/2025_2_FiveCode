@@ -22,8 +22,21 @@ export class WsClient {
 
   constructor(noteId: number | string) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = config.API_BASE_URL.replace(/^https?:\/\//, "");
-    this.url = `${protocol}//${host}/api/ws/notes/${noteId}`;
+
+    let host;
+    let basePath;
+    if (config.API_BASE_URL.startsWith("/")) {
+      host = window.location.host;
+      basePath = config.API_BASE_URL;
+    } else {
+      const urlParts = config.API_BASE_URL.replace(/^https?:\/\//, "").split(
+        "/"
+      );
+      host = urlParts[0];
+      basePath = urlParts.length > 1 ? `/${urlParts.slice(1).join("/")}` : "";
+    }
+
+    this.url = `${protocol}//${host}${basePath}/ws/notes/${noteId}`;
   }
 
   public connect(onMessage: (msg: ServerMessage) => void) {
