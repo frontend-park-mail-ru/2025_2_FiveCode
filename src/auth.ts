@@ -5,7 +5,7 @@ import { apiFetch } from "./api";
  * @param {{username: string, password: string}} creds
  */
 export async function login(creds: any) {
-  return apiFetch("/api/login", { method: "POST", body: creds });
+  return apiFetch("/login", { method: "POST", body: creds });
 }
 
 /**
@@ -13,19 +13,19 @@ export async function login(creds: any) {
  * @param {{username:string,password:string}} data
  */
 export async function register(data: any) {
-  return apiFetch("/api/register", { method: "POST", body: data });
+  return apiFetch("/register", { method: "POST", body: data });
 }
 
 /**
- * Проверка сессии (например GET /api/session возвращает user или null)
+ * Проверка сессии (например GET /session возвращает user или null)
  */
 export async function checkSession() {
-  return apiFetch("/api/session", { method: "GET" });
+  return apiFetch("/session", { method: "GET" });
 }
 
 /**
  * Logout (бикуканье бекенда удалить cookie)
  */
 export async function logout() {
-  return apiFetch("/api/logout", { method: "POST" });
+  return apiFetch("/logout", { method: "POST" });
 }

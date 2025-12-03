@@ -20,7 +20,7 @@ async function getCsrfToken(): Promise<string> {
   }
 
   if (!tokenFetchPromise) {
-    tokenFetchPromise = fetch(`${API_BASE}/api/csrf-token`, {
+    tokenFetchPromise = fetch(`${API_BASE}/csrf-token`, {
       credentials: "include",
     })
       .then(async (res) => {
