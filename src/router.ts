@@ -62,7 +62,6 @@ class Router {
     if (this.mode === "history") {
       window.history.pushState(null, "", this.root + this.clearSlashes(path));
       this.interval();
-      
     } else {
       window.location.href = `${window.location.href.replace(
         /#(.*)$/,

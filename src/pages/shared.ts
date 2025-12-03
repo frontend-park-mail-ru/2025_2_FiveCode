@@ -18,9 +18,9 @@ export async function handleSharedLink(uuid: string): Promise<void> {
 
   try {
     const response = await apiClient.activateSharedLink(uuid);
-    
+
     if (app) {
-        await renderAppLayout(app);
+      await renderAppLayout(app);
     }
 
     if (response && response.note_id) {
@@ -32,7 +32,8 @@ export async function handleSharedLink(uuid: string): Promise<void> {
   } catch (error: any) {
     console.error("Failed to activate shared link:", error);
     if (app) {
-      let errorMsg = "Не удалось получить доступ к заметке. Возможно, ссылка устарела.";
+      let errorMsg =
+        "Не удалось получить доступ к заметке. Возможно, ссылка устарела.";
       let actionLink = `<a href="/notes" class="btn" style="text-decoration:none;display:inline-block;margin-top:15px;">На главную</a>`;
 
       if (error.status === 401) {

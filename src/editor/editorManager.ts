@@ -207,9 +207,17 @@ export function createEditorManager({
 
     let previousElement: HTMLElement | null = null;
 
-    const processExistingDomElement = (domElement: HTMLElement, block: Block, isFocused: boolean) => {
+    const processExistingDomElement = (
+      domElement: HTMLElement,
+      block: Block,
+      isFocused: boolean
+    ) => {
       if (!isFocused) {
-        const newBlockElement = renderBlock(block, updateBlockContent, readOnly);
+        const newBlockElement = renderBlock(
+          block,
+          updateBlockContent,
+          readOnly
+        );
         domElement.replaceWith(newBlockElement);
         return newBlockElement;
       }

@@ -1,19 +1,17 @@
-import ejs from 'ejs';
-import { renderDashboard } from '../pages/dashboard';
-import { renderLogin } from '../pages/login';
+import ejs from "ejs";
 
 const ICONS = {
-  Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,
+  Icon: new URL("../static/svg/icon_goose.svg", import.meta.url).href,
 };
 
 interface User {
-    id: number;
-    username: string;
+  id: number;
+  username: string;
 }
 
 interface HeaderProps {
-   user?: User | null;
-   app: HTMLElement;
+  user?: User | null;
+  app: HTMLElement;
 }
 
 /**
@@ -23,8 +21,8 @@ interface HeaderProps {
  * @param {string} [params.user.username] - Имя ползователя для отображения
  * @returns {HTMLElement} DOM-элемент header
  */
-export function Header({ user, app }: HeaderProps) : HTMLElement {
-    const template = `
+export function Header({ user, app }: HeaderProps): HTMLElement {
+  const template = `
         <header class="header">
         <div class="header__logo">
             <img src="<%= iconUrl %>" class="header__icon">
@@ -32,13 +30,12 @@ export function Header({ user, app }: HeaderProps) : HTMLElement {
         </div>
         </header>
     `;
-    const html = ejs.render(template, {
+  const html = ejs.render(template, {
     iconUrl: ICONS.Icon,
-    });
-    
-    const el = document.createElement('div');
-    el.innerHTML = html;
-    
-    
-    return el.firstElementChild as HTMLElement;
+  });
+
+  const el = document.createElement("div");
+  el.innerHTML = html;
+
+  return el.firstElementChild as HTMLElement;
 }

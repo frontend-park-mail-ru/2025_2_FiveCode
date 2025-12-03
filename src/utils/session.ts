@@ -15,7 +15,7 @@ export function saveUser(user: User) {
     try {
       u.username = u.email.split("@")[0];
     } catch (e) {
-      ;
+      console.error(e);
     }
   }
 
@@ -29,7 +29,9 @@ export function loadUser() {
   if (parsed && !parsed.username && typeof parsed.email === "string") {
     try {
       parsed.username = parsed.email.split("@")[0];
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   }
   return parsed;
 }

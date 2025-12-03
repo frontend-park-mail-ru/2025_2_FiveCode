@@ -106,7 +106,7 @@ export const apiClient = {
     return response;
   },
 
-  async register(data: Object): Promise<AuthResponse> {
+  async register(data: object): Promise<AuthResponse> {
     const response = await register(data);
     return response;
   },

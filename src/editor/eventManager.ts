@@ -4,7 +4,7 @@ import {
   UpdateCallback,
 } from "../components/block";
 import { sizeMap } from "./constants";
-import {createDeleteBlock} from "../components/deleteNoteModal";
+import { createDeleteBlock } from "../components/deleteNoteModal";
 
 interface EventManagerDependencies {
   container: HTMLElement;
@@ -118,7 +118,9 @@ export function setupEventManager({
           sel.removeAllRanges();
           sel.addRange(range);
           triggerUpdate();
-        } catch (err) {}
+        } catch (err) {
+          console.error("Error inserting line break:", err);
+        }
         return;
       }
 
@@ -152,17 +154,17 @@ export function setupEventManager({
         if (action === "delete" && typeof deleteBlock === "function") {
           const deleteModal = createDeleteBlock();
           document.body.appendChild(deleteModal);
-          
-          deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
-            try {
-              deleteBlock(id);
-              
-            } catch (err) {
-              console.error("Failed to delete note:", err);
-            }
-            deleteModal.remove();
-          });
 
+          deleteModal
+            .querySelector(".delete-note-confirm")
+            ?.addEventListener("click", async () => {
+              try {
+                deleteBlock(id);
+              } catch (err) {
+                console.error("Failed to delete note:", err);
+              }
+              deleteModal.remove();
+            });
         }
         if (action === "move-up" && typeof moveBlock === "function") {
           moveBlock(id, "up");
@@ -228,7 +230,9 @@ export function setupEventManager({
             sel.removeAllRanges();
             sel.addRange(lastSelectionRange);
           }
-        } catch (err) {}
+        } catch (err) {
+          console.error("Failed to restore selection range:", err);
+        }
 
         if (dropdown?.id === "font-dropdown") {
           document.execCommand("fontName", false, dropdownItem.dataset.value);

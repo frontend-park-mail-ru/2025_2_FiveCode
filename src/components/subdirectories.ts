@@ -116,7 +116,11 @@ export function Subdirectories({
   allNotes.forEach((note) => {
     if (note.favorite && folders["Избранное"]) {
       folders["Избранное"].push(note);
-    } else if (currentUserId && note.owner_id !== currentUserId && folders["Совместный_доступ"]) {
+    } else if (
+      currentUserId &&
+      note.owner_id !== currentUserId &&
+      folders["Совместный_доступ"]
+    ) {
       folders["Совместный_доступ"].push(note);
     } else if (folders["Заметки"]) {
       folders["Заметки"].push(note);

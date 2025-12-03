@@ -1,7 +1,7 @@
-import ejs from 'ejs';
-import { Sidebar } from '../components/sidebar';
+import ejs from "ejs";
+import { Sidebar } from "../components/sidebar";
 
-interface User{
+interface User {
   id?: number;
   username?: string;
   password?: string;
@@ -19,7 +19,7 @@ declare global {
 }
 
 export function PageView(noteId: string | number): HTMLElement | null {
-  const el = document.createElement('div');
+  const el = document.createElement("div");
   el.innerHTML = `<div class="page"></div>`;
   const page = el.firstElementChild as HTMLElement;
   const user = window.__APP_SESSION__?.user ?? null;
@@ -32,7 +32,7 @@ export function PageView(noteId: string | number): HTMLElement | null {
   `;
 
   const mainHtml = ejs.render(mainTemplate, { noteId });
-  const mainEl = document.createElement('div');
+  const mainEl = document.createElement("div");
   mainEl.innerHTML = mainHtml;
   const main = mainEl.firstElementChild as HTMLElement;
   page.appendChild(main);

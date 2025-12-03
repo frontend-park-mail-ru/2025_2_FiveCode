@@ -59,7 +59,7 @@ async function initializeApp(): Promise<void> {
       saveUser(user);
     }
   } catch (error) {
-    console.error("Session check failed, assuming logged out.");
+    console.error("Session check failed, assuming logged out:", error);
   }
 
   if (user) {

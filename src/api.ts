@@ -94,7 +94,9 @@ export async function apiFetch(
   let json = null;
   try {
     json = text ? JSON.parse(text) : null;
-  } catch (e) {}
+  } catch (e) {
+    console.error("Failed to parse JSON response:", e);
+  }
 
   if (!res.ok) {
     if (res.status === 403) {
@@ -106,7 +108,7 @@ export async function apiFetch(
       ) {
         clearCsrfToken();
         if (!isRetry) {
-            return apiFetch(path, options, true);
+          return apiFetch(path, options, true);
         }
       }
     }

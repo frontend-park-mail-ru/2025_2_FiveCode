@@ -176,7 +176,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   editorManager.render();
 
   const sharingSettings = await apiClient.getSharingSettings(noteId as number);
-  if (sharingSettings.collaborators.length > 1 || sharingSettings.public_access.access_level) {
+  if (
+    sharingSettings.collaborators.length > 1 ||
+    sharingSettings.public_access.access_level
+  ) {
     activeWsClient = new WsClient(noteId);
     activeWsClient.connect((msg: ServerMessage) => {
       if (msg.type === "note_update") {
@@ -247,7 +250,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   });
 
   openCollabBtn?.addEventListener("click", () => {
-
     const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
     const modal = createCollaboratorsModal(id);
     document.body.appendChild(modal);

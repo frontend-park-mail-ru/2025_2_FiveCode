@@ -151,7 +151,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
               } catch (e) {
                 handleError(e, "Ошибка при удалении участника");
               }
-          });
+            });
         });
 
         const roleChangeSelect = li.querySelector(

@@ -1,13 +1,13 @@
-import ejs from 'ejs';
+import ejs from "ejs";
 
 const ICONS = {
-  deafult_file: new URL('../static/svg/icon_file.svg', import.meta.url).href
+  deafult_file: new URL("../static/svg/icon_file.svg", import.meta.url).href,
 };
 
-interface NoteCardParams{
+interface NoteCardParams {
   id: number;
-  title: string; 
-  text: string; 
+  title: string;
+  text: string;
   icon: string;
   favorite: boolean;
 }
@@ -21,7 +21,12 @@ interface NoteCardParams{
  * @param {boolean} params.favorite признак избранного
  * @returns {HTMLElement} DOM-элемент карточки
  */
-export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLElement {
+export function NoteCard({
+  title,
+  text,
+  icon,
+  favorite,
+}: NoteCardParams): HTMLElement {
   const template = `
     <div class="note-card<%= favorite ? ' note-card--favorite' : '' %>">
       <h3 class="note-card__title">
@@ -41,13 +46,13 @@ export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLE
   `;
 
   const html = ejs.render(template, {
-    title, 
-    text, 
-    icon, 
-    favorite, 
+    title,
+    text,
+    icon,
+    favorite,
     defaultIcon: ICONS.deafult_file,
   });
-  const container = document.createElement('div');
+  const container = document.createElement("div");
   container.innerHTML = html;
   return container.firstElementChild as HTMLElement;
 }

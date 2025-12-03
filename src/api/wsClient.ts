@@ -2,7 +2,6 @@ import { Block } from "../components/block";
 import { config } from "../config/project.config";
 import { showNotification } from "../components/notification";
 
-
 export type MessageType = "note_update" | "error";
 
 export interface ServerMessage {
@@ -33,6 +32,7 @@ export class WsClient {
       this.socket = new WebSocket(this.url);
     } catch (e) {
       showNotification("Ошибка в создании совместного доступа", "error");
+      console.error(e);
       return;
     }
 
@@ -45,7 +45,11 @@ export class WsClient {
         const data: ServerMessage = JSON.parse(event.data);
         onMessage(data);
       } catch (e) {
-        showNotification("Ошибка в получении данных совместного доступа", "error");
+        showNotification(
+          "Ошибка в получении данных совместного доступа",
+          "error"
+        );
+        console.error(e);
       }
     };
 
@@ -53,14 +57,18 @@ export class WsClient {
       showNotification("Соединение совместного доступа закрыто", "info");
       if (this.shouldReconnect) {
         setTimeout(() => {
-            showNotification("Повторное подключение к совместному доступу...", "info");
-            this.connect(onMessage);
+          showNotification(
+            "Повторное подключение к совместному доступу...",
+            "info"
+          );
+          this.connect(onMessage);
         }, this.reconnectInterval);
       }
     };
 
     this.socket.onerror = (err) => {
       showNotification("Ошибка в соединении совместного доступа", "error");
+      console.error(err);
       this.socket?.close();
     };
   }
