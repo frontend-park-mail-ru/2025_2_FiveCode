@@ -17,6 +17,13 @@ const ICONS = {
   share: new URL("../static/svg/icon_share.svg", import.meta.url).href,
 };
 
+interface Icon {
+  id?: number;
+  name?: string;
+  url?: string;
+}
+
+
 let activeWsClient: WsClient | null = null;
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
@@ -34,12 +41,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   let isReadOnly = true;
   let isOwner = false;
+  let icon : Icon;
 
   try {
     const note = await apiClient.getNote(noteId as number);
     const blocksData = await apiClient.getBlocksForNote(noteId as number);
     initialTitle = note.title;
     isFavorite = note.is_favorite || false;
+    icon = note.icon;
 
     initialBlocks = (blocksData.blocks || []).map((block: any): Block => {
       if (block.type === "attachment") {
@@ -86,6 +95,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   mainEl.className = "note-editor__main";
   mainEl.innerHTML = `
     <div class="note-editor__header">
+
       <span id="save-status"></span>
       ${isOwner ? `<button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>` : ""}
       <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
@@ -137,7 +147,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     `
         : ""
     }
-    <input class="note-editor__title" placeholder="Загрузка..." value="" />
+    <div class="note-editor__title-handler" >
+      <img src="${icon.url}" style="display: flex; aligh-items: center; width:40px;">
+      <input class="note-editor__title" placeholder="Загрузка..." value="" />
+    </div>
     <div class="block-editor">Загрузка блоков...</div>
   `;
 

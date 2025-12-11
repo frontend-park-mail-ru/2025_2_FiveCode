@@ -8,8 +8,14 @@ interface NoteCardParams{
   id: number;
   title: string; 
   text: string; 
-  icon: string;
+  icon: Icon;
   favorite: boolean;
+}
+
+interface Icon {
+  id?: number;
+  name?: string;
+  url: string;
 }
 
 /**
@@ -39,11 +45,11 @@ export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLE
       <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
     </div>
   `;
-
+  console.log("icon:", icon.url);
   const html = ejs.render(template, {
     title, 
     text, 
-    icon, 
+    icon: icon.url, 
     favorite, 
     defaultIcon: ICONS.deafult_file,
   });
