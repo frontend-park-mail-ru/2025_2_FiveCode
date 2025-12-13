@@ -108,13 +108,16 @@
     left: 0;
     bottom: 64px;
     width: 100%;
-    max-height: calc(100% - 64px);
+    /* max-height: calc(100% - 64px); */
+    max-height: 30%;
+
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     background: var(--gray-50);
     padding: 12px;
     box-sizing: border-box;
     z-index: 999;
+    border-top: 2px solid var(--primary-200);
   }
 
   .sidebar__subs .subdir-header {
