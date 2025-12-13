@@ -19,10 +19,17 @@ interface Note {
   id: number;
   owner_id: number;
   title: string;
-  icon: string;
+  icon: Icon;
   favorite: boolean;
   parent_note_id?: number | null;
 }
+
+interface Icon {
+  id?: number;
+  name?: string;
+  url: string;
+}
+
 
 interface SubdirectoriesParams {
   items: Note[];
@@ -68,7 +75,9 @@ export function Subdirectories({
 
   const noteItemTemplate = `
     <li class="subdir-item <%= isActive ? 'subdir-item--active' : '' %>" data-note-id="<%= id %>">
-      <a href="/note/<%= id %>" class="subdir-header" data-link>
+      <a href="/note/<%= id %>" class="subdir-header" data-link>      
+      <img src="<%= icon %>" style="display: flex; aligh-items: center; width: 16px;">
+
         <span class="subdir-title">
           <%= title.length > 18 ? title.substring(0,17) + '...' : title %>
         </span>
@@ -291,6 +300,7 @@ export function Subdirectories({
         showSubNotes,
         subnotesHTML,
         canEdit,
+        icon: item.icon.url
       });
 
       const noteWrapper = document.createElement("div");

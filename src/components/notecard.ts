@@ -31,6 +31,7 @@ export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLE
   const template = `
     <div class="note-card<%= favorite ? ' note-card--favorite' : '' %>">
       <h3 class="note-card__title">
+        <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
         <% if (title.includes(' ')) { %>
                 <%= title %>
             <% } else if (title.length > 24) { %>
@@ -42,7 +43,6 @@ export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLE
             <% } %>
       </h3>
       <p class="note-card__text"><%= text %></p>
-      <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
     </div>
   `;
   console.log("icon:", icon.url);
