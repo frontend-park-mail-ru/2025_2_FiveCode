@@ -23,6 +23,7 @@ import "./static/css/techsupport/statistics.css";
 import "./static/css/chat.css";
 import "./static/css/collaboration.css";
 import "./static/css/notification.css";
+import "./static/css/icon-menu.css";
 
 interface User {
   id?: number;

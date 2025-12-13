@@ -99,6 +99,12 @@ export interface ActivateAccessResponse {
   };
 }
 
+interface Icon {
+  id?: number;
+  name?: string;
+  url: string;
+}
+
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -345,4 +351,18 @@ export const apiClient = {
       body: JSON.stringify({ access_level: accessLevel }),
     });
   },
+
+  async getIcons(): Promise<Array<{ id: number; url: string }>> {
+    return apiFetch(`/api/icons`, { method: "GET" });
+  },
+
+  async updateNoteIcon(
+    noteId: string | number,
+    icon: Icon
+  ): Promise<void> {
+    return apiFetch(`/api/notes/${noteId}/icons`, {
+      method: "PUT",
+      body: JSON.stringify({ icon }),
+    });
+  }
 };

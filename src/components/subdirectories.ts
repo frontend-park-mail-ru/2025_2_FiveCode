@@ -4,6 +4,7 @@ import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { handleError } from "../utils/errorHandler";
 import { showNotification } from "./notification";
+import { chooseIconModal } from './chooseIconModal';
 
 const ICONS = {
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
@@ -167,6 +168,38 @@ export function Subdirectories({
     });
   };
 
+  const attachIconClickHandler = (noteItemEl: HTMLElement, noteId: number) => {
+    const iconEl = noteItemEl.querySelector('img[style*="width: 16px;"]') as HTMLElement | null;
+
+    if (!iconEl) return;
+
+    iconEl.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+    
+            const modal = await chooseIconModal(e as MouseEvent);
+            document.body.appendChild(modal);
+
+        const onIconSelected = (event: Event) => {
+            const { iconId } = (event as CustomEvent).detail;
+            (async () => {
+                try {
+                    await apiClient.updateNoteIcon(noteId, iconId);
+                    document.dispatchEvent(new CustomEvent('notesUpdated'));
+                    showNotification('Иконка обновлена', 'success');
+                    modal.remove();
+                } catch (err) {
+                    handleError(err, 'Не удалось обновить иконку');
+                } finally {
+                    document.removeEventListener('iconSelected', onIconSelected);
+                }
+            })();
+        };
+
+        document.addEventListener('iconSelected', onIconSelected);
+    });
+  };
+
   const updateActiveState = () => {
     const currentId = Number(window.location.pathname.split("/").pop());
     if (!root || !document.body.contains(root)) {
@@ -303,11 +336,15 @@ export function Subdirectories({
         showSubNotes,
         subnotesHTML,
         canEdit,
+        icon_triangle: ICONS.icon_triangle,
+        icon: item.icon?.url || ICONS.icon_folder,
       });
 
       const noteWrapper = document.createElement("div");
       noteWrapper.innerHTML = noteHtml;
       const noteItem = noteWrapper.firstElementChild as HTMLElement;
+
+      attachIconClickHandler(noteItem, item.id);
 
       if (canEdit) {
         const dotsButton = noteItem.querySelector(".subdir-menu-dots");

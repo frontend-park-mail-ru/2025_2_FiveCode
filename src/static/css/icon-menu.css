@@ -1,3 +1,48 @@
 .icon-menu {
+    position: absolute;
+    background: var(--primary-50);
+    border: 1px solid var(--primary-100);
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 8px 0;
     display: grid;
+    width: 300px;
+    max-height: 400px;
+}
+
+.icon-list {
+    /* display: flex; */
+    align-items: center;
+    padding: 8px 16px;
+    color: var(--text-900);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.icon-item:hover {
+    background: rgba(var(--primary-100), 0.1);
+    color: var(--primary-500);
+}
+
+.icon-item {
+    /* display: flex; */
+    align-items: center;
+    gap: 2px;
+    padding: 2px 2px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.icon-menu-close{
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    fill: var(--text-600);
+    transition: fill 0.2s;
 }
