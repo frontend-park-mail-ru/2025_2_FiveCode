@@ -181,19 +181,24 @@ export function Subdirectories({
             document.body.appendChild(modal);
 
         const onIconSelected = (event: Event) => {
-            const { iconId } = (event as CustomEvent).detail;
-            (async () => {
-                try {
-                    await apiClient.updateNoteIcon(noteId, iconId);
-                    document.dispatchEvent(new CustomEvent('notesUpdated'));
-                    showNotification('Иконка обновлена', 'success');
-                    modal.remove();
-                } catch (err) {
-                    handleError(err, 'Не удалось обновить иконку');
-                } finally {
-                    document.removeEventListener('iconSelected', onIconSelected);
-                }
-            })();
+          const { iconId, url: iconUrl, name: iconName } = (event as CustomEvent).detail;
+          (async () => {
+              try { 
+                const icon : Icon = {
+                  id: iconId,
+                  name: iconName,
+                  url: iconUrl
+                };
+                  await apiClient.updateNoteIcon(noteId, icon);
+                  document.dispatchEvent(new CustomEvent('notesUpdated'));
+                  showNotification('Иконка обновлена', 'success');
+                  modal.remove();
+              } catch (err) {
+                  handleError(err, 'Не удалось обновить иконку');
+              } finally {
+                  document.removeEventListener('iconSelected', onIconSelected);
+              }
+          })();
         };
 
         document.addEventListener('iconSelected', onIconSelected);

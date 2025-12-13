@@ -360,6 +360,7 @@ export const apiClient = {
     noteId: string | number,
     icon: Icon
   ): Promise<void> {
+    console.log("Updating note icon:", noteId, icon);
     return apiFetch(`/api/notes/${noteId}/icons`, {
       method: "PUT",
       body: JSON.stringify({ icon }),
