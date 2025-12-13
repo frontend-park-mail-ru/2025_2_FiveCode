@@ -76,6 +76,8 @@ export function Subdirectories({
   const noteItemTemplate = `
     <li class="subdir-item <%= isActive ? 'subdir-item--active' : '' %>" data-note-id="<%= id %>">
       <a href="/note/<%= id %>" class="subdir-header" data-link>      
+      <img src="<%= icon_triangle %>" class="folder-arrow" />
+      
       <img src="<%= icon %>" style="display: flex; aligh-items: center; width: 16px;">
 
         <span class="subdir-title">
@@ -287,6 +289,7 @@ export function Subdirectories({
           id: sub.id,
           title: sub.title,
           dots: ICONS.dots,
+          
         });
       });
 
@@ -300,7 +303,6 @@ export function Subdirectories({
         showSubNotes,
         subnotesHTML,
         canEdit,
-        icon: item.icon.url
       });
 
       const noteWrapper = document.createElement("div");
