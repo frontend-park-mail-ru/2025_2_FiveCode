@@ -81,7 +81,7 @@ export function Sidebar({
                 <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
-            <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
+            <a class="sidebar__item" data-link style="display:none"> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
             <a class="sidebar__item" id="app-settings-btn" data-link style="cursor:pointer"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
         </aside>
     `;

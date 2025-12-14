@@ -16,7 +16,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
                     <select id="generalAccessSelect" class="collab-input" style="margin-bottom:10px;">
                         <option value="private">Доступ ограничен</option>
                         <option value="viewer">Все, у кого есть ссылка (Читатель)</option>
-                        <option value="commenter">Все, у кого есть ссылка (Комментатор)</option>
+                        <option value="commenter" style="display:none">Все, у кого есть ссылка (Комментатор)</option>
                         <option value="editor">Все, у кого есть ссылка (Редактор)</option>
                     </select>
                     
@@ -45,7 +45,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
                         <select id="collabRoleSelect" class="collab-input" style="width: 120px; margin-bottom:0;">
                             <option value="editor">Редактор</option>
                             <option value="viewer">Читатель</option>
-                            <option value="commenter">Комментатор</option>
+                            <option value="commenter" style="display:none">Комментатор</option>
                         </select>
                         <button class="collab-invite-btn" id="inviteEditorBtn">
                             +
