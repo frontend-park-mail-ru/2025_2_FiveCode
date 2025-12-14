@@ -3,6 +3,7 @@ import { saveUser } from "./utils/session";
 import ejs from "ejs";
 import router from "./router";
 import { renderAppLayout } from "./layout";
+import { initializeTheme } from "./components/settingsModal";
 import "../styles.css";
 import "./static/css/auth.css";
 import "./static/css/globals.css";
@@ -15,6 +16,7 @@ import "./static/css/settings.css";
 import "./static/css/note-menu.css";
 import "./static/css/user-menu.css";
 import "./static/css/search.css";
+import "./static/css/settings-modal.css";
 import "./static/css/techsupport.css";
 import "./static/css/techsupport/menu.css";
 import "./static/css/techsupport/ticket-list.css";
@@ -37,6 +39,9 @@ const ICONS = {
 };
 
 async function initializeApp(): Promise<void> {
+  // Инициализация темы приложения
+  initializeTheme();
+
   const app = document.getElementById("app");
   if (!app) {
     console.error("Could not find app container");

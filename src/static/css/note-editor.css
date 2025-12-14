@@ -27,11 +27,16 @@
   align-items: center;
   padding-bottom: 10px;
   gap: 12px;
+  padding: 15px 5%;
+  border-radius: 8px;
+  margin: 10px 5%;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .save-status {
   margin-right: auto;
-  color: #8a8a8a;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
   transition: opacity 0.3s;
 }
@@ -64,8 +69,10 @@
 }
 
 .note-editor__header-btn img {
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
+  padding: 4px;
+
 }
 
 @media (max-width: 768px) {
@@ -89,7 +96,7 @@
   outline: none;
   background-color: transparent;
   /* margin-bottom: 20px; */
-  color: #333;
+  color: var(--text-dark);
 }
 
 .block-container {
@@ -105,7 +112,9 @@
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.98);
+  /* background: rgba(255, 255, 255, 0.98); */
+  /* background: var(--bg-secondary); */
+  background: var(--block-handle);
   box-shadow: 0 6px 18px rgba(21, 38, 70, 0.06);
   border: 1px solid rgba(15, 40, 80, 0.06);
   cursor: pointer;
@@ -177,7 +186,7 @@
 
 .block--text {
   font-size: 16px;
-  color: #37352f;
+  color: var(--text-block);
   width: 100%;
   max-width: none;
   background: transparent;
@@ -286,13 +295,14 @@
   height: 34px;
   border-radius: 6px;
   border: none;
-  background: rgba(255, 255, 255, 0.98);
+  /* background: rgba(255, 255, 255, 0.98); */
+  background: var(--block-handle);
   box-shadow: 0 6px 18px rgba(21, 38, 70, 0.06);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #2f6ff6;
+  color: var(--primary-color);
   font-size: 14px;
   opacity: 0;
   transition:
@@ -305,7 +315,7 @@
 }
 
 .block-action-delete {
-  color: #e05b5b;
+  color: var(--danger-400);
 }
 
 .note-editor__buttons {

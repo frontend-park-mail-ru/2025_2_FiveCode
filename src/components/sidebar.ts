@@ -10,6 +10,7 @@ import {
 import { loadUser } from "../utils/session";
 import { handleError } from "../utils/errorHandler";
 import { createSearchModal } from "./search";
+import { createSettingsModal } from "./settingsModal";
 
 
 const ICONS = {
@@ -81,7 +82,7 @@ export function Sidebar({
             </nav>
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-            <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
+            <a class="sidebar__item" id="app-settings-btn" data-link style="cursor:pointer"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
         </aside>
     `;
 
@@ -115,9 +116,16 @@ export function Sidebar({
 
   const searchBtn = el.querySelector("#search-btn");
   searchBtn?.addEventListener("click", () => {
-  const modal = createSearchModal();
-  document.body.appendChild(modal);
-});
+    const modal = createSearchModal();
+    document.body.appendChild(modal);
+  });
+
+  const appSettingsBtn = el.querySelector("#app-settings-btn");
+  appSettingsBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    const modal = createSettingsModal();
+    document.body.appendChild(modal);
+  });
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();
