@@ -358,12 +358,18 @@ export const apiClient = {
 
   async updateNoteIcon(
     noteId: string | number,
-    icon: Icon
+    iconId: number,
+    iconUrl?: string,
+    iconName?: string
   ): Promise<void> {
-    console.log("Updating note icon:", noteId, icon);
+    console.log("Updating note icon:", noteId, iconId);
     return apiFetch(`/api/notes/${noteId}/icons`, {
       method: "PUT",
-      body: JSON.stringify({ icon }),
+      body: JSON.stringify({ icon_file_id: Number(iconId) }),
     });
+  },
+
+  async getPDFexport(noteId: string | number): Promise<{ pdf_url: string }> {
+    return apiFetch(`/notes/${noteId}/export/pdf`, { method: "GET" });
   }
 };

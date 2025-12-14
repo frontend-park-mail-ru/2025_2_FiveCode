@@ -189,7 +189,7 @@ export function Subdirectories({
                   name: iconName,
                   url: iconUrl
                 };
-                  await apiClient.updateNoteIcon(noteId, icon);
+                  await apiClient.updateNoteIcon(noteId, iconId);
                   document.dispatchEvent(new CustomEvent('notesUpdated'));
                   showNotification('Иконка обновлена', 'success');
                   modal.remove();

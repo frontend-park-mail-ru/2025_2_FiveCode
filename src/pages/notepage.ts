@@ -11,10 +11,11 @@ import { loadUser } from "../utils/session";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
-  star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
+  star: new URL("../static/svg/icon_star.svg", import.meta.url).href,
   clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
-  dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  dots: new URL("../static/svg/icon_dots_grey.svg", import.meta.url).href,
   share: new URL("../static/svg/icon_share.svg", import.meta.url).href,
+  pdf: new URL("../static/svg/icon_pdf.svg", import.meta.url).href,
 };
 
 interface Icon {
@@ -97,10 +98,15 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     <div class="note-editor__header">
 
       <span id="save-status"></span>
-      ${isOwner ? `<button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>` : ""}
-      <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
-      <button class="note-editor__header-btn" id="openCollabModal" ><img src="${ICONS.share}" style="width: 22px; height: 22px;"/></button>
-
+      <div style="position: relative;">
+        <button class="note-editor__header-btn" id="dots-note-btn"><img src="${ICONS.dots}" alt="Menu"></button>
+        <div class="note-menu" id="note-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; z-index: 1000; min-width: 200px;">
+          ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #d32f2f; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.trash}" alt="Delete" style="width: 18px;"> Удалить заметку</button>` : ""}
+          <button class="note-menu-item" id="favorite-note-btn" style="width: 100%; padding: 12px 16px; text-align: left;  cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.star}" alt="Favorite" style="width: 18px;"> Добавить в избранное</button>
+          <button class="note-menu-item" id="openCollabModal" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.share}" alt="Share" style="width: 18px;"> Поделиться</button>
+          <button class="note-menu-item" id="exportToPDF" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px;"><img src="${ICONS.pdf}" alt="Export" style="width: 18px;"> Экспортировать в PDF</button>
+        </div>
+      </div>
     </div>
     ${
       !isReadOnly
@@ -166,8 +172,36 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const favoriteBtn = mainEl.querySelector(
     "#favorite-note-btn"
   ) as HTMLButtonElement;
-  const openCollabBtn = document.querySelector("#openCollabModal");
+  const openCollabBtn = mainEl.querySelector("#openCollabModal") as HTMLButtonElement;
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
+  const exportToPDF = mainEl.querySelector("#exportToPDF") as HTMLButtonElement;
+  const dotsBtn = mainEl.querySelector("#dots-note-btn") as HTMLButtonElement;
+  const noteMenu = mainEl.querySelector("#note-menu") as HTMLElement;
+
+  // Меню для кнопки dots
+  dotsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isHidden = noteMenu.style.display === "none";
+    noteMenu.style.display = isHidden ? "block" : "none";
+  });
+
+  // Закрытие меню при клике вне его
+  document.addEventListener("click", (e) => {
+    if (!dotsBtn.contains(e.target as Node) && !noteMenu.contains(e.target as Node)) {
+      noteMenu.style.display = "none";
+    }
+  });
+
+  exportToPDF.addEventListener("click", async () => {
+    try {
+      const response = await apiClient.getPDFexport(noteId as number);
+      const pdfUrl = response.pdf_url;
+      window.open(pdfUrl, "_blank");
+    } catch (err) {
+      handleError(err, "Ошибка при экспорте в PDF");
+    }
+    noteMenu.style.display = "none";
+  });
 
   if (isFavorite) {
     favoriteBtn.classList.add("active");
@@ -237,6 +271,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           }
           deleteModal.remove();
         });
+      noteMenu.style.display = "none";
     });
   }
 
@@ -257,6 +292,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     } catch (err) {
       handleError(err, "Ошибка обновления избранного");
     }
+    noteMenu.style.display = "none";
   });
 
   openCollabBtn?.addEventListener("click", () => {
@@ -264,6 +300,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
     const modal = createCollaboratorsModal(id);
     document.body.appendChild(modal);
+    noteMenu.style.display = "none";
   });
 
   const handleNotesUpdated = (event: Event) => {
