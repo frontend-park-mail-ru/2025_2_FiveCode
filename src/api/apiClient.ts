@@ -362,7 +362,6 @@ export const apiClient = {
     iconUrl?: string,
     iconName?: string
   ): Promise<void> {
-    console.log("Updating note icon:", noteId, iconId);
     return apiFetch(`/api/notes/${noteId}/icons`, {
       method: "PUT",
       body: JSON.stringify({ icon_file_id: Number(iconId) }),
@@ -382,5 +381,12 @@ export const apiClient = {
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     return url;
+  },
+
+  async searchNotes(query: string): Promise<any> {
+    return apiFetch(`/api/notes/search`, {
+      method: "POST",
+      body: JSON.stringify({ query }),
+    });
   }
 };

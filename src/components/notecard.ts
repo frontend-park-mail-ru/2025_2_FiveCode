@@ -45,7 +45,6 @@ export function NoteCard({ title, text, icon, favorite }: NoteCardParams): HTMLE
       <p class="note-card__text"><%= text %></p>
     </div>
   `;
-  console.log("icon:", icon.url);
   const html = ejs.render(template, {
     title, 
     text, 
