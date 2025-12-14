@@ -111,10 +111,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 <circle cx="28" cy="20" r="2.5" fill="#495057"/>
 </svg>
 </button>
-        <div class="note-menu" id="note-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; z-index: 1000; min-width: 200px;">
-          ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #d32f2f; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.trash}" alt="Delete" style="width: 18px;"> Удалить заметку</button>` : ""}
-          <button class="note-menu-item" id="openCollabModal" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.share}" alt="Share" style="width: 18px;"> Поделиться</button>
-          <button class="note-menu-item" id="exportToPDF" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px;"><img src="${ICONS.pdf}" alt="Export" style="width: 18px;"> Экспортировать в PDF</button>
+        <div class="note-menu" id="note-menu" >
+          <button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>
+          <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
+        ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="color:#d32f2f;"><img src="${ICONS.trash}" alt="Delete"> Удалить заметку</button>` : ""}
+          
         </div>
       </div>
     </div>

@@ -86,12 +86,12 @@ export function createSearchModal(): HTMLElement {
     resultsContainer.innerHTML = "";
 
     if (!Array.isArray(results)) {
-      resultsContainer.innerHTML = '<p style="color: #999;">Некорректный формат ответа</p>';
+      resultsContainer.innerHTML = '<p style="color: var(--gray-300);">Некорректный формат ответа</p>';
       return;
     }
 
     if (results.length === 0) {
-      resultsContainer.innerHTML = '<p style="color: #999;">Ничего не найдено</p>';
+      resultsContainer.innerHTML = '<p style="color: var(--gray-300);">Ничего не найдено</p>';
       return;
     }
 
@@ -102,19 +102,11 @@ export function createSearchModal(): HTMLElement {
 
     results.slice(0, 5).forEach((result: SearchResult) => {
       const li = document.createElement("li");
-      li.style.padding = "8px 10px";
-      li.style.borderRadius = "6px";
-      li.style.cursor = "pointer";
-      li.style.backgroundColor = "rgba(74, 144, 226, 0.1)";
-      li.style.marginBottom = "6px";
-      li.style.transition = "background-color 0.2s";
+      li.className = "search-modal-list";
 
       const link = document.createElement("a");
       link.href = `/note/${result.id || result.note_id}`;
-      link.style.textDecoration = "none";
-      link.style.color = "inherit";
-      link.style.display = "block";
-      link.dataset.link = "";
+      link.className = "search-modal-result-list";
       
       const titleText = result.title || "Без названия";
       link.innerHTML = result.highlighted_title || titleText;
@@ -141,8 +133,7 @@ export function createSearchModal(): HTMLElement {
 
     if (results.length > 5) {
       const moreInfo = document.createElement("p");
-      moreInfo.style.fontSize = "12px";
-      moreInfo.style.color = "#999";
+      moreInfo.className = "search-modal-result-limitation"
       moreInfo.textContent = `Показано 5 из ${results.length} результатов`;
       resultsContainer.appendChild(moreInfo);
     }
