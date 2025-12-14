@@ -1,6 +1,4 @@
 import ejs from 'ejs';
-import { renderDashboard } from '../pages/dashboard';
-import { renderLogin } from '../pages/login';
 
 const ICONS = {
   Icon: new URL('../static/svg/icon_goose.svg', import.meta.url).href,

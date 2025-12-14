@@ -1,12 +1,7 @@
-import ejs from "ejs";
 import { Sidebar } from "./components/sidebar";
-import { techSupportWrapper } from "./components/techsupportdutton";
 import { loadUser } from "./utils/session";
 import { apiClient } from "./api/apiClient";
 
-const ICONS = {
-  Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
-};
 
 export async function renderAppLayout(app: HTMLElement): Promise<void> {
   app.innerHTML = "";

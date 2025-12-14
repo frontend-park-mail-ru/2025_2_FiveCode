@@ -1,5 +1,3 @@
-import ejs from 'ejs'
-
 export function createDeleteAccountModal(): HTMLElement {
     const trash = new URL("../static/svg/icon_delete.svg", import.meta.url).href;
 

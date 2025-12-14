@@ -74,7 +74,7 @@ export function createSearchModal(): HTMLElement {
 
     try {
       const response: any = await apiClient.searchNotes(query);
-      let results = Array.isArray(response) ? response : (response?.results || response?.notes || response?.data || []);
+      const results = Array.isArray(response) ? response : (response?.results || response?.notes || response?.data || []);
       displayResults(results);
     } catch (err) {
       handleError(err, "Ошибка при поиске");
@@ -133,7 +133,7 @@ export function createSearchModal(): HTMLElement {
 
     if (results.length > 5) {
       const moreInfo = document.createElement("p");
-      moreInfo.className = "search-modal-result-limitation"
+      moreInfo.className = "search-modal-result-limitation";
       moreInfo.textContent = `Показано 5 из ${results.length} результатов`;
       resultsContainer.appendChild(moreInfo);
     }

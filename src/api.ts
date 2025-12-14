@@ -94,7 +94,9 @@ export async function apiFetch(
   let json = null;
   try {
     json = text ? JSON.parse(text) : null;
-  } catch (e) {}
+  } catch (e) {
+    console.error(e);
+  }
 
   if (!res.ok) {
     if (res.status === 403) {

@@ -7,11 +7,6 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;");
 }
 
-interface TokenRule {
-  type: "string" | "comment" | "number" | "keyword" | "default";
-  regex: RegExp;
-}
-
 const SQL_KEYWORDS = new Set([
   "SELECT",
   "FROM",

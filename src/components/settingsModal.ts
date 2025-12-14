@@ -155,7 +155,7 @@ export function initializeTheme() {
   applyTheme(savedTheme);
 
   if (savedTheme === "auto") {
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
       const theme = localStorage.getItem("app-theme") || "auto";
       if (theme === "auto") {
         applyTheme("auto");

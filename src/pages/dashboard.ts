@@ -1,9 +1,6 @@
-import ejs from 'ejs';
 import { Header } from '../components/header';
 import { MainContent } from '../components/maincontent';
 import { loadUser } from '../utils/session';
-import { renderNotes } from './notes';
-import { renderLogin } from './login';
 
 interface User {
   id: number;

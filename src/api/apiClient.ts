@@ -99,11 +99,6 @@ export interface ActivateAccessResponse {
   };
 }
 
-interface Icon {
-  id?: number;
-  name?: string;
-  url: string;
-}
 
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
@@ -112,7 +107,7 @@ export const apiClient = {
     return response;
   },
 
-  async register(data: Object): Promise<AuthResponse> {
+  async register(data: object): Promise<AuthResponse> {
     const response = await register(data);
     return response;
   },
@@ -359,8 +354,6 @@ export const apiClient = {
   async updateNoteIcon(
     noteId: string | number,
     iconId: number,
-    iconUrl?: string,
-    iconName?: string
   ): Promise<void> {
     return apiFetch(`/api/notes/${noteId}/icons`, {
       method: "PUT",

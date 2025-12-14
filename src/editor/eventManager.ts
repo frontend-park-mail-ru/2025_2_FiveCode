@@ -118,7 +118,9 @@ export function setupEventManager({
           sel.removeAllRanges();
           sel.addRange(range);
           triggerUpdate();
-        } catch (err) {}
+        } catch (err) {
+          console.error(err);
+        }
         return;
       }
 
@@ -228,7 +230,9 @@ export function setupEventManager({
             sel.removeAllRanges();
             sel.addRange(lastSelectionRange);
           }
-        } catch (err) {}
+        } catch (err) {
+          console.error(err);
+        }
 
         if (dropdown?.id === "font-dropdown") {
           document.execCommand("fontName", false, dropdownItem.dataset.value);

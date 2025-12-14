@@ -1,8 +1,4 @@
-import ejs from 'ejs'
-
 export function deleteCollaboratorModal(): HTMLElement {
-    const trash = new URL("../static/svg/icon_delete.svg", import.meta.url).href;
-
     const modalTemplate = `
         <div id="deleteCollaborationModal" class="exit-modal-overlay">
             <div class="exit-modal-content">

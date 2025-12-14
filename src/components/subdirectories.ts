@@ -181,14 +181,10 @@ export function Subdirectories({
             document.body.appendChild(modal);
 
         const onIconSelected = (event: Event) => {
-          const { iconId, url: iconUrl, name: iconName } = (event as CustomEvent).detail;
+          const { iconId, url, name } = (event as CustomEvent).detail;
           (async () => {
               try { 
-                const icon : Icon = {
-                  id: iconId,
-                  name: iconName,
-                  url: iconUrl
-                };
+                
                   await apiClient.updateNoteIcon(noteId, iconId);
                   document.dispatchEvent(new CustomEvent('notesUpdated'));
                   showNotification('Иконка обновлена', 'success');
@@ -528,7 +524,6 @@ export function Subdirectories({
     }
 
     header.addEventListener("click", () => {
-      const list = folderElement.querySelector(".folder-list") as HTMLElement;
       collapsed = !collapsed;
       updateState();
     });
