@@ -4,6 +4,7 @@ import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { handleError } from "../utils/errorHandler";
 import { showNotification } from "./notification";
+import { chooseIconModal } from './chooseIconModal';
 
 const ICONS = {
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
@@ -19,10 +20,17 @@ interface Note {
   id: number;
   owner_id: number;
   title: string;
-  icon: string;
+  icon: Icon;
   favorite: boolean;
   parent_note_id?: number | null;
 }
+
+interface Icon {
+  id?: number;
+  name?: string;
+  url: string;
+}
+
 
 interface SubdirectoriesParams {
   items: Note[];
@@ -68,7 +76,11 @@ export function Subdirectories({
 
   const noteItemTemplate = `
     <li class="subdir-item <%= isActive ? 'subdir-item--active' : '' %>" data-note-id="<%= id %>">
-      <a href="/note/<%= id %>" class="subdir-header" data-link>
+      <a href="/note/<%= id %>" class="subdir-header" data-link>      
+      <img src="<%= icon_triangle %>" class="folder-arrow" />
+      
+      <img src="<%= icon %>" style="display: flex; aligh-items: center; width: 16px;">
+
         <span class="subdir-title">
           <%= title.length > 18 ? title.substring(0,17) + '...' : title %>
         </span>
@@ -156,6 +168,43 @@ export function Subdirectories({
     });
   };
 
+  const attachIconClickHandler = (noteItemEl: HTMLElement, noteId: number) => {
+    const iconEl = noteItemEl.querySelector('img[style*="width: 16px;"]') as HTMLElement | null;
+
+    if (!iconEl) return;
+
+    iconEl.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+    
+            const modal = await chooseIconModal(e as MouseEvent);
+            document.body.appendChild(modal);
+
+        const onIconSelected = (event: Event) => {
+          const { iconId, url: iconUrl, name: iconName } = (event as CustomEvent).detail;
+          (async () => {
+              try { 
+                const icon : Icon = {
+                  id: iconId,
+                  name: iconName,
+                  url: iconUrl
+                };
+                  await apiClient.updateNoteIcon(noteId, iconId);
+                  document.dispatchEvent(new CustomEvent('notesUpdated'));
+                  showNotification('Иконка обновлена', 'success');
+                  modal.remove();
+              } catch (err) {
+                  handleError(err, 'Не удалось обновить иконку');
+              } finally {
+                  document.removeEventListener('iconSelected', onIconSelected);
+              }
+          })();
+        };
+
+        document.addEventListener('iconSelected', onIconSelected);
+    });
+  };
+
   const updateActiveState = () => {
     const currentId = Number(window.location.pathname.split("/").pop());
     if (!root || !document.body.contains(root)) {
@@ -165,6 +214,10 @@ export function Subdirectories({
     const prevActive = root.querySelector(".subdir-item--active");
     if (prevActive) {
       prevActive.classList.remove("subdir-item--active");
+      const prevArrow = prevActive.querySelector(".folder-arrow") as HTMLElement | null;
+      if (prevArrow) {
+        prevArrow.classList.remove("rotated");
+      }
       const prevBtn = prevActive.querySelector(".add-subnote-btn");
       prevBtn?.remove();
       const prevSubnotesList = prevActive.querySelector(
@@ -204,6 +257,10 @@ export function Subdirectories({
         ".subnotes-list"
       ) as HTMLElement | null;
       if (subnotesList) subnotesList.style.display = "block";
+      const arrow = newActive.querySelector(".folder-arrow") as HTMLElement | null;
+      if (arrow) {
+        arrow.classList.add("rotated");
+      }
       newActive.classList.add("subdir-item--active");
 
       const isSharedFolder =
@@ -278,6 +335,7 @@ export function Subdirectories({
           id: sub.id,
           title: sub.title,
           dots: ICONS.dots,
+          
         });
       });
 
@@ -291,11 +349,15 @@ export function Subdirectories({
         showSubNotes,
         subnotesHTML,
         canEdit,
+        icon_triangle: ICONS.icon_triangle,
+        icon: item.icon?.url || ICONS.icon_folder,
       });
 
       const noteWrapper = document.createElement("div");
       noteWrapper.innerHTML = noteHtml;
       const noteItem = noteWrapper.firstElementChild as HTMLElement;
+
+      attachIconClickHandler(noteItem, item.id);
 
       if (canEdit) {
         const dotsButton = noteItem.querySelector(".subdir-menu-dots");

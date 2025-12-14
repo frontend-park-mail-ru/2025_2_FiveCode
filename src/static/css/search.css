@@ -73,3 +73,23 @@
     overflow-y: auto;
     margin-bottom: 10px;
 }
+
+.search-modal-list {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: rgba(74, 144, 226, 0.1);
+  margin-bottom: 6px;
+  transition: background-color 0.2s;
+}
+
+.search-modal-result-list {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.search-modal-result-limitation {
+  font-size: 14px;
+  color: var(--text-secondary);
+}

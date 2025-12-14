@@ -1,20 +1,22 @@
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import CopyWebpackPlugin from "copy-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import { config } from "./src/config/project.config.js";
 
 const require = createRequire(import.meta.url);
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const isProduction = process.env.NODE_ENV === "production";
 
 export default {
   entry: "./src/app.ts",
   output: {
-    filename: "bundle.js",
+    filename: isProduction ? "bundle.[contenthash].js" : "bundle.js",
     path: path.resolve(__dirname, "dist"),
     clean: true,
     publicPath: "/",
@@ -28,7 +30,10 @@ export default {
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: [
+          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
+          "css-loader",
+        ],
       },
       {
         test: /\.ejs$/,
@@ -44,12 +49,19 @@ export default {
     extensions: [".ts", ".js"],
     fallback: {
       path: false,
-      fs: require.resolve("browserify-fs"),
+      fs: false,
       buffer: require.resolve("buffer/"),
       stream: require.resolve("stream-browserify"),
       util: require.resolve("util/"),
       process: require.resolve("process/browser"),
     },
+  },
+  optimization: {
+    minimize: isProduction,
+    minimizer: [
+      "...",
+      new CssMinimizerPlugin(),
+    ],
   },
   devServer: {
     static: [
@@ -62,7 +74,7 @@ export default {
     hot: true,
     allowedHosts: "all",
   },
-  mode: "development",
+  mode: isProduction ? "production" : "development",
   plugins: [
     new webpack.ProvidePlugin({
       process: "process/browser",
@@ -71,6 +83,19 @@ export default {
     new HtmlWebpackPlugin({
       template: "index.html",
       filename: "index.html",
+      minify: isProduction
+        ? {
+            collapseWhitespace: true,
+            removeComments: true,
+          }
+        : false,
     }),
+    ...(isProduction
+      ? [
+          new MiniCssExtractPlugin({
+            filename: "styles.[contenthash].css",
+          }),
+        ]
+      : []),
   ],
 };

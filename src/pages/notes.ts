@@ -63,7 +63,7 @@ export async function renderNotes(): Promise<void> {
           id: 0,
           title: "Создать заметку",
           text: "",
-          icon: ICONS.add_new,
+          icon: {url: ICONS.add_new},
           favorite: false,
         });
 
