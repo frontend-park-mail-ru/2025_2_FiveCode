@@ -214,6 +214,10 @@ export function Subdirectories({
     const prevActive = root.querySelector(".subdir-item--active");
     if (prevActive) {
       prevActive.classList.remove("subdir-item--active");
+      const prevArrow = prevActive.querySelector(".folder-arrow") as HTMLElement | null;
+      if (prevArrow) {
+        prevArrow.classList.remove("rotated");
+      }
       const prevBtn = prevActive.querySelector(".add-subnote-btn");
       prevBtn?.remove();
       const prevSubnotesList = prevActive.querySelector(
@@ -253,6 +257,10 @@ export function Subdirectories({
         ".subnotes-list"
       ) as HTMLElement | null;
       if (subnotesList) subnotesList.style.display = "block";
+      const arrow = newActive.querySelector(".folder-arrow") as HTMLElement | null;
+      if (arrow) {
+        arrow.classList.add("rotated");
+      }
       newActive.classList.add("subdir-item--active");
 
       const isSharedFolder =

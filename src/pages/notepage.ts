@@ -98,11 +98,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     <div class="note-editor__header">
 
       <span id="save-status"></span>
-      <div style="position: relative;">
-        <button class="note-editor__header-btn" id="dots-note-btn"><img src="${ICONS.dots}" alt="Menu"></button>
+      <div style="position: relative;">          
+      <button class="note-editor__header-btn" style="transform: translateY(-10px);" id="favorite-note-btn"><img src="${ICONS.star}"  alt="Favorite"></button>        
+      <button class="note-editor__header-btn" id="dots-note-btn"><img src="${ICONS.dots}" style="width: 40px; height: 40px;" alt="Menu"></button>
         <div class="note-menu" id="note-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; z-index: 1000; min-width: 200px;">
           ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #d32f2f; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.trash}" alt="Delete" style="width: 18px;"> Удалить заметку</button>` : ""}
-          <button class="note-menu-item" id="favorite-note-btn" style="width: 100%; padding: 12px 16px; text-align: left;  cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.star}" alt="Favorite" style="width: 18px;"> Добавить в избранное</button>
           <button class="note-menu-item" id="openCollabModal" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0;"><img src="${ICONS.share}" alt="Share" style="width: 18px;"> Поделиться</button>
           <button class="note-menu-item" id="exportToPDF" style="width: 100%; padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px;"><img src="${ICONS.pdf}" alt="Export" style="width: 18px;"> Экспортировать в PDF</button>
         </div>
@@ -194,9 +194,13 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   exportToPDF.addEventListener("click", async () => {
     try {
-      const response = await apiClient.getPDFexport(noteId as number);
-      const pdfUrl = response.pdf_url;
+      const pdfUrl = await apiClient.getPDFexport(noteId as number);
+      if (!pdfUrl) {
+        handleError(new Error("Invalid PDF URL"), "Не удалось получить URL PDF");
+        return;
+      }
       window.open(pdfUrl, "_blank");
+      showNotification("PDF экспортирован", "success");
     } catch (err) {
       handleError(err, "Ошибка при экспорте в PDF");
     }

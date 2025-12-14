@@ -369,7 +369,18 @@ export const apiClient = {
     });
   },
 
-  async getPDFexport(noteId: string | number): Promise<{ pdf_url: string }> {
-    return apiFetch(`/notes/${noteId}/export/pdf`, { method: "GET" });
+  async getPDFexport(noteId: string | number): Promise<string> {
+    const response = await fetch(`${API_BASE}/api/notes/${noteId}/export/pdf`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return url;
   }
 };
