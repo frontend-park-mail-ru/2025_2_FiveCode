@@ -44,5 +44,11 @@ export async function chooseIconModal(event: MouseEvent): Promise<HTMLElement> {
         modal.remove();
     });
 
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+        modal.remove();
+        }
+    });
+
     return modal;
 }
