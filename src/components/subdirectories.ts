@@ -4,7 +4,7 @@ import { apiClient } from "../api/apiClient";
 import router from "../router";
 import { handleError } from "../utils/errorHandler";
 import { showNotification } from "./notification";
-import { chooseIconModal } from './chooseIconModal';
+import { chooseIconModal } from "./chooseIconModal";
 
 const ICONS = {
   icon_triangle: new URL("../static/svg/icon_triangle.svg", import.meta.url)
@@ -30,7 +30,6 @@ interface Icon {
   name?: string;
   url: string;
 }
-
 
 interface SubdirectoriesParams {
   items: Note[];
@@ -173,35 +172,42 @@ export function Subdirectories({
   };
 
   const attachIconClickHandler = (noteItemEl: HTMLElement, noteId: number) => {
-    const iconEl = noteItemEl.querySelector('img[style*="width: 16px;"]') as HTMLElement | null;
+    const iconEl = noteItemEl.querySelector(
+      'img[style*="width: 16px;"]'
+    ) as HTMLElement | null;
 
     if (!iconEl) return;
 
-    iconEl.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-    
-            const modal = await chooseIconModal(e as MouseEvent);
-            document.body.appendChild(modal);
+    iconEl.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-        const onIconSelected = (event: Event) => {
-          const { iconId, url, name } = (event as CustomEvent).detail;
-          (async () => {
-              try { 
-                
-                  await apiClient.updateNoteIcon(noteId, iconId);
-                  document.dispatchEvent(new CustomEvent('notesUpdated'));
-                  showNotification('Иконка обновлена', 'success');
-                  modal.remove();
-              } catch (err) {
-                  handleError(err, 'Не удалось обновить иконку');
-              } finally {
-                  document.removeEventListener('iconSelected', onIconSelected);
-              }
-          })();
-        };
+      const modal = await chooseIconModal(e as MouseEvent, noteId);
+      document.body.appendChild(modal);
 
-        document.addEventListener('iconSelected', onIconSelected);
+      const onIconSelected = (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+
+        if (String(detail.targetNoteId) !== String(noteId)) {
+          return;
+        }
+
+        const { iconId } = detail;
+        (async () => {
+          try {
+            await apiClient.updateNoteIcon(noteId, iconId);
+            document.dispatchEvent(new CustomEvent("notesUpdated"));
+            showNotification("Иконка обновлена", "success");
+            modal.remove();
+          } catch (err) {
+            handleError(err, "Не удалось обновить иконку");
+          } finally {
+            document.removeEventListener("iconSelected", onIconSelected);
+          }
+        })();
+      };
+
+      document.addEventListener("iconSelected", onIconSelected);
     });
   };
 
@@ -214,7 +220,9 @@ export function Subdirectories({
     const prevActive = root.querySelector(".subdir-item--active");
     if (prevActive) {
       prevActive.classList.remove("subdir-item--active");
-      const prevArrow = prevActive.querySelector(".folder-arrow") as HTMLElement | null;
+      const prevArrow = prevActive.querySelector(
+        ".folder-arrow"
+      ) as HTMLElement | null;
       if (prevArrow) {
         prevArrow.classList.remove("rotated");
       }
@@ -257,7 +265,9 @@ export function Subdirectories({
         ".subnotes-list"
       ) as HTMLElement | null;
       if (subnotesList) subnotesList.style.display = "block";
-      const arrow = newActive.querySelector(".folder-arrow") as HTMLElement | null;
+      const arrow = newActive.querySelector(
+        ".folder-arrow"
+      ) as HTMLElement | null;
       if (arrow) {
         arrow.classList.add("rotated");
       }
@@ -335,7 +345,6 @@ export function Subdirectories({
           id: sub.id,
           title: sub.title,
           dots: ICONS.dots,
-          
         });
       });
 
