@@ -1,6 +1,6 @@
-import { Header } from "../components/header";
-import { MainContent } from "../components/maincontent";
-import { loadUser } from "../utils/session";
+import { Header } from '../components/header';
+import { MainContent } from '../components/maincontent';
+import { loadUser } from '../utils/session';
 
 interface User {
   id: number;

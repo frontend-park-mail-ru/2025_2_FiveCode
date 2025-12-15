@@ -99,6 +99,7 @@ export interface ActivateAccessResponse {
   };
 }
 
+
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -345,4 +346,40 @@ export const apiClient = {
       body: JSON.stringify({ access_level: accessLevel }),
     });
   },
+
+  async getIcons(): Promise<Array<{ id: number; url: string }>> {
+    return apiFetch(`/api/icons`, { method: "GET" });
+  },
+
+  async updateNoteIcon(
+    noteId: string | number,
+    iconId: number,
+  ): Promise<void> {
+    return apiFetch(`/api/notes/${noteId}/icons`, {
+      method: "PUT",
+      body: JSON.stringify({ icon_file_id: Number(iconId) }),
+    });
+  },
+
+  async getPDFexport(noteId: string | number): Promise<string> {
+    const response = await fetch(`${API_BASE}/api/notes/${noteId}/export/pdf`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return url;
+  },
+
+  async searchNotes(query: string): Promise<any> {
+    return apiFetch(`/api/notes/search`, {
+      method: "POST",
+      body: JSON.stringify({ query }),
+    });
+  }
 };

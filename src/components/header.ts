@@ -1,4 +1,4 @@
-import ejs from "ejs";
+import ejs from 'ejs';
 
 const ICONS = {
   Icon: new URL("../static/svg/icon_goose.svg", import.meta.url).href,

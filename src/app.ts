@@ -3,6 +3,7 @@ import { saveUser } from "./utils/session";
 import ejs from "ejs";
 import router from "./router";
 import { renderAppLayout } from "./layout";
+import { initializeTheme } from "./components/settingsModal";
 import "../styles.css";
 import "./static/css/auth.css";
 import "./static/css/globals.css";
@@ -15,6 +16,7 @@ import "./static/css/settings.css";
 import "./static/css/note-menu.css";
 import "./static/css/user-menu.css";
 import "./static/css/search.css";
+import "./static/css/settings-modal.css";
 import "./static/css/techsupport.css";
 import "./static/css/techsupport/menu.css";
 import "./static/css/techsupport/ticket-list.css";
@@ -23,6 +25,7 @@ import "./static/css/techsupport/statistics.css";
 import "./static/css/chat.css";
 import "./static/css/collaboration.css";
 import "./static/css/notification.css";
+import "./static/css/icon-menu.css";
 
 interface User {
   id?: number;
@@ -36,6 +39,9 @@ const ICONS = {
 };
 
 async function initializeApp(): Promise<void> {
+  // Инициализация темы приложения
+  initializeTheme();
+
   const app = document.getElementById("app");
   if (!app) {
     console.error("Could not find app container");
@@ -81,6 +87,46 @@ async function initializeApp(): Promise<void> {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+
+  // Регистрация и управление service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(registration => {
+        console.log('[App] Service Worker registered:', registration);
+        
+        // Проверка обновлений каждые 60 секунд
+        setInterval(() => {
+          registration.update();
+        }, 60000);
+
+        // Обработка обновления
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[App] New Service Worker available');
+                // Можно показать уведомление пользователю об обновлении
+                const event = new CustomEvent('swupdate', { 
+                  detail: { registration }
+                });
+                window.dispatchEvent(event);
+              }
+            });
+          }
+        });
+      })
+      .catch(err => {
+        console.error('[App] Service Worker registration failed:', err);
+      });
+
+    // Обработка сообщений от service worker
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('[App] Service Worker controller changed');
+    });
+  }
+
   initializeApp();
 
   document.body.addEventListener("click", (e: MouseEvent) => {

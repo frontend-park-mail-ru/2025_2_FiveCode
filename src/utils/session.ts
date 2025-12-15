@@ -10,15 +10,15 @@ export function saveUser(user: User) {
   if (u && typeof u === "object" && "user" in u) {
     u = (u as any).user;
   }
-
+/* eslint-disable no-empty */
   if (u && !u.username && typeof u.email === "string") {
     try {
       u.username = u.email.split("@")[0];
     } catch (e) {
-      console.error(e);
+      
     }
   }
-
+/* eslint-enable no-empty */
   localStorage.setItem("user", JSON.stringify(u));
   (window as any).__APP_SESSION__ = { user: u };
 }
@@ -27,11 +27,12 @@ export function loadUser() {
   const raw = localStorage.getItem("user");
   const parsed = raw ? JSON.parse(raw) : null;
   if (parsed && !parsed.username && typeof parsed.email === "string") {
+    /* eslint-disable no-empty */
     try {
       parsed.username = parsed.email.split("@")[0];
     } catch (e) {
-      console.error(e);
     }
+    /* eslint-enable no-empty */
   }
   return parsed;
 }

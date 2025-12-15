@@ -5,10 +5,13 @@ import router from "../router";
 import {
   UserMenu,
   createExitConfirmationModal,
-  createSearchModal,
+  
 } from "./userMenu";
 import { loadUser } from "../utils/session";
 import { handleError } from "../utils/errorHandler";
+import { createSearchModal } from "./search";
+import { createSettingsModal } from "./settingsModal";
+
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,
@@ -78,8 +81,8 @@ export function Sidebar({
                 <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
-            <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-            <a class="sidebar__item" data-link> <img src="<%= settings %>" class="sidebar__icon" /> Настройки</a>
+            <a class="sidebar__item" data-link style="display:none"> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
+            <a class="sidebar__item" id="app-settings-btn" data-link style="cursor:pointer"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
         </aside>
     `;
 
@@ -112,6 +115,17 @@ export function Sidebar({
   document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
 
   const searchBtn = el.querySelector("#search-btn");
+  searchBtn?.addEventListener("click", () => {
+    const modal = createSearchModal();
+    document.body.appendChild(modal);
+  });
+
+  const appSettingsBtn = el.querySelector("#app-settings-btn");
+  appSettingsBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    const modal = createSettingsModal();
+    document.body.appendChild(modal);
+  });
 
   const handleDotsClick = (event: Event) => {
     event.stopPropagation();

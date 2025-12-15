@@ -95,7 +95,7 @@ export async function apiFetch(
   try {
     json = text ? JSON.parse(text) : null;
   } catch (e) {
-    console.error("Failed to parse JSON response:", e);
+    console.error(e);
   }
 
   if (!res.ok) {

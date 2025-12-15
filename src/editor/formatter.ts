@@ -207,7 +207,7 @@ export function parseHtmlToTextAndFormats(element: HTMLElement): {
           newFormats.strikethrough = true;
         }
       } catch (err) {
-        console.error("Failed to get computed style:", err);
+        console.error(err);
       }
 
       el.childNodes.forEach((child) => traverse(child, newFormats));

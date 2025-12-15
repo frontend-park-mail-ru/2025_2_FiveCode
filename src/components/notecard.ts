@@ -6,10 +6,16 @@ const ICONS = {
 
 interface NoteCardParams {
   id: number;
-  title: string;
-  text: string;
-  icon: string;
+  title: string; 
+  text: string; 
+  icon: Icon;
   favorite: boolean;
+}
+
+interface Icon {
+  id?: number;
+  name?: string;
+  url: string;
 }
 
 /**
@@ -30,6 +36,7 @@ export function NoteCard({
   const template = `
     <div class="note-card<%= favorite ? ' note-card--favorite' : '' %>">
       <h3 class="note-card__title">
+        <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
         <% if (title.includes(' ')) { %>
                 <%= title %>
             <% } else if (title.length > 24) { %>
@@ -41,15 +48,13 @@ export function NoteCard({
             <% } %>
       </h3>
       <p class="note-card__text"><%= text %></p>
-      <img src="<%= icon %>" style="display: flex; aligh-items: center;"">
     </div>
   `;
-
   const html = ejs.render(template, {
-    title,
-    text,
-    icon,
-    favorite,
+    title, 
+    text, 
+    icon: icon.url, 
+    favorite, 
     defaultIcon: ICONS.deafult_file,
   });
   const container = document.createElement("div");

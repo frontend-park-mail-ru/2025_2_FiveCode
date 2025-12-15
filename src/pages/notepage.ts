@@ -11,11 +11,19 @@ import { loadUser } from "../utils/session";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
-  star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
+  star: new URL("../static/svg/icon_star.svg", import.meta.url).href,
   clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
-  dots: new URL("../static/svg/icon_dots.svg", import.meta.url).href,
+  dots: new URL("../static/svg/icon_dots_grey.svg", import.meta.url).href,
   share: new URL("../static/svg/icon_share.svg", import.meta.url).href,
+  pdf: new URL("../static/svg/icon_pdf.svg", import.meta.url).href,
 };
+
+interface Icon {
+  id?: number;
+  name?: string;
+  url?: string;
+}
+
 
 let activeWsClient: WsClient | null = null;
 
@@ -34,12 +42,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   let isReadOnly = true;
   let isOwner = false;
+  let icon : Icon;
 
   try {
     const note = await apiClient.getNote(noteId as number);
     const blocksData = await apiClient.getBlocksForNote(noteId as number);
     initialTitle = note.title;
     isFavorite = note.is_favorite || false;
+    icon = note.icon;
 
     initialBlocks = (blocksData.blocks || []).map((block: any): Block => {
       if (block.type === "attachment") {
@@ -84,13 +94,29 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   }
 
   mainEl.className = "note-editor__main";
+  
+  // Получение цвета заголовка из локального хранилища
+  const headerColor = localStorage.getItem("note-header-color") || "#45B7D1";
+  
   mainEl.innerHTML = `
-    <div class="note-editor__header">
-      <span id="save-status"></span>
-      ${isOwner ? `<button class="note-editor__header-btn" id="delete-note-btn"><img src="${ICONS.trash}" alt="Delete"></button>` : ""}
-      <button class="note-editor__header-btn" id="favorite-note-btn"><img src="${ICONS.star}" alt="Favorite"></button>
-      <button class="note-editor__header-btn" id="openCollabModal" ><img src="${ICONS.share}" style="width: 22px; height: 22px;"/></button>
+    <div class="note-editor__header" style="background-color: ${headerColor}; transition: background-color 0.3s ease;">
 
+      <span id="save-status"></span>
+      <div style="position: relative;">          
+      <button class="note-editor__header-btn" style="transform: translateY(0px);" id="favorite-note-btn"><img src="${ICONS.star}"  alt="Favorite"></button>        
+      <button class="note-editor__header-btn" id="dots-note-btn"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="20" r="2.5" fill="#495057"/>
+        <circle cx="20" cy="20" r="2.5" fill="#495057"/>
+        <circle cx="28" cy="20" r="2.5" fill="#495057"/>
+        </svg>
+        </button>
+        <div class="note-menu" id="note-menu" >
+          <button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>
+          <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
+        ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="color:#d32f2f;"><img src="${ICONS.trash}" alt="Delete"> Удалить заметку</button>` : ""}
+          
+        </div>
+      </div>
     </div>
     ${
       !isReadOnly
@@ -137,7 +163,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     `
         : ""
     }
-    <input class="note-editor__title" placeholder="Загрузка..." value="" />
+    <div class="note-editor__title-handler" >
+      <img src="${icon.url}" style="display: flex; aligh-items: center; width:40px;">
+      <input class="note-editor__title" placeholder="Загрузка..." value="" />
+    </div>
     <div class="block-editor">Загрузка блоков...</div>
   `;
 
@@ -153,8 +182,40 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const favoriteBtn = mainEl.querySelector(
     "#favorite-note-btn"
   ) as HTMLButtonElement;
-  const openCollabBtn = document.querySelector("#openCollabModal");
+  const openCollabBtn = mainEl.querySelector("#openCollabModal") as HTMLButtonElement;
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
+  const exportToPDF = mainEl.querySelector("#exportToPDF") as HTMLButtonElement;
+  const dotsBtn = mainEl.querySelector("#dots-note-btn") as HTMLButtonElement;
+  const noteMenu = mainEl.querySelector("#note-menu") as HTMLElement;
+  noteMenu.style.display = "none";
+
+  dotsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isHidden = noteMenu.style.display === "none";
+    noteMenu.style.display = isHidden ? "block" : "none";
+  });
+
+  // Закрытие меню при клике вне его
+  document.addEventListener("click", (e) => {
+    if (!dotsBtn.contains(e.target as Node) && !noteMenu.contains(e.target as Node)) {
+      noteMenu.style.display = "none";
+    }
+  });
+
+  exportToPDF.addEventListener("click", async () => {
+    try {
+      const pdfUrl = await apiClient.getPDFexport(noteId as number);
+      if (!pdfUrl) {
+        handleError(new Error("Invalid PDF URL"), "Не удалось получить URL PDF");
+        return;
+      }
+      window.open(pdfUrl, "_blank");
+      showNotification("PDF экспортирован", "success");
+    } catch (err) {
+      handleError(err, "Ошибка при экспорте в PDF");
+    }
+    noteMenu.style.display = "none";
+  });
 
   if (isFavorite) {
     favoriteBtn.classList.add("active");
@@ -227,6 +288,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
           }
           deleteModal.remove();
         });
+      noteMenu.style.display = "none";
     });
   }
 
@@ -247,12 +309,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     } catch (err) {
       handleError(err, "Ошибка обновления избранного");
     }
+    noteMenu.style.display = "none";
   });
 
   openCollabBtn?.addEventListener("click", () => {
     const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
     const modal = createCollaboratorsModal(id);
     document.body.appendChild(modal);
+    noteMenu.style.display = "none";
   });
 
   const handleNotesUpdated = (event: Event) => {
@@ -272,4 +336,25 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     "notesUpdated",
     handleNotesUpdated as EventListener
   );
+
+  // Слушатель для изменения цвета заголовка
+  const handleHeaderColorChange = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const { color } = customEvent.detail;
+    const header = mainEl.querySelector(".note-editor__header") as HTMLElement;
+    if (header) {
+      header.style.backgroundColor = color;
+    }
+  };
+
+  document.addEventListener("headerColorChanged", handleHeaderColorChange);
+
+  // Очистка при удалении элемента
+  const observer = new MutationObserver(() => {
+    if (!document.body.contains(mainEl)) {
+      document.removeEventListener("headerColorChanged", handleHeaderColorChange);
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }

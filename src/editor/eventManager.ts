@@ -119,7 +119,7 @@ export function setupEventManager({
           sel.addRange(range);
           triggerUpdate();
         } catch (err) {
-          console.error("Error inserting line break:", err);
+          console.error(err);
         }
         return;
       }
@@ -231,7 +231,7 @@ export function setupEventManager({
             sel.addRange(lastSelectionRange);
           }
         } catch (err) {
-          console.error("Failed to restore selection range:", err);
+          console.error(err);
         }
 
         if (dropdown?.id === "font-dropdown") {
