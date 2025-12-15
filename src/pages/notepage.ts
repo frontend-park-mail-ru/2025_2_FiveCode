@@ -8,6 +8,7 @@ import { WsClient, ServerMessage } from "../api/wsClient";
 import { handleError } from "../utils/errorHandler";
 import { showNotification } from "../components/notification";
 import { loadUser } from "../utils/session";
+import { chooseIconModal } from "../components/chooseIconModal";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -23,7 +24,6 @@ interface Icon {
   name?: string;
   url?: string;
 }
-
 
 let activeWsClient: WsClient | null = null;
 
@@ -42,7 +42,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   let isReadOnly = true;
   let isOwner = false;
-  let icon : Icon;
+  let icon: Icon;
 
   try {
     const note = await apiClient.getNote(noteId as number);
@@ -94,10 +94,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   }
 
   mainEl.className = "note-editor__main";
-  
+
   // Получение цвета заголовка из локального хранилища
   const headerColor = localStorage.getItem("note-header-color") || "#45B7D1";
-  
+
   mainEl.innerHTML = `
     <div class="note-editor__header" style="background-color: ${headerColor}; transition: background-color 0.3s ease;">
 
@@ -163,9 +163,9 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     `
         : ""
     }
-    <div class="note-editor__title-handler" >
-      <img src="${icon.url}" style="display: flex; aligh-items: center; width:40px;">
-      <input class="note-editor__title" placeholder="Загрузка..." value="" />
+    <div class="note-editor__title-handler">
+      <img id="note-header-icon" src="${icon.url}" style="display: flex; align-items: center; width:40px; cursor: pointer;">
+      <input class="note-editor__title" ... />
     </div>
     <div class="block-editor">Загрузка блоков...</div>
   `;
@@ -182,7 +182,9 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const favoriteBtn = mainEl.querySelector(
     "#favorite-note-btn"
   ) as HTMLButtonElement;
-  const openCollabBtn = mainEl.querySelector("#openCollabModal") as HTMLButtonElement;
+  const openCollabBtn = mainEl.querySelector(
+    "#openCollabModal"
+  ) as HTMLButtonElement;
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
   const exportToPDF = mainEl.querySelector("#exportToPDF") as HTMLButtonElement;
   const dotsBtn = mainEl.querySelector("#dots-note-btn") as HTMLButtonElement;
@@ -197,7 +199,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   // Закрытие меню при клике вне его
   document.addEventListener("click", (e) => {
-    if (!dotsBtn.contains(e.target as Node) && !noteMenu.contains(e.target as Node)) {
+    if (
+      !dotsBtn.contains(e.target as Node) &&
+      !noteMenu.contains(e.target as Node)
+    ) {
       noteMenu.style.display = "none";
     }
   });
@@ -206,7 +211,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     try {
       const pdfUrl = await apiClient.getPDFexport(noteId as number);
       if (!pdfUrl) {
-        handleError(new Error("Invalid PDF URL"), "Не удалось получить URL PDF");
+        handleError(
+          new Error("Invalid PDF URL"),
+          "Не удалось получить URL PDF"
+        );
         return;
       }
       window.open(pdfUrl, "_blank");
@@ -352,9 +360,35 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   // Очистка при удалении элемента
   const observer = new MutationObserver(() => {
     if (!document.body.contains(mainEl)) {
-      document.removeEventListener("headerColorChanged", handleHeaderColorChange);
+      document.removeEventListener(
+        "headerColorChanged",
+        handleHeaderColorChange
+      );
       observer.disconnect();
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+
+  const headerIconImg = mainEl.querySelector(
+    "#note-header-icon"
+  ) as HTMLImageElement;
+
+  headerIconImg?.addEventListener("click", async (e) => {
+    const modal = await chooseIconModal(e);
+    document.body.appendChild(modal);
+  });
+
+  const onIconSelectedGlobal = async (event: Event) => {
+    const { iconId, url } = (event as CustomEvent).detail;
+    try {
+      await apiClient.updateNoteIcon(noteId, iconId);
+      if (headerIconImg) headerIconImg.src = url;
+      document.dispatchEvent(new CustomEvent("notesUpdated"));
+      showNotification("Иконка обновлена", "success");
+    } catch (err) {
+      handleError(err, "Не удалось обновить иконку");
+    }
+  };
+
+  document.addEventListener("iconSelected", onIconSelectedGlobal);
 }
