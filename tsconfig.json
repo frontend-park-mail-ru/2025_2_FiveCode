@@ -16,6 +16,6 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "sw.js", "sw.js"],
   "exclude": ["node_modules"]
 }

@@ -42,13 +42,11 @@
   width: 100%;
   padding: 10px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
   border: 1px solid var(--primary-300);
-  color: var(--text-noraml);
 }
 
 .modal__form input::placeholder {
-  color: #000;
+  color: var(--text-noraml);
   opacity: 1;
 }
 
@@ -162,11 +160,16 @@
   font-size: 16px;
 }
 
+.input::placeholder {
+  color: var(--text-noraml);
+}
+
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
+
 
 .toggle-password {
   position: absolute;

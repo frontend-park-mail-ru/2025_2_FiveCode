@@ -13,11 +13,12 @@
 }
 
 .icon-list {
-    /* display: flex; */
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 10px;
+    height: auto;
     padding: 8px 16px;
-    color: var(--text-900);
-    text-decoration: none;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
@@ -28,7 +29,6 @@
 }
 
 .icon-item {
-    /* display: flex; */
     align-items: center;
     gap: 2px;
     padding: 2px 2px;

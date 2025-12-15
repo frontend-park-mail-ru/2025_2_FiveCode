@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import { config } from "./src/config/project.config.js";
+import CopyPlugin from "copy-webpack-plugin";
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -33,6 +34,7 @@ export default {
         use: [
           isProduction ? MiniCssExtractPlugin.loader : "style-loader",
           "css-loader",
+          "postcss-loader",
         ],
       },
       {
@@ -66,7 +68,12 @@ export default {
   devServer: {
     static: [
       {
-        directory: path.join(__dirname, "public"),
+        directory: path.join(__dirname, "dist"),
+        publicPath: "/",
+      },
+      {
+        directory: path.join(__dirname, "src/static/service-worker"),
+        publicPath: "/",
       },
     ],
     port: config.DEV_SERVER_PORT,
@@ -89,6 +96,14 @@ export default {
             removeComments: true,
           }
         : false,
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src/static/service-worker/sw.js"),
+          to: path.resolve(__dirname, "dist/sw.js"),
+        },
+      ],
     }),
     ...(isProduction
       ? [

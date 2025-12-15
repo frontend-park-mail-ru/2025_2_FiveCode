@@ -105,12 +105,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <div style="position: relative;">          
       <button class="note-editor__header-btn" style="transform: translateY(0px);" id="favorite-note-btn"><img src="${ICONS.star}"  alt="Favorite"></button>        
       <button class="note-editor__header-btn" id="dots-note-btn"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-
-<circle cx="12" cy="20" r="2.5" fill="#495057"/>
-<circle cx="20" cy="20" r="2.5" fill="#495057"/>
-<circle cx="28" cy="20" r="2.5" fill="#495057"/>
-</svg>
-</button>
+        <circle cx="12" cy="20" r="2.5" fill="#495057"/>
+        <circle cx="20" cy="20" r="2.5" fill="#495057"/>
+        <circle cx="28" cy="20" r="2.5" fill="#495057"/>
+        </svg>
+        </button>
         <div class="note-menu" id="note-menu" >
           <button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>
           <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
@@ -188,8 +187,8 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const exportToPDF = mainEl.querySelector("#exportToPDF") as HTMLButtonElement;
   const dotsBtn = mainEl.querySelector("#dots-note-btn") as HTMLButtonElement;
   const noteMenu = mainEl.querySelector("#note-menu") as HTMLElement;
+  noteMenu.style.display = "none";
 
-  // Меню для кнопки dots
   dotsBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const isHidden = noteMenu.style.display === "none";
