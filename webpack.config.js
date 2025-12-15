@@ -103,6 +103,14 @@ export default {
           from: path.resolve(__dirname, "src/static/service-worker/sw.js"),
           to: path.resolve(__dirname, "dist/sw.js"),
         },
+        {
+          from: path.resolve(__dirname, "src/static/manifest.json"),
+          to: path.resolve(__dirname, "dist/manifest.json"),
+        },
+        {
+          from: path.resolve(__dirname, "src/static/svg"),
+          to: path.resolve(__dirname, "dist/static/svg"),
+        },
       ],
     }),
     ...(isProduction
