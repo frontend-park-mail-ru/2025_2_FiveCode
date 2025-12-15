@@ -26,11 +26,17 @@ interface Icon {
 }
 
 let activeWsClient: WsClient | null = null;
+let activeIconListener: ((e: Event) => void) | null = null;
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
   if (activeWsClient) {
     activeWsClient.close();
     activeWsClient = null;
+  }
+
+  if (activeIconListener) {
+    document.removeEventListener("iconSelected", activeIconListener);
+    activeIconListener = null;
   }
 
   const mainEl = document.getElementById("main-content");
@@ -95,7 +101,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   mainEl.className = "note-editor__main";
 
-  // Получение цвета заголовка из локального хранилища
   const headerColor = localStorage.getItem("note-header-color") || "#45B7D1";
 
   mainEl.innerHTML = `
@@ -163,9 +168,9 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     `
         : ""
     }
-    <div class="note-editor__title-handler">
+    <div class="note-editor__title-handler" >
       <img id="note-header-icon" src="${icon.url}" style="display: flex; align-items: center; width:40px; cursor: pointer;">
-      <input class="note-editor__title" ... />
+      <input class="note-editor__title" placeholder="Загрузка..." value="" />
     </div>
     <div class="block-editor">Загрузка блоков...</div>
   `;
@@ -191,13 +196,56 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const noteMenu = mainEl.querySelector("#note-menu") as HTMLElement;
   noteMenu.style.display = "none";
 
+  const headerIconImg = mainEl.querySelector(
+    "#note-header-icon"
+  ) as HTMLImageElement;
+
+  headerIconImg?.addEventListener("click", async (e) => {
+    const modal = await chooseIconModal(e, Number(noteId));
+    document.body.appendChild(modal);
+  });
+
+  const onIconSelectedGlobal = async (event: Event) => {
+    const detail = (event as CustomEvent).detail;
+
+    if (String(detail.targetNoteId) !== String(noteId)) {
+      return;
+    }
+
+    const { iconId, url } = detail;
+    try {
+      await apiClient.updateNoteIcon(noteId, iconId);
+      if (headerIconImg) headerIconImg.src = url;
+      document.dispatchEvent(new CustomEvent("notesUpdated"));
+      showNotification("Иконка обновлена", "success");
+
+      const modal = document.getElementById("chooseIconModal");
+      if (modal) modal.remove();
+    } catch (err) {
+      handleError(err, "Не удалось обновить иконку");
+    }
+  };
+
+  document.addEventListener("iconSelected", onIconSelectedGlobal);
+  activeIconListener = onIconSelectedGlobal;
+
+  const observer = new MutationObserver(() => {
+    if (!document.body.contains(mainEl)) {
+      if (activeIconListener) {
+        document.removeEventListener("iconSelected", activeIconListener);
+        activeIconListener = null;
+      }
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
   dotsBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const isHidden = noteMenu.style.display === "none";
     noteMenu.style.display = isHidden ? "block" : "none";
   });
 
-  // Закрытие меню при клике вне его
   document.addEventListener("click", (e) => {
     if (
       !dotsBtn.contains(e.target as Node) &&
@@ -345,7 +393,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     handleNotesUpdated as EventListener
   );
 
-  // Слушатель для изменения цвета заголовка
   const handleHeaderColorChange = (event: Event) => {
     const customEvent = event as CustomEvent;
     const { color } = customEvent.detail;
@@ -357,38 +404,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   document.addEventListener("headerColorChanged", handleHeaderColorChange);
 
-  // Очистка при удалении элемента
-  const observer = new MutationObserver(() => {
+  const styleObserver = new MutationObserver(() => {
     if (!document.body.contains(mainEl)) {
       document.removeEventListener(
         "headerColorChanged",
         handleHeaderColorChange
       );
-      observer.disconnect();
+      styleObserver.disconnect();
     }
   });
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  const headerIconImg = mainEl.querySelector(
-    "#note-header-icon"
-  ) as HTMLImageElement;
-
-  headerIconImg?.addEventListener("click", async (e) => {
-    const modal = await chooseIconModal(e);
-    document.body.appendChild(modal);
-  });
-
-  const onIconSelectedGlobal = async (event: Event) => {
-    const { iconId, url } = (event as CustomEvent).detail;
-    try {
-      await apiClient.updateNoteIcon(noteId, iconId);
-      if (headerIconImg) headerIconImg.src = url;
-      document.dispatchEvent(new CustomEvent("notesUpdated"));
-      showNotification("Иконка обновлена", "success");
-    } catch (err) {
-      handleError(err, "Не удалось обновить иконку");
-    }
-  };
-
-  document.addEventListener("iconSelected", onIconSelectedGlobal);
+  styleObserver.observe(document.body, { childList: true, subtree: true });
 }
