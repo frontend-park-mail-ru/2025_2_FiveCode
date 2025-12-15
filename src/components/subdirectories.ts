@@ -371,6 +371,8 @@ export function Subdirectories({
           const rect = (dotsButton as HTMLElement).getBoundingClientRect();
           menu.style.top = rect.bottom + "px";
           menu.style.left = rect.left + "px";
+          menu.style.width = "fit-content";
+          menu.style.minWidth = "fit-content";
 
           menu.querySelector(".delete-note")?.addEventListener("click", () => {
             const deleteModal = createDeleteNoteModal();

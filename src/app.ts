@@ -94,7 +94,6 @@ window.addEventListener("DOMContentLoaded", () => {
       .then(registration => {
         console.log('[App] Service Worker registered:', registration);
         
-        // Проверка обновлений каждые 60 секунд
         setInterval(() => {
           registration.update();
         }, 60000);
@@ -107,7 +106,6 @@ window.addEventListener("DOMContentLoaded", () => {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.log('[App] New Service Worker available');
-                // Можно показать уведомление пользователю об обновлении
                 const event = new CustomEvent('swupdate', { 
                   detail: { registration }
                 });
@@ -121,7 +119,6 @@ window.addEventListener("DOMContentLoaded", () => {
         console.error('[App] Service Worker registration failed:', err);
       });
 
-    // Обработка сообщений от service worker
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       console.log('[App] Service Worker controller changed');
     });
