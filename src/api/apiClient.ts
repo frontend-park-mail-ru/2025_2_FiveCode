@@ -362,7 +362,7 @@ export const apiClient = {
   },
 
   async getPDFexport(noteId: string | number): Promise<string> {
-    const response = await fetch(`${API_BASE}/api/notes/${noteId}/export/pdf`, {
+    const response = await fetch(`${API_BASE}/notes/${noteId}/export/pdf`, {
       method: "GET",
       credentials: "include",
     });
