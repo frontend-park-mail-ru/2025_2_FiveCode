@@ -3,28 +3,32 @@ import router from "../router";
 import { handleError } from "../utils/errorHandler";
 
 interface SearchResult {
-  id?: number;
-  note_id?: number;
+  note_id: number;
   title: string;
   highlighted_title?: string;
-  parent_note_id?: number | null;
+  content_snippet?: string;
+  rank?: number;
+  updated_at?: string;
 }
 
 export function createSearchModal(): HTMLElement {
   const modalTemplate = `
     <div id="searchModal" class="search-modal-overlay">
       <div class="search-modal-content">
-        <span id="closeSearchModal" class="search-modal-close">×</span>
-        <p class="search-modal-title">Поиск по заметкам</p>
-        <input 
-          type="text" 
-          class="search-modal-input" 
-          id="searchInput" 
-          placeholder="Введите текст для поиска..."
-          autocomplete="off"
-        />
-        <div class="search-modal-results" id="searchResults"></div>
-        <button class="search-modal-button" id="searchButton">Поиск</button>
+        <div class="search-modal-header">
+            <span class="search-icon">🔍</span>
+            <input 
+            type="text" 
+            class="search-modal-input" 
+            id="searchInput" 
+            placeholder="Поиск по заметкам..."
+            autocomplete="off"
+            />
+        </div>
+        
+        <div class="search-modal-results" id="searchResults">
+            <div class="search-placeholder">Введите текст для поиска...</div>
+        </div>
       </div>
     </div>
   `;
@@ -34,112 +38,94 @@ export function createSearchModal(): HTMLElement {
   const modal = container.firstElementChild as HTMLElement;
 
   const searchInput = modal.querySelector("#searchInput") as HTMLInputElement;
-  const searchButton = modal.querySelector("#searchButton") as HTMLButtonElement;
   const resultsContainer = modal.querySelector("#searchResults") as HTMLElement;
-  const closeBtn = modal.querySelector("#closeSearchModal") as HTMLElement;
 
-  closeBtn.addEventListener("click", () => {
-    modal.remove();
-  });
+  const close = () => modal.remove();
 
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      modal.remove();
+      close();
     }
   });
 
-  searchInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      performSearch();
+  document.addEventListener("keydown", function handleEsc(e) {
+    if (e.key === "Escape") {
+      close();
+      document.removeEventListener("keydown", handleEsc);
     }
   });
 
-  searchButton.addEventListener("click", performSearch);
+  let debounceTimeout: NodeJS.Timeout;
 
   searchInput.addEventListener("input", () => {
-    if (searchInput.value.length > 2) {
-      performSearch();
-    } else {
-      resultsContainer.innerHTML = "";
-    }
-  });
-
-  async function performSearch() {
+    clearTimeout(debounceTimeout);
     const query = searchInput.value.trim();
 
-    if (!query) {
-      resultsContainer.innerHTML = '';
+    if (query.length === 0) {
+      resultsContainer.innerHTML =
+        '<div class="search-placeholder">Введите текст для поиска...</div>';
       return;
     }
 
+    debounceTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  });
+
+  async function performSearch(query: string) {
     try {
       const response: any = await apiClient.searchNotes(query);
-      const results = Array.isArray(response) ? response : (response?.results || response?.notes || response?.data || []);
+      const results = Array.isArray(response)
+        ? response
+        : response?.results || [];
       displayResults(results);
     } catch (err) {
-      handleError(err, "Ошибка при поиске");
-      resultsContainer.innerHTML = '<p style="color: var(--danger);">Ошибка при поиске</p>';
+      console.error(err);
+      resultsContainer.innerHTML =
+        '<div class="search-placeholder error">Ошибка при поиске</div>';
     }
   }
 
   function displayResults(results: SearchResult[]) {
     resultsContainer.innerHTML = "";
 
-    if (!Array.isArray(results)) {
-      resultsContainer.innerHTML = '<p style="color: var(--gray-300);">Некорректный формат ответа</p>';
-      return;
-    }
-
     if (results.length === 0) {
-      resultsContainer.innerHTML = '<p style="color: var(--gray-300);">Ничего не найдено</p>';
+      resultsContainer.innerHTML =
+        '<div class="search-placeholder">Ничего не найдено</div>';
       return;
     }
 
-    const resultsList = document.createElement("ul");
-    resultsList.style.listStyle = "none";
-    resultsList.style.padding = "0";
-    resultsList.style.margin = "0 0 12px 0";
+    const resultsList = document.createElement("div");
+    resultsList.className = "search-list";
 
-    results.slice(0, 5).forEach((result: SearchResult) => {
-      const li = document.createElement("li");
-      li.className = "search-modal-list";
+    results.forEach((result: SearchResult) => {
+      const item = document.createElement("div");
+      item.className = "search-list-item";
 
-      const link = document.createElement("a");
-      link.href = `/note/${result.id || result.note_id}`;
-      link.className = "search-modal-result-list";
-      
-      const titleText = result.title || "Без названия";
-      link.innerHTML = result.highlighted_title || titleText;
+      const titleHtml =
+        result.highlighted_title || result.title || "Без названия";
+      const snippetHtml = result.content_snippet || "";
 
-      li.appendChild(link);
+      item.innerHTML = `
+        <div class="search-item-icon">📄</div>
+        <div class="search-item-content">
+            <div class="search-item-title">${titleHtml}</div>
+            ${snippetHtml ? `<div class="search-item-snippet">${snippetHtml}</div>` : ""}
+        </div>
+      `;
 
-      li.addEventListener("mouseenter", () => {
-        li.style.backgroundColor = "rgba(74, 144, 226, 0.2)";
+      item.addEventListener("click", () => {
+        router.navigate(`/note/${result.note_id}`);
+        close();
       });
 
-      li.addEventListener("mouseleave", () => {
-        li.style.backgroundColor = "rgba(74, 144, 226, 0.1)";
-      });
-
-      li.addEventListener("click", () => {
-        router.navigate(`/note/${result.id || result.note_id}`);
-        modal.remove();
-      });
-
-      resultsList.appendChild(li);
+      resultsList.appendChild(item);
     });
 
     resultsContainer.appendChild(resultsList);
-
-    if (results.length > 5) {
-      const moreInfo = document.createElement("p");
-      moreInfo.className = "search-modal-result-limitation";
-      moreInfo.textContent = `Показано 5 из ${results.length} результатов`;
-      resultsContainer.appendChild(moreInfo);
-    }
   }
 
-  setTimeout(() => searchInput.focus(), 100);
+  setTimeout(() => searchInput.focus(), 50);
 
   return modal;
 }

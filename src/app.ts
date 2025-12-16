@@ -39,7 +39,6 @@ const ICONS = {
 };
 
 async function initializeApp(): Promise<void> {
-  // Инициализация темы приложения
   initializeTheme();
 
   const app = document.getElementById("app");
@@ -87,44 +86,23 @@ async function initializeApp(): Promise<void> {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-
-  // Регистрация и управление service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(registration => {
-        console.log('[App] Service Worker registered:', registration);
-        
-        // Проверка обновлений каждые 60 секунд
-        setInterval(() => {
-          registration.update();
-        }, 60000);
-
-        // Обработка обновления
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[App] New Service Worker available');
-                // Можно показать уведомление пользователю об обновлении
-                const event = new CustomEvent('swupdate', { 
-                  detail: { registration }
-                });
-                window.dispatchEvent(event);
-              }
-            });
-          }
+  if ("serviceWorker" in navigator) {
+    if (process.env.NODE_ENV === "production") {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then(() => {
+          console.log("ServiceWorker registration successful");
+        })
+        .catch((err) => {
+          console.log("ServiceWorker registration failed: ", err);
         });
-      })
-      .catch(err => {
-        console.error('[App] Service Worker registration failed:', err);
+    } else {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
       });
-
-    // Обработка сообщений от service worker
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('[App] Service Worker controller changed');
-    });
+    }
   }
 
   initializeApp();

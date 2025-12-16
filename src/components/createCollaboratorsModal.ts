@@ -239,6 +239,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
     try {
       await apiClient.setPublicAccess(noteId, accessLevel);
       showNotification("Настройки доступа обновлены", "success");
+      document.dispatchEvent(new CustomEvent("sharingSettingsUpdated"));
       loadCollaborators();
     } catch (e) {
       handleError(e, "Не удалось обновить настройки доступа");
@@ -260,6 +261,7 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
       statusEl.textContent = "Успешно добавлено";
       statusEl.classList.add("complete--visible");
       showNotification("Приглашение отправлено", "success");
+      document.dispatchEvent(new CustomEvent("sharingSettingsUpdated"));
       input.value = "";
       loadCollaborators();
     } catch (err: any) {

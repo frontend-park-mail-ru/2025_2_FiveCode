@@ -13,6 +13,7 @@ import { chooseIconModal } from "../components/chooseIconModal";
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
   star: new URL("../static/svg/icon_star.svg", import.meta.url).href,
+  filled_star: new URL("../static/svg/icon_favorite.svg", import.meta.url).href,
   clear: new URL("../static/svg/icon_clear_format.svg", import.meta.url).href,
   dots: new URL("../static/svg/icon_dots_grey.svg", import.meta.url).href,
   share: new URL("../static/svg/icon_share.svg", import.meta.url).href,
@@ -27,6 +28,7 @@ interface Icon {
 
 let activeWsClient: WsClient | null = null;
 let activeIconListener: ((e: Event) => void) | null = null;
+let activeSharingListener: ((e: Event) => void) | null = null;
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
   if (activeWsClient) {
@@ -39,6 +41,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     activeIconListener = null;
   }
 
+  if (activeSharingListener) {
+    document.removeEventListener(
+      "sharingSettingsUpdated",
+      activeSharingListener
+    );
+    activeSharingListener = null;
+  }
+
   const mainEl = document.getElementById("main-content");
   if (!mainEl) return;
 
@@ -49,6 +59,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   let isReadOnly = true;
   let isOwner = false;
   let icon: Icon;
+  let isSubNote = false;
 
   try {
     const note = await apiClient.getNote(noteId as number);
@@ -56,6 +67,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     initialTitle = note.title;
     isFavorite = note.is_favorite || false;
     icon = note.icon;
+    isSubNote = !!note.parent_note_id;
 
     initialBlocks = (blocksData.blocks || []).map((block: any): Block => {
       if (block.type === "attachment") {
@@ -102,13 +114,16 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   mainEl.className = "note-editor__main";
 
   const headerColor = localStorage.getItem("note-header-color") || "#45B7D1";
+  const starIconUrl = isFavorite ? ICONS.filled_star : ICONS.star;
 
   mainEl.innerHTML = `
     <div class="note-editor__header" style="background-color: ${headerColor}; transition: background-color 0.3s ease;">
 
       <span id="save-status"></span>
       <div style="position: relative;">          
-      <button class="note-editor__header-btn" style="transform: translateY(0px);" id="favorite-note-btn"><img src="${ICONS.star}"  alt="Favorite"></button>        
+      <button class="note-editor__header-btn ${isFavorite ? "active" : ""}" style="transform: translateY(0px);" id="favorite-note-btn">
+        <img src="${starIconUrl}" alt="Favorite" id="favorite-star-img">
+      </button>        
       <button class="note-editor__header-btn" id="dots-note-btn"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="20" r="2.5" fill="#495057"/>
         <circle cx="20" cy="20" r="2.5" fill="#495057"/>
@@ -116,7 +131,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
         </svg>
         </button>
         <div class="note-menu" id="note-menu" >
-          <button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>
+          ${!isSubNote ? `<button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>` : ""}
           <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
         ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="color:#d32f2f;"><img src="${ICONS.trash}" alt="Delete"> Удалить заметку</button>` : ""}
           
@@ -187,6 +202,9 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const favoriteBtn = mainEl.querySelector(
     "#favorite-note-btn"
   ) as HTMLButtonElement;
+  const favoriteStarImg = mainEl.querySelector(
+    "#favorite-star-img"
+  ) as HTMLImageElement;
   const openCollabBtn = mainEl.querySelector(
     "#openCollabModal"
   ) as HTMLButtonElement;
@@ -201,7 +219,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   ) as HTMLImageElement;
 
   headerIconImg?.addEventListener("click", async (e) => {
-    const modal = await chooseIconModal(e, Number(noteId));
+    const modal = await chooseIconModal(e, Number(noteId), icon.id);
     document.body.appendChild(modal);
   });
 
@@ -219,6 +237,8 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       document.dispatchEvent(new CustomEvent("notesUpdated"));
       showNotification("Иконка обновлена", "success");
 
+      if (icon) icon.id = iconId;
+
       const modal = document.getElementById("chooseIconModal");
       if (modal) modal.remove();
     } catch (err) {
@@ -234,6 +254,13 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       if (activeIconListener) {
         document.removeEventListener("iconSelected", activeIconListener);
         activeIconListener = null;
+      }
+      if (activeSharingListener) {
+        document.removeEventListener(
+          "sharingSettingsUpdated",
+          activeSharingListener
+        );
+        activeSharingListener = null;
       }
       observer.disconnect();
     }
@@ -273,10 +300,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     noteMenu.style.display = "none";
   });
 
-  if (isFavorite) {
-    favoriteBtn.classList.add("active");
-  }
-
   titleInput.value = initialTitle;
 
   const editorManager = createEditorManager({
@@ -292,11 +315,8 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   editorManager.render();
 
-  const sharingSettings = await apiClient.getSharingSettings(noteId as number);
-  if (
-    sharingSettings.collaborators.length > 1 ||
-    sharingSettings.public_access.access_level
-  ) {
+  const initWebsocket = () => {
+    if (activeWsClient) return;
     activeWsClient = new WsClient(noteId);
     activeWsClient.connect((msg: ServerMessage) => {
       if (msg.type === "note_update") {
@@ -320,7 +340,22 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
         }
       }
     });
+  };
+
+  const sharingSettings = await apiClient.getSharingSettings(noteId as number);
+
+  if (
+    isOwner ||
+    sharingSettings.collaborators.length > 1 ||
+    sharingSettings.public_access.access_level
+  ) {
+    initWebsocket();
   }
+
+  activeSharingListener = () => {
+    initWebsocket();
+  };
+  document.addEventListener("sharingSettingsUpdated", activeSharingListener);
 
   if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
@@ -353,6 +388,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     try {
       await apiClient.toggleFavorite(noteId as number, newFavoriteStatus);
       favoriteBtn.classList.toggle("active", newFavoriteStatus);
+      if (favoriteStarImg) {
+        favoriteStarImg.src = newFavoriteStatus
+          ? ICONS.filled_star
+          : ICONS.star;
+      }
       document.dispatchEvent(
         new CustomEvent("notesUpdated", {
           detail: { noteId: noteId, isFavorite: newFavoriteStatus },
@@ -368,19 +408,25 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     noteMenu.style.display = "none";
   });
 
-  openCollabBtn?.addEventListener("click", () => {
-    const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
-    const modal = createCollaboratorsModal(id);
-    document.body.appendChild(modal);
-    noteMenu.style.display = "none";
-  });
+  if (openCollabBtn) {
+    openCollabBtn.addEventListener("click", () => {
+      const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
+      const modal = createCollaboratorsModal(id);
+      document.body.appendChild(modal);
+      noteMenu.style.display = "none";
+    });
+  }
 
   const handleNotesUpdated = (event: Event) => {
     const custom = event as CustomEvent;
     if (!custom?.detail) return;
     const { noteId: updatedId, isFavorite } = custom.detail;
     if (String(updatedId) === String(noteId)) {
-      favoriteBtn.classList.toggle("active", Boolean(isFavorite));
+      const fav = Boolean(isFavorite);
+      favoriteBtn.classList.toggle("active", fav);
+      if (favoriteStarImg) {
+        favoriteStarImg.src = fav ? ICONS.filled_star : ICONS.star;
+      }
     }
   };
 

@@ -52,7 +52,9 @@ export async function renderSettingsPage(): Promise<void> {
   const saveButton = settingsComponent.querySelector(
     ".save-button"
   ) as HTMLButtonElement;
-  const cancelButton = settingsComponent.querySelector(".cancel-button");
+  const cancelButton = settingsComponent.querySelector(
+    ".cancel-button"
+  ) as HTMLButtonElement;
   const deleteButton = settingsComponent.querySelector(
     ".delete-account-button"
   );
@@ -71,6 +73,22 @@ export async function renderSettingsPage(): Promise<void> {
   statusElements.forEach((el) => el.remove());
 
   let initialName = user?.username || user?.email?.split("@")[0] || "Имя";
+  let currentAvatarFile: File | null = null;
+  const initialAvatarUrl = avatarUrl || ICONS.userIcon;
+
+  saveButton.disabled = true;
+  cancelButton.disabled = true;
+
+  const checkChanges = () => {
+    const hasNameChanged = nameInput.value.trim() !== initialName;
+    const hasAvatarChanged = currentAvatarFile !== null;
+    const hasChanges = hasNameChanged || hasAvatarChanged;
+
+    saveButton.disabled = !hasChanges;
+    cancelButton.disabled = !hasChanges;
+  };
+
+  nameInput.addEventListener("input", checkChanges);
 
   avatarUploadTrigger?.addEventListener("click", () => {
     avatarFileInput.click();
@@ -83,54 +101,67 @@ export async function renderSettingsPage(): Promise<void> {
       showNotification("Недопустимый формат файла", "error");
       return;
     }
-    try {
-      const uploadedFile = await apiClient.uploadFile(file);
-      const updatedUser = await apiClient.updateUser({
-        avatar_file_id: uploadedFile.id,
-      });
-      saveUser(updatedUser);
-      avatarUrl = uploadedFile.url;
-      avatarPreview.src = avatarUrl;
-      document.dispatchEvent(
-        new CustomEvent("userProfileUpdated", {
-          detail: { newAvatarUrl: uploadedFile.url },
-        })
-      );
-      showNotification("Аватар успешно загружен", "success");
-    } catch (error) {
-      handleError(error, "Ошибка при загрузке аватара");
-    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result && avatarPreview) {
+        avatarPreview.src = e.target.result as string;
+      }
+    };
+    reader.readAsDataURL(file);
+
+    currentAvatarFile = file;
+    checkChanges();
   });
 
   saveButton?.addEventListener("click", async () => {
     const newName = nameInput.value.trim();
-    if (!newName || newName === initialName) {
-      return;
-    }
 
     const originalButtonText = saveButton.textContent;
     saveButton.textContent = "Сохранение...";
     saveButton.disabled = true;
+    cancelButton.disabled = true;
 
     try {
-      const updatedUser = await apiClient.updateUser({ username: newName });
-      saveUser(updatedUser);
-      initialName = updatedUser.username || initialName;
-      document.dispatchEvent(new CustomEvent("userProfileUpdated"));
+      if (currentAvatarFile) {
+        const uploadedFile = await apiClient.uploadFile(currentAvatarFile);
+        await apiClient.updateUser({
+          avatar_file_id: uploadedFile.id,
+        });
+
+        avatarUrl = uploadedFile.url;
+        currentAvatarFile = null;
+
+        document.dispatchEvent(
+          new CustomEvent("userProfileUpdated", {
+            detail: { newAvatarUrl: uploadedFile.url },
+          })
+        );
+      }
+
+      if (newName !== initialName) {
+        const updatedUser = await apiClient.updateUser({ username: newName });
+        saveUser(updatedUser);
+        initialName = updatedUser.username || initialName;
+        document.dispatchEvent(new CustomEvent("userProfileUpdated"));
+      }
+
       showNotification("Профиль обновлен", "success");
+      checkChanges();
     } catch (error) {
       handleError(error, "Ошибка при сохранении изменений");
+      checkChanges();
     } finally {
-      setTimeout(() => {
-        saveButton.textContent = originalButtonText;
-        saveButton.disabled = false;
-      }, 500);
+      saveButton.textContent = originalButtonText;
     }
   });
 
   cancelButton?.addEventListener("click", () => {
     nameInput.value = initialName;
-    avatarPreview.src = avatarUrl || ICONS.userIcon;
+    avatarPreview.src = initialAvatarUrl;
+    currentAvatarFile = null;
+    avatarFileInput.value = "";
+    checkChanges();
   });
 
   deleteButton?.addEventListener("click", () => {

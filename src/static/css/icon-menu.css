@@ -1,48 +1,65 @@
 .icon-menu {
-    position: absolute;
-    background: var(--primary-50);
-    border: 1px solid var(--primary-100);
-    border-radius: 6px;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 1000;
-    padding: 8px 0;
-    display: grid;
-    width: 300px;
-    max-height: 400px;
+  position: absolute;
+  background: var(--bg-default);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  padding: 8px;
+  width: 320px;
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.icon-menu-inner {
+  position: relative;
+}
+
+.icon-menu-close {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 20px;
+  line-height: 20px;
+  text-align: center;
+  z-index: 10;
+}
+
+.icon-menu-close:hover {
+  color: var(--text-primary);
 }
 
 .icon-list {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 10px;
-    height: auto;
-    padding: 8px 16px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-}
-
-.icon-item:hover {
-    background: rgba(var(--primary-100), 0.1);
-    color: var(--primary-500);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding-top: 10px;
+  justify-items: center;
 }
 
 .icon-item {
-    align-items: center;
-    gap: 2px;
-    padding: 2px 2px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.1s ease;
+  object-fit: contain;
+  border: 2px solid transparent;
 }
 
-.icon-menu-close{
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    fill: var(--text-600);
-    transition: fill 0.2s;
+.icon-item:hover {
+  background: var(--bg-secondary);
+  transform: scale(1.1);
+}
+
+.icon-item.selected {
+  background: var(--primary-100);
+  border-color: var(--primary-color);
 }

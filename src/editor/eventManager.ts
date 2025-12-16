@@ -96,8 +96,9 @@ export function setupEventManager({
   });
 
   container.addEventListener("keydown", (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+
     if (e.key === "Enter") {
-      const target = e.target as HTMLElement;
       if (target.closest(".block--code")) return;
       const targetBlockContainer =
         target.closest<HTMLElement>(".block-container");
@@ -128,6 +129,39 @@ export function setupEventManager({
       triggerUpdate();
       if (targetBlockContainer?.dataset.blockId) {
         addNewBlock(targetBlockContainer.dataset.blockId, "text");
+      }
+    }
+
+    if (e.key === "Backspace") {
+      const blockContainer = target.closest<HTMLElement>(".block-container");
+
+      if (
+        blockContainer &&
+        target.classList.contains("block--text") &&
+        (target.innerText.trim() === "" || target.innerText === "\n")
+      ) {
+        const prevContainer =
+          blockContainer.previousElementSibling as HTMLElement;
+
+        if (prevContainer && deleteBlock && blockContainer.dataset.blockId) {
+          e.preventDefault();
+
+          const prevBlockId = prevContainer.dataset.blockId;
+          const prevEditable = prevContainer.querySelector(
+            ".block--text, .code-content"
+          ) as HTMLElement;
+
+          deleteBlock(blockContainer.dataset.blockId).then(() => {
+            if (prevEditable) {
+              const range = document.createRange();
+              const sel = window.getSelection();
+              range.selectNodeContents(prevEditable);
+              range.collapse(false); // В конец
+              sel?.removeAllRanges();
+              sel?.addRange(range);
+            }
+          });
+        }
       }
     }
   });

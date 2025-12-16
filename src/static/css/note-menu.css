@@ -1,81 +1,69 @@
-.subdir-item {
-  position: relative;
-}
-
-.subdir-header:hover .subdir-menu-dots,
-.subdir-header:hover .subdir-menu-favorite {
-  display: block !important;
-}
-
-.subdir-menu-dots, .subnote-menu-dots {
-  right: 8px;
-  top: 50%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.subdir-menu-dots img {
-  width: 16px;
-  height: 16px;
-}
-
 .note-menu {
   position: absolute;
-  background: rgba(var(--primary-600), 0.9);
-  border: 1px solid var(--primary-100);
+  background: var(--bg-default);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  z-index: 1000;
-  padding: 8px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  padding: 4px;
+  min-width: 160px;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
 }
 
 .note-menu button {
-  display: block;
-  width: 100%;
-  padding: 8px 16px;
-  text-align: left;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--text-normal);
   display: flex;
   align-items: center;
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 0.1s;
 }
 
 .note-menu button:hover {
-  background-color: var(--primary-100);
-}
-
-.user-menu--visible {
-  display: block;
+  background-color: var(--bg-secondary);
 }
 
 .note-menu-item {
   width: 100%;
-  padding: 12px 16px;
+  padding: 8px 12px;
   text-align: left;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+}
+
+.note-menu-item:hover {
+  background-color: var(--bg-secondary);
 }
 
 .note-menu-item img {
-  width: 20px;
-  height: 20px;
-
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
 }
 
-.note-menu {
-  display: block;
-  position: absolute;
-  right: 0px;
-  top: 100%;
-  margin-top: 8px;
-  z-index: 1000;
-  min-width: 300px;
+.delete-note {
+  color: var(--danger-500) !important;
+}
+
+.delete-note:hover {
+  background-color: var(--danger-100) !important;
+}
+
+[data-theme="dark"] .delete-note:hover {
+  background-color: rgba(220, 53, 69, 0.15) !important;
 }

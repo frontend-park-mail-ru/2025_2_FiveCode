@@ -13,8 +13,6 @@ export async function renderNotes(): Promise<void> {
   const main = document.getElementById("main-content");
   if (!main) return;
 
-  main.innerHTML = "";
-
   try {
     const allNotes = await apiClient.getNotesForUser();
 
@@ -22,6 +20,8 @@ export async function renderNotes(): Promise<void> {
     if (currentPath !== "/notes" && currentPath !== "/") {
       return;
     }
+
+    main.innerHTML = "";
 
     const categories = [
       { key: "favorites", title: "Избранное" },
@@ -33,6 +33,16 @@ export async function renderNotes(): Promise<void> {
     );
 
     categories.forEach(({ key, title }) => {
+      const filteredNotes = processedNotes.filter((note: any) => {
+        if (key === "favorites") return note.favorite;
+        if (key === "recent") return !note.favorite;
+        return true;
+      });
+
+      if (key === "favorites" && filteredNotes.length === 0) {
+        return;
+      }
+
       const sectionHtml = ejs.render(
         `<div class="notes-section"><h2><%= title %></h2><div class="notes-content"></div></div>`,
         { title }
@@ -41,12 +51,6 @@ export async function renderNotes(): Promise<void> {
       sectionEl.innerHTML = sectionHtml;
       const section = sectionEl.firstElementChild as HTMLElement;
       const list = section.querySelector(".notes-content") as HTMLElement;
-
-      const filteredNotes = processedNotes.filter((note: any) => {
-        if (key === "favorites") return note.favorite;
-        if (key === "recent") return !note.favorite;
-        return true;
-      });
 
       filteredNotes.forEach((note: any) => {
         const noteCard = NoteCard(note);
@@ -63,7 +67,7 @@ export async function renderNotes(): Promise<void> {
           id: 0,
           title: "Создать заметку",
           text: "",
-          icon: {url: ICONS.add_new},
+          icon: { url: ICONS.add_new },
           favorite: false,
         });
 
@@ -100,12 +104,14 @@ export async function renderNotes(): Promise<void> {
   }
 }
 
-document.removeEventListener("notesUpdated", renderNotes as EventListener);
-document.addEventListener("notesUpdated", () => {
+const onNotesUpdated = () => {
   const currentPath = window.location.pathname;
   if (currentPath === "/notes" || currentPath === "/") {
     renderNotes().catch((err) =>
       console.error("Failed to refresh notes after update:", err)
     );
   }
-});
+};
+
+document.removeEventListener("notesUpdated", onNotesUpdated);
+document.addEventListener("notesUpdated", onNotesUpdated);

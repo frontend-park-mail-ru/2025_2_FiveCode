@@ -107,6 +107,10 @@ class Router {
       if (match) {
         match.shift();
         route.cb(...match);
+
+        document.dispatchEvent(
+          new CustomEvent("routeChanged", { detail: { path: fragment } })
+        );
         return true;
       }
       return false;

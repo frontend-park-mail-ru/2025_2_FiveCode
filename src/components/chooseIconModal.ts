@@ -3,8 +3,14 @@ import { apiClient } from "../api/apiClient";
 
 export async function chooseIconModal(
   event: MouseEvent,
-  targetNoteId: number
+  targetNoteId: number,
+  currentIconId?: number | null
 ): Promise<HTMLElement> {
+  const existingModal = document.getElementById("chooseIconModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
   const icons = await apiClient.getIcons();
 
   const modalTemplate = `
@@ -13,7 +19,12 @@ export async function chooseIconModal(
             <span id="closeModal" class="icon-menu-close">×</span>
             <div class="icon-list">
                 <% icons.forEach(icon => { %>
-                    <img src="<%= icon.url %>" class="icon-item" data-icon-id="<%= icon.id %>" data-icon-name="<%= icon.name %>" />
+                    <img 
+                      src="<%= icon.url %>" 
+                      class="icon-item <%= icon.id === currentIconId ? 'selected' : '' %>" 
+                      data-icon-id="<%= icon.id %>" 
+                      data-icon-name="<%= icon.name %>" 
+                    />
                 <% }); %>
             </div>
         </div>
@@ -21,12 +32,16 @@ export async function chooseIconModal(
 `;
 
   const container = document.createElement("div");
-  container.innerHTML = ejs.render(modalTemplate, { icons });
+  container.innerHTML = ejs.render(modalTemplate, { icons, currentIconId });
   const modal = container.firstElementChild as HTMLElement;
 
+  const left = Math.min(event.clientX + 10, window.innerWidth - 330);
+  const top = Math.min(event.clientY + 10, window.innerHeight - 310);
+
   modal.style.position = "absolute";
-  modal.style.left = `${event.clientX + 10}px`;
-  modal.style.top = `${event.clientY + 10}px`;
+  modal.style.position = "fixed";
+  modal.style.left = `${left}px`;
+  modal.style.top = `${top}px`;
 
   modal.querySelectorAll(".icon-item").forEach((iconEl) => {
     iconEl.addEventListener("click", () => {
@@ -37,13 +52,15 @@ export async function chooseIconModal(
       document.dispatchEvent(
         new CustomEvent("iconSelected", {
           detail: {
-            iconId: selectedIconId,
+            iconId: Number(selectedIconId),
             name: selectedIconName,
             url: selectedIconUrl,
             targetNoteId: targetNoteId,
           },
         })
       );
+
+      modal.remove();
     });
   });
 

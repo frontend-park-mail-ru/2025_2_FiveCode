@@ -1,109 +1,75 @@
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `app-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `app-dynamic-${CACHE_VERSION}`;
-const API_CACHE = `app-api-${CACHE_VERSION}`;
 
 const STATIC_FILES = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
-  console.log("[SW] Installing...");
+  self.skipWaiting();
   event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
-      .then((cache) => {
-        return Promise.allSettled(STATIC_FILES.map((file) => cache.add(file)));
-      })
-      .then(() => self.skipWaiting())
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.addAll(STATIC_FILES);
+    })
   );
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("[SW] Activating...");
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => {
-        return Promise.all(
-          keys.map((key) => {
-            if (![STATIC_CACHE, DYNAMIC_CACHE, API_CACHE].includes(key)) {
-              console.log("[SW] Deleting old cache:", key);
-              return caches.delete(key);
-            }
-          })
-        );
-      })
-      .then(() => self.clients.claim())
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
   );
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
+  const request = event.request;
   const url = new URL(request.url);
 
-  if (request.method !== "GET") return;
+  if (url.pathname.startsWith("/api/") || request.method !== "GET") {
+    return;
+  }
 
-  if (url.pathname.startsWith("/api/")) {
-    event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse.ok) {
-            const cacheCopy = networkResponse.clone();
-            caches
-              .open(API_CACHE)
-              .then((cache) => cache.put(request, cacheCopy));
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(request))
-    );
+  if (url.pathname.includes("hot-update")) {
     return;
   }
 
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches
-              .open(DYNAMIC_CACHE)
-              .then((cache) => cache.put(request, clone));
-          }
-          return response;
+        .then((networkResponse) => {
+          return caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, networkResponse.clone());
+            return networkResponse;
+          });
         })
-        .catch(() => caches.match("/index.html"))
-    );
-    return;
-  }
-
-  if (["style", "script", "image", "font"].includes(request.destination)) {
-    event.respondWith(
-      caches.open(DYNAMIC_CACHE).then((cache) =>
-        cache.match(request).then((cached) => {
-          if (cached) return cached;
-
-          return fetch(request)
-            .then((response) => {
-              if (response.ok) {
-                cache.put(request, response.clone());
-              }
-              return response;
-            })
-            .catch(() => {
-              if (request.destination === "image") {
-                return new Response("", { status: 204 });
-              }
-              return new Response("", { status: 503 });
-            });
+        .catch(() => {
+          return caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            return caches.match("/index.html");
+          });
         })
-      )
     );
     return;
   }
 
   event.respondWith(
-    fetch(request).catch(
-      () => caches.match(request) || new Response("", { status: 503 })
-    )
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(request).then((networkResponse) => {
+        return caches.open(DYNAMIC_CACHE).then((cache) => {
+          cache.put(request, networkResponse.clone());
+          return networkResponse;
+        });
+      });
+    })
   );
 });

@@ -99,7 +99,6 @@ export interface ActivateAccessResponse {
   };
 }
 
-
 export const apiClient = {
   async login(creds: User): Promise<AuthResponse> {
     const response = await login(creds);
@@ -224,9 +223,7 @@ export const apiClient = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const url = `${API_BASE}/files/upload`;
-
-    return apiFetch(url, {
+    return apiFetch("/files/upload", {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -348,14 +345,11 @@ export const apiClient = {
   },
 
   async getIcons(): Promise<Array<{ id: number; url: string }>> {
-    return apiFetch(`/api/icons`, { method: "GET" });
+    return apiFetch(`/icons`, { method: "GET" });
   },
 
-  async updateNoteIcon(
-    noteId: string | number,
-    iconId: number,
-  ): Promise<void> {
-    return apiFetch(`/api/notes/${noteId}/icons`, {
+  async updateNoteIcon(noteId: string | number, iconId: number): Promise<void> {
+    return apiFetch(`/notes/${noteId}/icons`, {
       method: "PUT",
       body: JSON.stringify({ icon_file_id: Number(iconId) }),
     });
@@ -377,9 +371,9 @@ export const apiClient = {
   },
 
   async searchNotes(query: string): Promise<any> {
-    return apiFetch(`/api/notes/search`, {
+    return apiFetch(`/notes/search`, {
       method: "POST",
       body: JSON.stringify({ query }),
     });
-  }
+  },
 };
