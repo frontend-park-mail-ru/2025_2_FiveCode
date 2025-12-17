@@ -31,11 +31,13 @@ function validateForm(form: HTMLFormElement): ValidationErrors {
     ""
   ).trim();
 
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9]{2,}$/;
+
   if (!email) {
     errors.email = "Обязательное поле";
   } else if (email.length < 3) {
     errors.email = "Email должен быть не короче 3 символов";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  } else if (!emailRegex.test(email)) {
     errors.email = "Некорректный формат email";
   }
 
@@ -173,8 +175,42 @@ export function renderRegister(app: HTMLElement): void {
       await apiClient.login(data);
       await renderAppLayout(app);
       router.navigate("notes");
-    } catch (err) {
-      handleError(err, "Ошибка регистрации");
+    } catch (err: any) {
+      let handled = false;
+
+      if (err.body && Array.isArray(err.body.errors)) {
+        err.body.errors.forEach((fieldErr: any) => {
+          if (fieldErr.field === "email") {
+            emailErrorEl.textContent = "Некорректный Email";
+            emailErrorEl.classList.add("error-message--visible");
+            handled = true;
+          }
+          if (fieldErr.field === "password") {
+            passwordErrorEl.textContent = "Пароль слишком простой";
+            passwordErrorEl.classList.add("error-message--visible");
+            handled = true;
+          }
+        });
+      }
+
+      if (!handled && err.body && err.body.error) {
+        const errorMsg = err.body.error.toLowerCase();
+
+        if (errorMsg.includes("exists") || errorMsg.includes("существует")) {
+          emailErrorEl.textContent =
+            "Пользователь с таким Email уже существует";
+          emailErrorEl.classList.add("error-message--visible");
+          handled = true;
+        } else if (errorMsg.includes("password")) {
+          passwordErrorEl.textContent = "Ошибка в пароле";
+          passwordErrorEl.classList.add("error-message--visible");
+          handled = true;
+        }
+      }
+
+      if (!handled) {
+        handleError(err, "Ошибка регистрации");
+      }
     }
   });
 
