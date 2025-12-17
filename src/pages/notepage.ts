@@ -342,18 +342,21 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     });
   };
 
-  const sharingSettings = await apiClient.getSharingSettings(noteId as number);
+  const checkAndInitWebsocket = async () => {
+    try {
+      const settings = await apiClient.getSharingSettings(Number(noteId));
+      if (settings.collaborators.length > 1) {
+        initWebsocket();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-  if (
-    isOwner ||
-    sharingSettings.collaborators.length > 1 ||
-    sharingSettings.public_access.access_level
-  ) {
-    initWebsocket();
-  }
+  checkAndInitWebsocket();
 
   activeSharingListener = () => {
-    initWebsocket();
+    checkAndInitWebsocket();
   };
   document.addEventListener("sharingSettingsUpdated", activeSharingListener);
 
