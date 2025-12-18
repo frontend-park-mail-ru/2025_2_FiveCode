@@ -187,8 +187,12 @@ function renderCodeBlock(
 
     const applyHighlighting = () => {
       const currentPos = getCaretPosition(contentElement);
-      const rawCode = contentElement.innerText;
-      const newHtml = highlightCode(rawCode, languageSelect.value);
+      const rawCode = contentElement.innerText.replace(/\u200B/g, "");
+      let newHtml = highlightCode(rawCode, languageSelect.value);
+
+      if (rawCode.endsWith("\n")) {
+        newHtml += "\u200B";
+      }
 
       if (contentElement.innerHTML !== newHtml) {
         contentElement.innerHTML = newHtml;
@@ -198,7 +202,7 @@ function renderCodeBlock(
 
     const debouncedSave = debounce(() => {
       updateCallback(block.id, {
-        code: contentElement.innerText,
+        code: contentElement.innerText.replace(/\u200B/g, ""),
         language: languageSelect.value,
       });
     }, 500);
@@ -259,7 +263,7 @@ function renderCodeBlock(
 
     languageSelect.addEventListener("change", () => {
       updateCallback(block.id, {
-        code: contentElement.innerText,
+        code: contentElement.innerText.replace(/\u200B/g, ""),
         language: languageSelect.value,
       });
       applyHighlighting();
