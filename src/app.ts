@@ -39,7 +39,17 @@ const ICONS = {
   Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
 };
 
+let isInitialLoad = true;
+
 async function initializeApp(): Promise<void> {
+
+  if (!navigator.onLine && !isInitialLoad) {
+    console.log('Offline, skipping auth check');
+    return;
+  }
+  
+  isInitialLoad = false;
+
   initializeTheme();
 
   const app = document.getElementById("app");
@@ -59,6 +69,7 @@ async function initializeApp(): Promise<void> {
   const isAuthPage = path === "/login" || path === "/register";
   const techsupportPath = path === "/techsupport";
   let user: User | null = null;
+  
   try {
     user = await apiClient.me();
     if (user) {
@@ -88,7 +99,7 @@ async function initializeApp(): Promise<void> {
 
 window.addEventListener("DOMContentLoaded", () => {
   if ("serviceWorker" in navigator) {
-    if (process.env.NODE_ENV === "production") {
+    // if (process.env.NODE_ENV === "production") {
       navigator.serviceWorker
         .register("/sw.js")
         .then(() => {
@@ -97,13 +108,13 @@ window.addEventListener("DOMContentLoaded", () => {
         .catch((err) => {
           console.log("ServiceWorker registration failed: ", err);
         });
-    } else {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (const registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
+    // } else {
+    //   navigator.serviceWorker.getRegistrations().then((registrations) => {
+    //     for (const registration of registrations) {
+    //       registration.unregister();
+    //     }
+    //   });
+    // }
   }
 
   initializeApp();
