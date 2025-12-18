@@ -345,7 +345,10 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const checkAndInitWebsocket = async () => {
     try {
       const settings = await apiClient.getSharingSettings(Number(noteId));
-      if (settings.collaborators.length > 1) {
+      if (
+        settings.collaborators.length > 1 ||
+        (settings.public_access && settings.public_access.access_level)
+      ) {
         initWebsocket();
       }
     } catch (e) {
@@ -369,19 +372,22 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       const deleteModal = createDeleteNoteModal();
       document.body.appendChild(deleteModal);
 
-      deleteModal
-        .querySelector(".delete-note-confirm")
-        ?.addEventListener("click", async () => {
-          try {
-            await apiClient.deleteNote(noteId as number);
-            document.dispatchEvent(new CustomEvent("notesUpdated"));
-            showNotification("Заметка удалена", "success");
-            router.navigate("notes");
-          } catch (err) {
-            handleError(err, "Не удалось удалить заметку");
-          }
-          deleteModal.remove();
-        });
+      const confirmBtn = deleteModal.querySelector(
+        ".delete-note-confirm"
+      ) as HTMLButtonElement;
+
+      confirmBtn?.addEventListener("click", async () => {
+        confirmBtn.disabled = true;
+        try {
+          await apiClient.deleteNote(noteId as number);
+          document.dispatchEvent(new CustomEvent("notesUpdated"));
+          showNotification("Заметка удалена", "success");
+          router.navigate("notes");
+        } catch (err) {
+          handleError(err, "Не удалось удалить заметку");
+        }
+        deleteModal.remove();
+      });
       noteMenu.style.display = "none";
     });
   }

@@ -16,7 +16,6 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
                     <select id="generalAccessSelect" class="collab-input" style="margin-bottom:10px;">
                         <option value="private">Доступ ограничен</option>
                         <option value="viewer">Все, у кого есть ссылка (Читатель)</option>
-                        <option value="commenter" style="display:none">Все, у кого есть ссылка (Комментатор)</option>
                         <option value="editor">Все, у кого есть ссылка (Редактор)</option>
                     </select>
                     
@@ -45,7 +44,6 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
                         <select id="collabRoleSelect" class="collab-input" style="width: 120px; margin-bottom:0;">
                             <option value="editor">Редактор</option>
                             <option value="viewer">Читатель</option>
-                            <option value="commenter" style="display:none">Комментатор</option>
                         </select>
                         <button class="collab-invite-btn" id="inviteEditorBtn">
                             +
@@ -113,14 +111,12 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
           <select class="collab-role-change" data-permission-id="${c.permission_id}" style="padding: 3px;">
             <option value="editor" ${c.role === "editor" ? "selected" : ""}>Редактор</option>
             <option value="viewer" ${c.role === "viewer" ? "selected" : ""}>Читатель</option>
-            <option value="commenter" ${c.role === "commenter" ? "selected" : ""}>Комментатор</option>
           </select>
         `;
       } else {
         const roleMap: Record<string, string> = {
           editor: "Редактор",
           viewer: "Читатель",
-          commenter: "Комментатор",
         };
         roleDisplay = `<span style="font-size:12px; color:gray;">${roleMap[c.role] || c.role}</span>`;
       }
@@ -145,7 +141,6 @@ export function createCollaboratorsModal(noteId: number): HTMLElement {
             ?.addEventListener("click", async () => {
               try {
                 await apiClient.removeCollaborator(noteId, c.permission_id);
-                deleteModal.remove();
                 showNotification("Участник удален", "success");
                 loadCollaborators();
               } catch (e) {

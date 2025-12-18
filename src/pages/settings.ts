@@ -168,19 +168,23 @@ export async function renderSettingsPage(): Promise<void> {
     const deleteModal = createDeleteAccountModal();
     document.body.appendChild(deleteModal);
 
-    deleteModal
-      .querySelector(".delete-account-confirm")
-      ?.addEventListener("click", async () => {
-        try {
-          await apiClient.deleteUser();
-          await apiClient.logout();
-          deleteModal.remove();
-          router.navigate("login");
-          showNotification("Аккаунт удален", "success");
-        } catch (error) {
-          handleError(error, "Не удалось удалить аккаунт");
-        }
-      });
+    const confirmBtn = deleteModal.querySelector(
+      ".delete-account-confirm"
+    ) as HTMLButtonElement;
+
+    confirmBtn?.addEventListener("click", async () => {
+      confirmBtn.disabled = true;
+      try {
+        await apiClient.deleteUser();
+        await apiClient.logout();
+        deleteModal.remove();
+        router.navigate("login");
+        showNotification("Аккаунт удален", "success");
+      } catch (error) {
+        handleError(error, "Не удалось удалить аккаунт");
+        deleteModal.remove();
+      }
+    });
   });
 
   closeButton?.addEventListener("click", () => {

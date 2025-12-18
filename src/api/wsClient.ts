@@ -40,7 +40,6 @@ export class WsClient {
   }
 
   public connect(onMessage: (msg: ServerMessage) => void) {
-    showNotification("Подключение к совместному доступу...", "info");
     try {
       this.socket = new WebSocket(this.url);
     } catch (e) {
@@ -67,13 +66,8 @@ export class WsClient {
     };
 
     this.socket.onclose = (event) => {
-      showNotification("Соединение совместного доступа закрыто", "info");
       if (this.shouldReconnect) {
         setTimeout(() => {
-          showNotification(
-            "Повторное подключение к совместному доступу...",
-            "info"
-          );
           this.connect(onMessage);
         }, this.reconnectInterval);
       }
@@ -87,7 +81,6 @@ export class WsClient {
   }
 
   public close() {
-    showNotification("Отключение совместного доступа...", "info");
     this.shouldReconnect = false;
     this.socket?.close();
     this.socket = null;
