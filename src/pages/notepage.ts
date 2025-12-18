@@ -9,6 +9,7 @@ import { handleError } from "../utils/errorHandler";
 import { showNotification } from "../components/notification";
 import { loadUser } from "../utils/session";
 import { chooseIconModal } from "../components/chooseIconModal";
+import { createNoteHeaderModal } from "../components/noteHeaderModal";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -113,81 +114,113 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   mainEl.className = "note-editor__main";
 
-  const headerColor = localStorage.getItem("note-header-color") || "#45B7D1";
+  let headerSettings: any = null;
+  try {
+    const headerData = localStorage.getItem(`note-header-${noteId}`);
+    if (headerData) {
+      headerSettings = JSON.parse(headerData);
+    }
+  } catch (e) {
+    console.log("Could not parse header settings from localStorage");
+  }
+
+  // Try to get header settings from server
+  try {
+    const serverHeaderSettings = await apiClient.getNoteHeader(noteId as number);
+    if (serverHeaderSettings) {
+      headerSettings = serverHeaderSettings;
+      localStorage.setItem(`note-header-${noteId}`, JSON.stringify(serverHeaderSettings));
+    }
+  } catch (e) {
+    console.log("Could not fetch header settings from server");
+  }
+
+  const headerColor = headerSettings?.header_color || "#45B7D1";
+  const headerImageUrl = headerSettings?.header_image_url || null;
   const starIconUrl = isFavorite ? ICONS.filled_star : ICONS.star;
 
   mainEl.innerHTML = `
-    <div class="note-editor__header" style="background-color: ${headerColor}; transition: background-color 0.3s ease;">
+    <div class="note-editor__header-wrapper">
+      <div class="note-editor__header" style="${
+        headerImageUrl
+          ? `background-image: url('${headerImageUrl}');`
+          : `background-color: ${headerColor};`
+      } transition: background-color 0.3s ease, background-image 0.3s ease;">
+        <div class="note-editor__header-content">
+          ${!isReadOnly ? `<button class="note-editor__header-customize-btn" id="customize-header-btn">Оформление</button>` : ""}
+          <div class="note-editor__header-controls">
+            <span id="save-status"></span>
+            <button class="note-editor__header-btn ${isFavorite ? "active" : ""}" id="favorite-note-btn">
+              <img src="${starIconUrl}" alt="Favorite" id="favorite-star-img">
+            </button>        
+            <button class="note-editor__header-btn" id="dots-note-btn"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="20" r="2.5" fill="#FFFFFF"/>
+              <circle cx="20" cy="20" r="2.5" fill="#FFFFFF"/>
+              <circle cx="28" cy="20" r="2.5" fill="#FFFFFF"/>
+              </svg>
+            </button>
+            <div class="note-menu" id="note-menu">
+              ${!isSubNote ? `<button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>` : ""}
+              <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
+              ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="color:#d32f2f;"><img src="${ICONS.trash}" alt="Delete"> Удалить заметку</button>` : ""}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <span id="save-status"></span>
-      <div style="position: relative;">          
-      <button class="note-editor__header-btn ${isFavorite ? "active" : ""}" style="transform: translateY(0px);" id="favorite-note-btn">
-        <img src="${starIconUrl}" alt="Favorite" id="favorite-star-img">
-      </button>        
-      <button class="note-editor__header-btn" id="dots-note-btn"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="20" r="2.5" fill="#495057"/>
-        <circle cx="20" cy="20" r="2.5" fill="#495057"/>
-        <circle cx="28" cy="20" r="2.5" fill="#495057"/>
-        </svg>
-        </button>
-        <div class="note-menu" id="note-menu" >
-          ${!isSubNote ? `<button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>` : ""}
-          <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
-        ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="color:#d32f2f;"><img src="${ICONS.trash}" alt="Delete"> Удалить заметку</button>` : ""}
-          
+    <div class="note-editor__content">
+      ${
+        !isReadOnly
+          ? `
+      <div class="formatting-toolbar">
+        <div class="format-dropdown" id="font-dropdown">
+          <button class="dropdown-toggle">
+            <span id="current-font-name">Inter</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" data-value="Inter" style="font-family: Inter;">Inter</div>
+            <div class="dropdown-item" data-value="Roboto" style="font-family: Roboto;">Roboto</div>
+            <div class="dropdown-item" data-value="Montserrat" style="font-family: Montserrat;">Montserrat</div>
+            <div class="dropdown-item" data-value="Manrope" style="font-family: Manrope;">Manrope</div>
+          </div>
         </div>
-      </div>
-    </div>
-    ${
-      !isReadOnly
-        ? `
-    <div class="formatting-toolbar">
-      <div class="format-dropdown" id="font-dropdown">
-        <button class="dropdown-toggle">
-          <span id="current-font-name">Inter</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div class="dropdown-menu">
-          <div class="dropdown-item" data-value="Inter" style="font-family: Inter;">Inter</div>
-          <div class="dropdown-item" data-value="Roboto" style="font-family: Roboto;">Roboto</div>
-          <div class="dropdown-item" data-value="Montserrat" style="font-family: Montserrat;">Montserrat</div>
-          <div class="dropdown-item" data-value="Manrope" style="font-family: Manrope;">Manrope</div>
+        <div class="format-dropdown" id="size-dropdown">
+          <button class="dropdown-toggle">
+            <span id="current-font-size">12</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" data-value="10">10</div>
+            <div class="dropdown-item" data-value="12">12</div>
+            <div class="dropdown-item" data-value="14">14</div>
+            <div class="dropdown-item" data-value="16">16</div>
+            <div class="dropdown-item" data-value="18">18</div>
+            <div class="dropdown-item" data-value="24">24</div>
+            <div class="dropdown-item" data-value="36">36</div>
+          </div>
         </div>
+        <button class="format-btn" data-command="bold" title="Жирный (Ctrl/Cmd+B)">B</button>
+        <button class="format-btn" data-command="italic" title="Курсив (Ctrl/Cmd+I)"><i>I</i></button>
+        <button class="format-btn" data-command="underline" title="Подчёркнутый (Ctrl/Cmd+U)"><u>U</u></button>
+        <button class="format-btn" data-command="strikeThrough" title="Зачёркнуть"><s>S</s></button>
+        <button class="format-btn" data-command="removeFormat" title="Очистить форматирование" aria-label="Очистить форматирование"><img src="${ICONS.clear}" alt="Clear"/></button>
       </div>
-       <div class="format-dropdown" id="size-dropdown">
-        <button class="dropdown-toggle">
-          <span id="current-font-size">12</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div class="dropdown-menu">
-          <div class="dropdown-item" data-value="10">10</div>
-          <div class="dropdown-item" data-value="12">12</div>
-          <div class="dropdown-item" data-value="14">14</div>
-          <div class="dropdown-item" data-value="16">16</div>
-          <div class="dropdown-item" data-value="18">18</div>
-          <div class="dropdown-item" data-value="24">24</div>
-          <div class="dropdown-item" data-value="36">36</div>
-        </div>
+      <div class="add-block-menu">
+        <div class="menu-item" data-type="text">Текст</div>
+        <div class="menu-item" data-type="code">Код</div>
+        <div class="menu-item" data-type="image">Изображение</div>
       </div>
-    <button class="format-btn" data-command="bold" title="Жирный (Ctrl/Cmd+B)">B</button>
-    <button class="format-btn" data-command="italic" title="Курсив (Ctrl/Cmd+I)"><i>I</i></button>
-    <button class="format-btn" data-command="underline" title="Подчёркнутый (Ctrl/Cmd+U)"><u>U</u></button>
-    <button class="format-btn" data-command="strikeThrough" title="Зачёркнуть"><s>S</s></button>
-    <button class="format-btn" data-command="removeFormat" title="Очистить форматирование" aria-label="Очистить форматирование"><img src="${ICONS.clear}" alt="Clear"/></button>
+      `
+          : ""
+      }
+      <div class="note-editor__title-handler">
+        <img id="note-header-icon" src="${icon.url}" style="display: flex; align-items: center; width:40px; cursor: pointer;">
+        <input class="note-editor__title" placeholder="Загрузка..." value="" />
+      </div>
+      <div class="block-editor">Загрузка блоков...</div>
     </div>
-    <div class="add-block-menu">
-      <div class="menu-item" data-type="text">Текст</div>
-      <div class="menu-item" data-type="code">Код</div>
-      <div class="menu-item" data-type="image">Изображение</div>
-    </div>
-    `
-        : ""
-    }
-    <div class="note-editor__title-handler" >
-      <img id="note-header-icon" src="${icon.url}" style="display: flex; align-items: center; width:40px; cursor: pointer;">
-      <input class="note-editor__title" placeholder="Загрузка..." value="" />
-    </div>
-    <div class="block-editor">Загрузка блоков...</div>
   `;
 
   const titleInput = mainEl.querySelector<HTMLInputElement>(
@@ -212,11 +245,25 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const exportToPDF = mainEl.querySelector("#exportToPDF") as HTMLButtonElement;
   const dotsBtn = mainEl.querySelector("#dots-note-btn") as HTMLButtonElement;
   const noteMenu = mainEl.querySelector("#note-menu") as HTMLElement;
+  const customizeHeaderBtn = mainEl.querySelector(
+    "#customize-header-btn"
+  ) as HTMLButtonElement;
+  const headerElement = mainEl.querySelector(
+    ".note-editor__header"
+  ) as HTMLElement;
   noteMenu.style.display = "none";
 
   const headerIconImg = mainEl.querySelector(
     "#note-header-icon"
   ) as HTMLImageElement;
+
+  // Customize header button handler
+  if (customizeHeaderBtn) {
+    customizeHeaderBtn.addEventListener("click", async () => {
+      const modal = await createNoteHeaderModal(Number(noteId), headerSettings);
+      document.body.appendChild(modal);
+    });
+  }
 
   headerIconImg?.addEventListener("click", async (e) => {
     const modal = await chooseIconModal(e, Number(noteId), icon.id);
@@ -359,6 +406,26 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     checkAndInitWebsocket();
   };
   document.addEventListener("sharingSettingsUpdated", activeSharingListener);
+
+  const handleHeaderUpdated = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const { header_type, header_color, header_image_file_id, header_image_url } =
+      customEvent.detail;
+
+    if (header_type === "color") {
+      headerElement.style.backgroundImage = "none";
+      headerElement.style.backgroundColor = header_color;
+    } else if (header_type === "image" && header_image_url) {
+      headerElement.style.backgroundColor = "transparent";
+      headerElement.style.backgroundImage = `url('${header_image_url}')`;
+      headerElement.style.backgroundSize = "cover";
+      headerElement.style.backgroundPosition = "center";
+    }
+
+    document.dispatchEvent(new CustomEvent("notesUpdated"));
+  };
+
+  document.addEventListener("headerUpdated", handleHeaderUpdated);
 
   if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);

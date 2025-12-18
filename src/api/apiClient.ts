@@ -376,4 +376,27 @@ export const apiClient = {
       body: JSON.stringify({ query }),
     });
   },
+
+  async updateNoteHeader(
+    noteId: string | number,
+    data: {
+      header_type: "color" | "image";
+      header_color?: string;
+      header_image_file_id?: number;
+      header_image_url?: string | null;
+    }
+  ): Promise<any> {
+    if (!noteId) 
+      throw new Error("noteId required");
+    return apiFetch(`/notes/${noteId}/headers`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getNoteHeader(noteId: string | number): Promise<any> {
+    if (!noteId) 
+      throw new Error("noteId required");
+    return apiFetch(`/notes/${noteId}/headers`, { method: "GET" });
+  },
 };

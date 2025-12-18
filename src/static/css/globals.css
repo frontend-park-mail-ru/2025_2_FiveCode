@@ -166,7 +166,7 @@ a {
 
 .page--layout {
   display: grid;
-  grid-template-columns: 292px 1fr;
+  grid-template-columns: 273px 1fr;
   height: 100vh;
   overflow: hidden;
 }
