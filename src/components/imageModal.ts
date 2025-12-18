@@ -2,6 +2,23 @@ import { apiClient, UploadedFile } from "../api/apiClient";
 import { handleError } from "../utils/errorHandler";
 import { showNotification } from "./notification";
 
+const ALLOWED_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "image/bmp",
+];
+const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"];
+
+function isValidFile(file: File): boolean {
+  if (ALLOWED_MIME_TYPES.includes(file.type)) {
+    return true;
+  }
+  const fileName = file.name.toLowerCase();
+  return ALLOWED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
+}
+
 export function createImageModal(): Promise<UploadedFile | null> {
   return new Promise((resolve) => {
     const modalOverlay = document.createElement("div");
@@ -16,8 +33,8 @@ export function createImageModal(): Promise<UploadedFile | null> {
           <div class="modal-tab-panel active" data-panel="upload">
             <div class="input-group drop-zone" id="imageDropZone">
               <label for="imageUpload">Выберите файл или перетащите сюда / вставьте из буфера</label>
-              <input type="file" id="imageUpload" />
-              <div class="drop-hint">Перетащите файл сюда или нажмите Ctrl+V, чтобы вставить</div>
+              <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/gif, image/webp, image/bmp" />
+              <div class="drop-hint">Поддерживаются: JPG, PNG, GIF, WEBP, BMP.</div>
               </div>
           </div>
         </div>
@@ -49,43 +66,17 @@ export function createImageModal(): Promise<UploadedFile | null> {
       resolve(value);
     };
 
-    confirmBtn.addEventListener("click", async () => {
-      const file = fileInput.files?.[0];
-      if (!file) return;
-      if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
-        showNotification("Недопустимый формат файла", "error");
-        return;
-      }
-      if (file) {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = "Загрузка...";
-        try {
-          const response = await apiClient.uploadFile(file);
-          close(response);
-        } catch (error) {
-          handleError(error, "Не удалось загрузить файл");
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = "Вставить";
-        }
-      }
-    });
-
-    cancelBtn.addEventListener("click", () => close(null));
-
-    modalOverlay.addEventListener("click", (e) => {
-      if (e.target === modalOverlay) close(null);
-    });
-
-    content.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-
     const handleFileAndClose = async (file: File | null) => {
       if (!file) return;
-      if (!["image/png", "image/jpeg", "image/gif"].includes(file.type)) {
-        showNotification("Недопустимый формат файла", "error");
+
+      if (!isValidFile(file)) {
+        showNotification(
+          "Недопустимый формат файла. Разрешены только изображения (JPG, PNG, GIF, WEBP, BMP).",
+          "error"
+        );
         return;
       }
+
       confirmBtn.disabled = true;
       confirmBtn.textContent = "Загрузка...";
       try {
@@ -97,6 +88,21 @@ export function createImageModal(): Promise<UploadedFile | null> {
         confirmBtn.textContent = "Вставить";
       }
     };
+
+    confirmBtn.addEventListener("click", () => {
+      const file = fileInput.files?.[0] ?? null;
+      handleFileAndClose(file);
+    });
+
+    cancelBtn.addEventListener("click", () => close(null));
+
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) close(null);
+    });
+
+    content.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
 
     fileInput.addEventListener("change", () => {
       const file = fileInput.files?.[0] ?? null;

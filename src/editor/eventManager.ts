@@ -156,7 +156,7 @@ export function setupEventManager({
               const range = document.createRange();
               const sel = window.getSelection();
               range.selectNodeContents(prevEditable);
-              range.collapse(false); // В конец
+              range.collapse(false);
               sel?.removeAllRanges();
               sel?.addRange(range);
             }
@@ -189,16 +189,19 @@ export function setupEventManager({
           const deleteModal = createDeleteBlock();
           document.body.appendChild(deleteModal);
 
-          deleteModal
-            .querySelector(".delete-note-confirm")
-            ?.addEventListener("click", async () => {
-              try {
-                deleteBlock(id);
-              } catch (err) {
-                console.error("Failed to delete note:", err);
-              }
-              deleteModal.remove();
-            });
+          const confirmBtn = deleteModal.querySelector(
+            ".delete-note-confirm"
+          ) as HTMLButtonElement;
+
+          confirmBtn?.addEventListener("click", async () => {
+            confirmBtn.disabled = true;
+            try {
+              if (deleteBlock) await deleteBlock(id);
+            } catch (err) {
+              console.error("Failed to delete note:", err);
+            }
+            deleteModal.remove();
+          });
         }
         if (action === "move-up" && typeof moveBlock === "function") {
           moveBlock(id, "up");

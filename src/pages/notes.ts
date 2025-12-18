@@ -52,16 +52,6 @@ export async function renderNotes(): Promise<void> {
       const section = sectionEl.firstElementChild as HTMLElement;
       const list = section.querySelector(".notes-content") as HTMLElement;
 
-      filteredNotes.forEach((note: any) => {
-        const noteCard = NoteCard(note);
-        const link = document.createElement("a");
-        link.href = `/note/${note.id}`;
-        link.setAttribute("data-link", "");
-        link.className = "note-card-link";
-        link.appendChild(noteCard);
-        list.appendChild(link);
-      });
-
       if (key === "recent") {
         const addCard = NoteCard({
           id: 0,
@@ -70,6 +60,8 @@ export async function renderNotes(): Promise<void> {
           icon: { url: ICONS.add_new },
           favorite: false,
         });
+
+        addCard.classList.add("note-card--create");
 
         addCard.addEventListener("click", async (e) => {
           e.preventDefault();
@@ -89,6 +81,16 @@ export async function renderNotes(): Promise<void> {
         addLink.appendChild(addCard);
         list.appendChild(addLink);
       }
+
+      filteredNotes.forEach((note: any) => {
+        const noteCard = NoteCard(note);
+        const link = document.createElement("a");
+        link.href = `/note/${note.id}`;
+        link.setAttribute("data-link", "");
+        link.className = "note-card-link";
+        link.appendChild(noteCard);
+        list.appendChild(link);
+      });
 
       main.appendChild(section);
     });

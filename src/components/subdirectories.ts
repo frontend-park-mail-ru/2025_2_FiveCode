@@ -92,7 +92,6 @@ export function Subdirectories({
         <% } %>
 
         <a href="/note/<%= id %>" class="tree-link" data-link style="display:contents; color:inherit;">
-            <!-- Добавил data-current-icon-id -->
             <img src="<%= iconUrl %>" class="tree-icon" data-action="icon" data-current-icon-id="<%= iconId %>" />
             <span class="tree-title"><%= title %></span>
         </a>
@@ -130,13 +129,13 @@ export function Subdirectories({
 
         const isRoot = depth === 0;
 
-        const showChildren = !isFavoriteSection && isRoot;
+        const showChildren = isRoot;
 
         const childrenHtml = showChildren
           ? renderNoteTree(subNotes, false, depth + 1)
           : "";
-        const canCreateSub =
-          !isFavoriteSection && isRoot && note.owner_id === currentUserId;
+
+        const canCreateSub = isRoot && note.owner_id === currentUserId;
         const hasChildren = subNotes.length > 0;
 
         let isExpanded = false;
@@ -173,7 +172,7 @@ export function Subdirectories({
         <ul class="folder-list">
             ${renderNoteTree(notes, isFav, 0)}
         </ul>
-        ${folderName === "Заметки" ? `<div class="add-note-button">+ Добавить страницу</div>` : ""}
+        ${folderName === "Заметки" ? `<div class="add-note-button">+ Создать заметку</div>` : ""}
     `;
 
     root.appendChild(folderContainer);
@@ -277,22 +276,26 @@ export function Subdirectories({
       menu.querySelector(".delete-note")?.addEventListener("click", () => {
         const deleteModal = createDeleteNoteModal();
         document.body.appendChild(deleteModal);
-        deleteModal
-          .querySelector(".delete-note-confirm")
-          ?.addEventListener("click", async () => {
-            try {
-              await apiClient.deleteNote(noteId);
-              if (window.location.pathname === `/note/${noteId}`) {
-                router.navigate("/notes");
-              }
-              document.dispatchEvent(new CustomEvent("notesUpdated"));
-              showNotification("Заметка удалена", "success");
-            } catch (err) {
-              handleError(err, "Ошибка удаления");
+        menu.remove();
+
+        const confirmBtn = deleteModal.querySelector(
+          ".delete-note-confirm"
+        ) as HTMLButtonElement;
+
+        confirmBtn?.addEventListener("click", async () => {
+          confirmBtn.disabled = true;
+          try {
+            await apiClient.deleteNote(noteId);
+            if (window.location.pathname === `/note/${noteId}`) {
+              router.navigate("/notes");
             }
-            deleteModal.remove();
-            menu.remove();
-          });
+            document.dispatchEvent(new CustomEvent("notesUpdated"));
+            showNotification("Заметка удалена", "success");
+          } catch (err) {
+            handleError(err, "Ошибка удаления");
+          }
+          deleteModal.remove();
+        });
       });
 
       const closeMenu = (ev: Event) => {

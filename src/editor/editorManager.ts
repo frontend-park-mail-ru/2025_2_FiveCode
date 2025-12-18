@@ -11,6 +11,7 @@ import { createImageModal } from "../components/imageModal";
 import { debounce } from "../utils/debounce";
 import { setupEventManager } from "./eventManager";
 import { handleError } from "../utils/errorHandler";
+import { getCaretPosition, setCaretPosition } from "../utils/caret";
 
 interface EditorManagerConfig {
   container: HTMLElement;
@@ -190,10 +191,24 @@ export function createEditorManager({
 
   const syncBlocks = (newBlocks: Block[]) => {
     blocks = newBlocks;
+
     const activeElement = document.activeElement as HTMLElement;
     const activeBlockId = activeElement
       ?.closest(".block-container")
       ?.getAttribute("data-block-id");
+
+    let savedCaretPosition: number | null = null;
+    let savedFocusedBlockId: string | null = null;
+
+    if (activeBlockId && activeElement) {
+      const editable = activeElement.closest(
+        '[contenteditable="true"]'
+      ) as HTMLElement;
+      if (editable) {
+        savedCaretPosition = getCaretPosition(editable);
+        savedFocusedBlockId = activeBlockId;
+      }
+    }
 
     const newBlockMap = new Map(newBlocks.map((b) => [String(b.id), b]));
     const currentDomBlocks = Array.from(container.children) as HTMLElement[];
@@ -207,27 +222,23 @@ export function createEditorManager({
 
     let previousElement: HTMLElement | null = null;
 
-    const processExistingDomElement = (
-      domElement: HTMLElement,
-      block: Block,
-      isFocused: boolean
+    const processDomElement = (
+      existingElement: HTMLElement | null,
+      block: Block
     ) => {
       const newBlockElement = renderBlock(block, updateBlockContent, readOnly);
-      domElement.replaceWith(newBlockElement);
-      return newBlockElement;
-    };
 
-    const createAndInsertNewDomElement = (
-      block: Block,
-      previousElement: HTMLElement | null
-    ) => {
-      const domElement = renderBlock(block, updateBlockContent, readOnly);
-      if (previousElement) {
-        previousElement.after(domElement);
+      if (existingElement) {
+        existingElement.replaceWith(newBlockElement);
+        return newBlockElement;
       } else {
-        container.prepend(domElement);
+        if (previousElement) {
+          previousElement.after(newBlockElement);
+        } else {
+          container.prepend(newBlockElement);
+        }
+        return newBlockElement;
       }
-      return domElement;
     };
 
     newBlocks.forEach((block) => {
@@ -236,13 +247,7 @@ export function createEditorManager({
         `.block-container[data-block-id="${blockIdStr}"]`
       ) as HTMLElement;
 
-      const isFocused = activeBlockId === blockIdStr;
-
-      if (domElement) {
-        domElement = processExistingDomElement(domElement, block, isFocused);
-      } else {
-        domElement = createAndInsertNewDomElement(block, previousElement);
-      }
+      domElement = processDomElement(domElement, block);
 
       if (previousElement) {
         if (previousElement.nextElementSibling !== domElement) {
@@ -256,6 +261,21 @@ export function createEditorManager({
 
       previousElement = domElement;
     });
+
+    if (savedFocusedBlockId && savedCaretPosition !== null) {
+      const newContainer = container.querySelector(
+        `.block-container[data-block-id="${savedFocusedBlockId}"]`
+      );
+      if (newContainer) {
+        const editable = newContainer.querySelector(
+          '[contenteditable="true"]'
+        ) as HTMLElement;
+        if (editable) {
+          editable.focus();
+          setCaretPosition(editable, savedCaretPosition);
+        }
+      }
+    }
 
     if (emptyStateEl) {
       emptyStateEl.style.display =

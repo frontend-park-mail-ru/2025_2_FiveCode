@@ -16,7 +16,6 @@
   --danger: #d32f2f;
 }
 
-/* Темная тема */
 [data-theme="dark"] {
   --bg-default: #1a1a1a;
   --bg-secondary: #2a2a2a;
@@ -30,7 +29,6 @@
   --text-noraml: #e0e0e0;
 }
 
-/* Светлая тема */
 [data-theme="light"] {
   --bg-default: #ffffff;
   --bg-secondary: #f5f5f5;
@@ -190,7 +188,7 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10001;
   backdrop-filter: blur(2px);
 }
 
@@ -244,8 +242,16 @@ a {
   gap: 8px;
   font-size: 18px;
   background-color: var(--danger-500);
+  transition: all 0.2s ease;
 }
 
 .exit-modal-button:hover {
   background-color: var(--danger-500);
+}
+
+.exit-modal-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  pointer-events: none;
 }
