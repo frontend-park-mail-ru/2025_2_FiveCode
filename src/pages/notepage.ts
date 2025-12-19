@@ -11,6 +11,7 @@ import { loadUser } from "../utils/session";
 import { chooseIconModal } from "../components/chooseIconModal";
 import { createNoteHeaderModal } from "../components/noteHeaderModal";
 import { isOffline, addOfflineListener, removeOfflineListener } from "../utils/offline";
+import { renderNoteHeader } from "../components/noteHeader";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -153,34 +154,21 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const starIconUrl = isFavorite ? ICONS.filled_star : ICONS.star;
 
   mainEl.innerHTML = `
+    <div id="note-page-header"></div>
     <div class="note-editor__header-wrapper">
-      <div class="note-editor__header" style="${
-        headerImageUrl
-          ? `background-image: url('${headerImageUrl}');`
-          : `background-color: ${headerColor};`
-      } transition: background-color 0.3s ease, background-image 0.3s ease;">
-        <div class="note-editor__header-content">
-          ${!isReadOnly ? `<button class="note-editor__header-customize-btn" id="customize-header-btn">Оформление</button>` : ""}
-          <div class="note-editor__header-controls">
-            <span id="save-status"></span>
-            <button class="note-editor__header-btn ${isFavorite ? "active" : ""}" id="favorite-note-btn">
-              <img src="${starIconUrl}" alt="Favorite" id="favorite-star-img">
-            </button>        
-            <button class="note-editor__header-btn" id="dots-note-btn"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="20" r="2.5" fill="#FFFFFF"/>
-              <circle cx="20" cy="20" r="2.5" fill="#FFFFFF"/>
-              <circle cx="28" cy="20" r="2.5" fill="#FFFFFF"/>
-              </svg>
-            </button>
-            <div class="note-menu" id="note-menu">
-              ${!isSubNote ? `<button class="note-menu-item" id="openCollabModal"><img src="${ICONS.share}" alt="Share" > Совместное редактирование</button>` : ""}
-              <button class="note-menu-item" id="exportToPDF"><img src="${ICONS.pdf}" alt="Export" > Экспортировать в PDF</button>
-              ${isOwner ? `<button class="note-menu-item" id="delete-note-btn" style="color:#d32f2f;"><img src="${ICONS.trash}" alt="Delete"> Удалить заметку</button>` : ""}
-            </div>
-          </div>
+    <div class="note-editor__header" style="${
+      headerImageUrl
+        ? `background-image: url('${headerImageUrl}');`
+        : `background-color: ${headerColor};`
+    } transition: background-color 0.3s ease, background-image 0.3s ease;">
+      <div class="note-editor__header-content">
+        ${!isReadOnly ? `<button class="note-editor__header-customize-btn" id="customize-header-btn">Изменить фон</button>` : ""}
+        <div class="note-editor__header-controls">
+          <span id="save-status"></span>
         </div>
       </div>
     </div>
+  </div>
 
     <div class="note-editor__content">
       ${
@@ -235,6 +223,16 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <div class="block-editor">Загрузка блоков...</div>
     </div>
   `;
+  
+  const pageHeaderContainer = mainEl.querySelector(
+  "#note-page-header"
+  ) as HTMLElement;
+
+  renderNoteHeader(pageHeaderContainer, {
+    title: initialTitle,
+    isFavorite: isFavorite,
+  });
+
 
   const titleInput = mainEl.querySelector<HTMLInputElement>(
     ".note-editor__title"
@@ -242,35 +240,137 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const editorContainer = mainEl.querySelector(".block-editor") as HTMLElement;
   const toolbar = mainEl.querySelector(".formatting-toolbar") as HTMLElement;
   const addBlockMenu = mainEl.querySelector(".add-block-menu") as HTMLElement;
-  const deleteBtn = mainEl.querySelector(
-    "#delete-note-btn"
-  ) as HTMLButtonElement;
-  const favoriteBtn = mainEl.querySelector(
-    "#favorite-note-btn"
-  ) as HTMLButtonElement;
-  const favoriteStarImg = mainEl.querySelector(
-    "#favorite-star-img"
-  ) as HTMLImageElement;
-  const openCollabBtn = mainEl.querySelector(
-    "#openCollabModal"
-  ) as HTMLButtonElement;
+  const openCollabBtn = mainEl.querySelector("#openCollabModal") as HTMLButtonElement;
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
-  const exportToPDF = mainEl.querySelector("#exportToPDF") as HTMLButtonElement;
-  const dotsBtn = mainEl.querySelector("#dots-note-btn") as HTMLButtonElement;
-  const noteMenu = mainEl.querySelector("#note-menu") as HTMLElement;
-  const customizeHeaderBtn = mainEl.querySelector(
-    "#customize-header-btn"
-  ) as HTMLButtonElement;
-  const headerElement = mainEl.querySelector(
-    ".note-editor__header"
-  ) as HTMLElement;
-  noteMenu.style.display = "none";
+  const customizeHeaderBtn = mainEl.querySelector("#customize-header-btn") as HTMLButtonElement;
+  const headerElement = mainEl.querySelector(".note-editor__header") as HTMLElement;
 
-  const headerIconImg = mainEl.querySelector(
-    "#note-header-icon"
-  ) as HTMLImageElement;
+  const headerIconImg = mainEl.querySelector("#note-header-icon") as HTMLImageElement;
 
-  // Customize header button handler
+  pageHeaderContainer.addEventListener(
+  "noteFavoriteToggled",
+  async (e: Event) => {
+    const active = (e as CustomEvent).detail.active;
+
+    try {
+      await apiClient.toggleFavorite(Number(noteId), active);
+      document.dispatchEvent(
+        new CustomEvent("notesUpdated", {
+          detail: { noteId, isFavorite: active },
+        })
+      );
+      showNotification(
+        active ? "Добавлено в избранное" : "Удалено из избранного",
+        "info"
+      );
+    } catch (err) {
+      handleError(err, "Ошибка обновления избранного");
+    }
+  });
+
+pageHeaderContainer.addEventListener(
+  "noteMenuAction",
+  async (e: Event) => {
+    const action = (e as CustomEvent).detail.action;
+
+    try {
+      switch (action) {
+        case "customize":
+          if (!isReadOnly) {
+            const modal = await createNoteHeaderModal(Number(noteId), headerSettings);
+            document.body.appendChild(modal);
+          } else {
+            showNotification("Редактирование доступно только владельцу заметки", "info");
+          }
+          break;
+
+        case "collaboration":
+          if (!isSubNote) {
+            const modal = createCollaboratorsModal(Number(noteId));
+            document.body.appendChild(modal);
+          } else {
+            showNotification("Совместный доступ недоступен для подзаметок", "info");
+          }
+          break;
+
+        case "export":
+          try {
+            const pdfUrl = await apiClient.getPDFexport(Number(noteId));
+            if (!pdfUrl) throw new Error("Invalid PDF URL");
+            window.open(pdfUrl, "_blank");
+            showNotification("PDF экспортирован", "success");
+          } catch (err) {
+            handleError(err, "Ошибка при экспорте в PDF");
+          }
+          break;
+
+        case "share":
+          try {
+            const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
+            const modal = createCollaboratorsModal(id);
+            document.body.appendChild(modal);
+          } catch (err) {
+            handleError(err, "хз почему тут ошибка");
+          }
+          break;
+
+        case "delete":
+          if (!isOwner) {
+            showNotification("Удалять заметку может только владелец", "info");
+            return;
+          }
+          const deleteModal = createDeleteNoteModal();
+          document.body.appendChild(deleteModal);
+
+          const confirmBtn = deleteModal.querySelector(
+            ".delete-note-confirm"
+          ) as HTMLButtonElement;
+
+          confirmBtn?.addEventListener("click", async () => {
+            confirmBtn.disabled = true;
+            try {
+              await apiClient.deleteNote(Number(noteId));
+              showNotification("Заметка удалена", "success");
+              router.navigate("/notes");
+              document.dispatchEvent(new CustomEvent("notesUpdated"));
+            } catch (err) {
+              handleError(err, "Не удалось удалить заметку");
+            } finally {
+              deleteModal.remove();
+            }
+          });
+          break;
+
+        case "favorite":
+          const newFavoriteStatus = !isFavorite;
+          try {
+            await apiClient.toggleFavorite(Number(noteId), newFavoriteStatus);
+            isFavorite = newFavoriteStatus;
+            showNotification(
+              newFavoriteStatus ? "Добавлено в избранное" : "Удалено из избранного",
+              "info"
+            );
+            document.dispatchEvent(
+              new CustomEvent("notesUpdated", {
+                detail: { noteId, isFavorite: newFavoriteStatus },
+              })
+            );
+          } catch (err) {
+            handleError(err, "Ошибка обновления избранного");
+          }
+          break;
+
+        default:
+          console.warn("Неизвестное действие header:", action);
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification("Произошла ошибка при выполнении действия", "error");
+    }
+  });
+
+
+
   if (customizeHeaderBtn) {
     customizeHeaderBtn.addEventListener("click", async () => {
       const modal = await createNoteHeaderModal(Number(noteId), headerSettings);
@@ -326,40 +426,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
-
-  dotsBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isHidden = noteMenu.style.display === "none";
-    noteMenu.style.display = isHidden ? "block" : "none";
-  });
-
-  document.addEventListener("click", (e) => {
-    if (
-      !dotsBtn.contains(e.target as Node) &&
-      !noteMenu.contains(e.target as Node)
-    ) {
-      noteMenu.style.display = "none";
-    }
-  });
-
-  exportToPDF.addEventListener("click", async () => {
-    try {
-      const pdfUrl = await apiClient.getPDFexport(noteId as number);
-      if (!pdfUrl) {
-        handleError(
-          new Error("Invalid PDF URL"),
-          "Не удалось получить URL PDF"
-        );
-        return;
-      }
-      window.open(pdfUrl, "_blank");
-      showNotification("PDF экспортирован", "success");
-    } catch (err) {
-      handleError(err, "Ошибка при экспорте в PDF");
-    }
-    noteMenu.style.display = "none";
-  });
-
   titleInput.value = initialTitle;
 
   const editorManager = createEditorManager({
@@ -382,6 +448,13 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       if (msg.type === "note_update") {
         if (msg.title) {
           titleInput.value = msg.title;
+          
+          const headerTitle = pageHeaderContainer.querySelector(".note-header__title") as HTMLElement;
+
+          if (headerTitle) {
+            headerTitle.textContent = msg.title;
+          }
+
           document.dispatchEvent(
             new CustomEvent("noteTitleUpdated", {
               detail: { noteId: noteId, newTitle: msg.title },
@@ -447,86 +520,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     editorManager.focusBlock(initialBlocks[0].id);
   }
 
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", () => {
-      const deleteModal = createDeleteNoteModal();
-      document.body.appendChild(deleteModal);
-
-      const confirmBtn = deleteModal.querySelector(
-        ".delete-note-confirm"
-      ) as HTMLButtonElement;
-
-      confirmBtn?.addEventListener("click", async () => {
-        confirmBtn.disabled = true;
-        try {
-          await apiClient.deleteNote(noteId as number);
-          document.dispatchEvent(new CustomEvent("notesUpdated"));
-          showNotification("Заметка удалена", "success");
-          router.navigate("notes");
-        } catch (err) {
-          handleError(err, "Не удалось удалить заметку");
-        }
-        deleteModal.remove();
-      });
-      noteMenu.style.display = "none";
-    });
-  }
-
-  favoriteBtn.addEventListener("click", async () => {
-    const newFavoriteStatus = !favoriteBtn.classList.contains("active");
-    try {
-      await apiClient.toggleFavorite(noteId as number, newFavoriteStatus);
-      favoriteBtn.classList.toggle("active", newFavoriteStatus);
-      if (favoriteStarImg) {
-        favoriteStarImg.src = newFavoriteStatus
-          ? ICONS.filled_star
-          : ICONS.star;
-      }
-      document.dispatchEvent(
-        new CustomEvent("notesUpdated", {
-          detail: { noteId: noteId, isFavorite: newFavoriteStatus },
-        })
-      );
-      showNotification(
-        newFavoriteStatus ? "Добавлено в избранное" : "Удалено из избранного",
-        "info"
-      );
-    } catch (err) {
-      handleError(err, "Ошибка обновления избранного");
-    }
-    noteMenu.style.display = "none";
-  });
-
-  if (openCollabBtn) {
-    openCollabBtn.addEventListener("click", () => {
-      const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
-      const modal = createCollaboratorsModal(id);
-      document.body.appendChild(modal);
-      noteMenu.style.display = "none";
-    });
-  }
-
-  const handleNotesUpdated = (event: Event) => {
-    const custom = event as CustomEvent;
-    if (!custom?.detail) return;
-    const { noteId: updatedId, isFavorite } = custom.detail;
-    if (String(updatedId) === String(noteId)) {
-      const fav = Boolean(isFavorite);
-      favoriteBtn.classList.toggle("active", fav);
-      if (favoriteStarImg) {
-        favoriteStarImg.src = fav ? ICONS.filled_star : ICONS.star;
-      }
-    }
-  };
-
-  document.removeEventListener(
-    "notesUpdated",
-    handleNotesUpdated as EventListener
-  );
-  document.addEventListener(
-    "notesUpdated",
-    handleNotesUpdated as EventListener
-  );
 
   const handleHeaderColorChange = (event: Event) => {
     const customEvent = event as CustomEvent;
@@ -553,10 +546,8 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const handleOfflineStatusChange = (offline: boolean) => {
     if (offline) {
       onlineNotificationShown = false;
-      if (deleteBtn) deleteBtn.disabled = true;
       if (customizeHeaderBtn) customizeHeaderBtn.disabled = true;
       if (openCollabBtn) openCollabBtn.disabled = true;
-      if (exportToPDF) exportToPDF.disabled = true;
       if (headerIconImg) headerIconImg.style.cursor = "not-allowed";
       
     } else {
@@ -564,10 +555,8 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
         showNotification("Вы снова онлайн. Редактирование доступно.", "success");
         onlineNotificationShown = true;
       }
-      if (deleteBtn && isOwner) deleteBtn.disabled = false;
       if (customizeHeaderBtn && !isReadOnly) customizeHeaderBtn.disabled = false;
       if (openCollabBtn && !isSubNote) openCollabBtn.disabled = false;
-      if (exportToPDF) exportToPDF.disabled = false;
       if (headerIconImg) headerIconImg.style.cursor = "pointer";
 
     }

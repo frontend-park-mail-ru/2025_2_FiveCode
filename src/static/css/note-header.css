@@ -1,0 +1,73 @@
+.note-header {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.note-header__title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.note-header__right {
+  position: relative;
+  display: flex;
+  gap: 4px;
+}
+
+.note-header__btn {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.note-header__btn:hover {
+  background-color: var(--gray-200);
+}
+
+.note-header__star.active {
+  background-color: var(--gray-200);
+}
+
+.note-header__dropdown {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  min-width: 160px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: none;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.note-header__dropdown.visible {
+  display: flex;
+}
+
+.note-header__dropdown-item {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.note-header__dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.note-header__dropdown-item.danger {
+  color: #d32f2f;
+}

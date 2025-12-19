@@ -28,6 +28,7 @@ import "./static/css/chat.css";
 import "./static/css/collaboration.css";
 import "./static/css/notification.css";
 import "./static/css/icon-menu.css";
+import "./static/css/note-header.css";
 
 interface User {
   id?: number;

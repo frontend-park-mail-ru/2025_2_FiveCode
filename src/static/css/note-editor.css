@@ -55,22 +55,41 @@
 }
 
 .note-editor__header-customize-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+
+  border: none;
+  border-radius: 6px;
+
+  padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  transition: all 0.2s;
-  margin-right: auto;
+
+  cursor: pointer;
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.note-editor__header:hover .note-editor__header-customize-btn {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .note-editor__header-customize-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
+
+.note-editor__header-customize-btn {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
 
 .note-editor__header-controls {
   display: flex;

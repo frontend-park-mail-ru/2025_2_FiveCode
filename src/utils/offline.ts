@@ -1,7 +1,6 @@
 /**
  * Provides methods to detect and listen for online/offline status
  */
-
 export interface OfflineState {
   isOffline: boolean;
   lastOnline?: Date;
