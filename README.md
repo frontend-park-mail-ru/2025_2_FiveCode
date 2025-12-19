@@ -25,7 +25,7 @@ Goose - веб-сервис для сохранения и структурир�
 
 ## Ссылки
 
-[Деплой](http://89.208.210.115:8030)
+[Деплой](https://goose-notes.duckdns.org/)
 
 [Figma](https://www.figma.com/design/sypChXE5UIhN17PBG8R5L2/vk---FiveTeam?m=auto&t=9DynmyB6gN4NF2u4-1)
 
