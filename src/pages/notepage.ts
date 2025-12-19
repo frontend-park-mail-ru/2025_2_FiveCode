@@ -308,7 +308,7 @@ pageHeaderContainer.addEventListener(
           try {
             const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
             const modal = createCollaboratorsModal(id);
-            document.body.appendChild(modal);
+            document.body.appendChild(modal); 
           } catch (err) {
             handleError(err, "хз почему тут ошибка");
           }

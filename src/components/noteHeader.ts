@@ -35,15 +35,15 @@ const template = `
     <div class="note-header__dropdown">
       <button class="note-header__dropdown-item"data-action="share">
       <img src="${ICONS.share}" alt="" style="width:16px; height:16px; margin-right:8px; vertical-align:middle;">
-        Поделиться
+        Совместный доступ
       </button>
       <button class="note-header__dropdown-item" data-action="export">
         <img src="${ICONS.pdf}" alt="" style="width:16px; height:16px; margin-right:8px; vertical-align:middle;">
-        Экспорт
+        Экспортировать в PDF
       </button>
       <button class="note-header__dropdown-item danger" data-action="delete">
         <img src="${ICONS.trash}" alt="" style="width:16px; height:16px; margin-right:8px; vertical-align:middle;">
-        Удалить
+        Удалить заметку
       </button>
     </div>
   </div>
