@@ -4,6 +4,7 @@ import ejs from "ejs";
 import router from "./router";
 import { renderAppLayout } from "./layout";
 import { initializeTheme } from "./components/settingsModal";
+import { initOfflineDetection, updateLastOnlineTime } from "./utils/offline";
 import "../styles.css";
 import "./static/css/auth.css";
 import "./static/css/globals.css";
@@ -51,6 +52,8 @@ async function initializeApp(): Promise<void> {
   isInitialLoad = false;
 
   initializeTheme();
+  initOfflineDetection();
+  updateLastOnlineTime();
 
   const app = document.getElementById("app");
   if (!app) {

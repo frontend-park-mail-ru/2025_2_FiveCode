@@ -10,6 +10,7 @@ import { showNotification } from "../components/notification";
 import { loadUser } from "../utils/session";
 import { chooseIconModal } from "../components/chooseIconModal";
 import { createNoteHeaderModal } from "../components/noteHeaderModal";
+import { isOffline, addOfflineListener, removeOfflineListener } from "../utils/offline";
 
 const ICONS = {
   trash: new URL("../static/svg/icon_delete.svg", import.meta.url).href,
@@ -30,6 +31,7 @@ interface Icon {
 let activeWsClient: WsClient | null = null;
 let activeIconListener: ((e: Event) => void) | null = null;
 let activeSharingListener: ((e: Event) => void) | null = null;
+let onlineNotificationShown = false;
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
   if (activeWsClient) {
@@ -61,6 +63,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   let isOwner = false;
   let icon: Icon;
   let isSubNote = false;
+  const userIsOffline = isOffline();
 
   try {
     const note = await apiClient.getNote(noteId as number);
@@ -83,7 +86,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     const currentUser = loadUser();
     isOwner = sharingSettings.is_owner;
 
-    if (isOwner) {
+    // If user is offline, force read-only mode
+    if (userIsOffline) {
+      isReadOnly = true;
+      console.log('[Offline] Forcing read-only mode');
+    } else if (isOwner) {
       isReadOnly = false;
     } else {
       const myPermission = sharingSettings.collaborators.find(
@@ -112,6 +119,12 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     return;
   }
 
+  // Show offline notification if user is offline
+  if (userIsOffline) {
+    showNotification("Вы находитесь в офлайн режиме. Заметки доступны только для просмотра.", "info");
+  }
+
+
   mainEl.className = "note-editor__main";
 
   let headerSettings: any = null;
@@ -121,7 +134,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       headerSettings = JSON.parse(headerData);
     }
   } catch (e) {
-    console.log("Could not parse header settings from localStorage");
+    console.error("Could not parse header settings from localStorage");
   }
 
   // Try to get header settings from server
@@ -132,7 +145,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       localStorage.setItem(`note-header-${noteId}`, JSON.stringify(serverHeaderSettings));
     }
   } catch (e) {
-    console.log("Could not fetch header settings from server");
+    console.error("Could not fetch header settings from server");
   }
 
   const headerColor = headerSettings?.header_color || "#45B7D1";
@@ -536,4 +549,37 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     }
   });
   styleObserver.observe(document.body, { childList: true, subtree: true });
+
+  const handleOfflineStatusChange = (offline: boolean) => {
+    if (offline) {
+      onlineNotificationShown = false;
+      if (deleteBtn) deleteBtn.disabled = true;
+      if (customizeHeaderBtn) customizeHeaderBtn.disabled = true;
+      if (openCollabBtn) openCollabBtn.disabled = true;
+      if (exportToPDF) exportToPDF.disabled = true;
+      if (headerIconImg) headerIconImg.style.cursor = "not-allowed";
+      
+    } else {
+      if (!onlineNotificationShown){
+        showNotification("Вы снова онлайн. Редактирование доступно.", "success");
+        onlineNotificationShown = true;
+      }
+      if (deleteBtn && isOwner) deleteBtn.disabled = false;
+      if (customizeHeaderBtn && !isReadOnly) customizeHeaderBtn.disabled = false;
+      if (openCollabBtn && !isSubNote) openCollabBtn.disabled = false;
+      if (exportToPDF) exportToPDF.disabled = false;
+      if (headerIconImg) headerIconImg.style.cursor = "pointer";
+
+    }
+  };
+
+  addOfflineListener(handleOfflineStatusChange);
+
+  const offlineObserver = new MutationObserver(() => {
+    if (!document.body.contains(mainEl)) {
+      removeOfflineListener(handleOfflineStatusChange);
+      offlineObserver.disconnect();
+    }
+  });
+  offlineObserver.observe(document.body, { childList: true, subtree: true });
 }
