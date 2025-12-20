@@ -164,6 +164,16 @@ function renderCodeBlock(
         </select>
       </div>
       <div class="code-content" contenteditable="<%= editable %>" spellcheck="false"><%- content %></div>
+      <button class="code-copy-btn">
+      <svg class="icon-copy" viewBox="0 0 24 24">
+        <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/>
+      </svg>
+
+      <svg class="icon-check" viewBox="0 0 24 24">
+        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/>
+      </svg>
+    </button>
+
     </div>
   `;
 
@@ -176,6 +186,24 @@ function renderCodeBlock(
 
   const doc = new DOMParser().parseFromString(html, "text/html");
   const element = doc.body.firstChild as HTMLElement;
+  const copyBtn = element.querySelector('.code-copy-btn') as HTMLButtonElement;
+ copyBtn.addEventListener("click", async () => {
+  const codeContent = element.querySelector(".code-content") as HTMLElement;
+  const code = codeContent.innerText.replace(/\u200B/g, "");
+
+  try {
+    await navigator.clipboard.writeText(code);
+
+    copyBtn.classList.add("success");
+
+    setTimeout(() => {
+      copyBtn.classList.remove("success");
+    }, 1000);
+  } catch (e) {
+    console.error("Copy failed", e);
+  }
+});
+
 
   if (!readOnly) {
     const contentElement = element.querySelector(

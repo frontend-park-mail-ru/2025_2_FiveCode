@@ -140,3 +140,46 @@
   background: #2a2a2a;
   border-color: var(--primary-500);
 }
+
+.code-block {
+  position: relative;
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  /* opacity: 0; */
+  z-index: 2;
+}
+
+.code-block:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.code-copy-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: rgba(255, 255, 255, 0.6);
+}
+
+.code-copy-btn.success svg {
+  fill: #4caf50;
+}
+
+
+.code-copy-btn .icon-check {
+  display: none;
+}
+
+.code-copy-btn.success .icon-copy {
+  display: none;
+}
+
+.code-copy-btn.success .icon-check {
+  display: block;
+}
