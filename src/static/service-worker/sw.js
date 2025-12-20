@@ -30,13 +30,11 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("[SW] Activating...");
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (!key.includes(CACHE_VERSION)) {
-            console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
           }
         })
@@ -85,9 +83,7 @@ self.addEventListener("fetch", (event) => {
           const responseToCache = networkResponse.clone();
           const cache = await caches.open(NOTES_CACHE);
           await cache.put(request, responseToCache);
-          
-          console.log('[SW] Cached note API request:', url.pathname);
-          
+                  
           return networkResponse;
         } catch (error) {
           // If network fails, try to serve from cache

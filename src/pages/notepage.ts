@@ -69,6 +69,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   try {
     const note = await apiClient.getNote(noteId as number);
+
     noteHeader = note.header ?? null;
     const blocksData = await apiClient.getBlocksForNote(noteId as number);
     initialTitle = note.title;
@@ -92,7 +93,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     // If user is offline, force read-only mode
     if (userIsOffline) {
       isReadOnly = true;
-      console.log('[Offline] Forcing read-only mode');
     } else if (isOwner) {
       isReadOnly = false;
     } else {
@@ -129,9 +129,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
 
   mainEl.className = "note-editor__main";
-
-  const headerImageUrl = noteHeader?.url || null;
-  console.log("Header settings:", noteHeader?.url);
   const starIconUrl = isFavorite ? ICONS.filled_star : ICONS.star;
 
   mainEl.innerHTML = `
@@ -218,6 +215,12 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
   const customizeHeaderBtn = mainEl.querySelector("#customize-header-btn") as HTMLButtonElement;
   const headerElement = mainEl.querySelector(".note-editor__header") as HTMLElement;
+  if (noteHeader?.url) {
+    headerElement.style.backgroundImage = `url('${noteHeader.url}')`;
+    headerElement.style.backgroundSize = "cover";
+    headerElement.style.backgroundPosition = "center";
+    headerElement.style.backgroundColor = "transparent";
+  }
 
 
   const headerIconImg = mainEl.querySelector("#note-header-icon") as HTMLImageElement;
@@ -351,7 +354,6 @@ pageHeaderContainer.addEventListener(
     customizeHeaderBtn.addEventListener("click", async () => {
       const modal = await createNoteHeaderModal(Number(noteId), noteHeader ? { header_id: noteHeader.id, ...(noteHeader.url ? { header_image_url: noteHeader.url } : {}) } : undefined);
       document.body.appendChild(modal);
-      console.log("что-то добавил:", modal);
     });
   }
 
@@ -471,25 +473,28 @@ pageHeaderContainer.addEventListener(
   activeSharingListener = () => {
     checkAndInitWebsocket();
   };
+  let header_image_url = noteHeader?.url ?? null;
   document.addEventListener("sharingSettingsUpdated", activeSharingListener);
-
+   
   const handleHeaderUpdated = (event: Event) => {
-    const customEvent = event as CustomEvent;
-    const { header_type, header_color, header_image_file_id, header_image_url } =
-      customEvent.detail;
+  const customEvent = event as CustomEvent;
+  const { header_image_url } = customEvent.detail;
 
-    if (header_type === "color") {
-      headerElement.style.backgroundImage = "none";
-      headerElement.style.backgroundColor = header_color;
-    } else if (header_type === "image" && header_image_url) {
-      headerElement.style.backgroundColor = "transparent";
-      headerElement.style.backgroundImage = `url('${header_image_url}')`;
-      headerElement.style.backgroundSize = "cover";
-      headerElement.style.backgroundPosition = "center";
-    }
+  if (header_image_url) {
+    noteHeader = {
+      id: noteHeader?.id ?? 0,
+      url: header_image_url,
+    };
 
-    document.dispatchEvent(new CustomEvent("notesUpdated"));
-  };
+    headerElement.style.backgroundImage = `url('${header_image_url}')`;
+    headerElement.style.backgroundSize = "cover";
+    headerElement.style.backgroundPosition = "center";
+    headerElement.style.backgroundColor = "transparent";
+  }
+
+  document.dispatchEvent(new CustomEvent("notesUpdated"));
+};
+
 
   document.addEventListener("headerUpdated", handleHeaderUpdated);
 

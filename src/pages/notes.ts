@@ -15,7 +15,6 @@ export async function renderNotes(): Promise<void> {
 
   try {
     const allNotes = await apiClient.getNotesForUser();
-    console.log("Fetched notes:", allNotes);
 
     const currentPath = window.location.pathname;
     if (currentPath !== "/notes" && currentPath !== "/") {

@@ -49,7 +49,6 @@ export async function createNoteHeaderModal(
 
   try {
     const headers = await apiClient.getNoteHeaders();
-    console.log("Available headers:", headers);
     headers.forEach((header: { id: number; name: string; url: string }) => {
       const item = document.createElement("div");
       item.className = "header-template";

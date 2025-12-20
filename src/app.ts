@@ -46,7 +46,6 @@ let isInitialLoad = true;
 async function initializeApp(): Promise<void> {
 
   if (!navigator.onLine && !isInitialLoad) {
-    console.log('Offline, skipping auth check');
     return;
   }
   
@@ -106,12 +105,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // if (process.env.NODE_ENV === "production") {
       navigator.serviceWorker
         .register("/sw.js")
-        .then(() => {
-          console.log("ServiceWorker registration successful");
-        })
-        .catch((err) => {
-          console.log("ServiceWorker registration failed: ", err);
-        });
+
     // } else {
     //   navigator.serviceWorker.getRegistrations().then((registrations) => {
     //     for (const registration of registrations) {
