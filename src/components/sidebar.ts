@@ -68,7 +68,7 @@ export function Sidebar({
                 </button>
             </div>
             <nav class="sidebar__nav">
-                <a href="/notes" class="sidebar__item <%= isHomeActive ? 'sidebar-item--active' : '' %>" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
+                <a href="/" class="sidebar__item <%= isHomeActive ? 'sidebar-item--active' : '' %>" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
                 <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
@@ -77,7 +77,7 @@ export function Sidebar({
         </aside>
     `;
 
-  const isHomeActive = window.location.pathname === `/notes`;
+  const isHomeActive = window.location.pathname === `/`;
 
   const html = ejs.render(template, {
     user: user,
