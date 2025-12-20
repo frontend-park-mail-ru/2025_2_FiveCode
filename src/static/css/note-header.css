@@ -34,7 +34,7 @@
 }
 
 .note-header__star.active {
-  background-color: var(--gray-200);
+  background-color: var(--primary-200);
 }
 
 .note-header__dropdown {
