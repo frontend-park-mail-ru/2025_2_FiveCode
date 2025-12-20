@@ -10,7 +10,11 @@ import { showNotification } from "../components/notification";
 import { loadUser } from "../utils/session";
 import { chooseIconModal } from "../components/chooseIconModal";
 import { createNoteHeaderModal } from "../components/noteHeaderModal";
-import { isOffline, addOfflineListener, removeOfflineListener } from "../utils/offline";
+import {
+  isOffline,
+  addOfflineListener,
+  removeOfflineListener,
+} from "../utils/offline";
 import { renderNoteHeader } from "../components/noteHeader";
 
 const ICONS = {
@@ -35,6 +39,7 @@ let activeSharingListener: ((e: Event) => void) | null = null;
 let onlineNotificationShown = false;
 
 export async function renderNoteEditor(noteId: number | string): Promise<void> {
+  // Очистка старых подключений и слушателей
   if (activeWsClient) {
     activeWsClient.close();
     activeWsClient = null;
@@ -90,7 +95,6 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     const currentUser = loadUser();
     isOwner = sharingSettings.is_owner;
 
-    // If user is offline, force read-only mode
     if (userIsOffline) {
       isReadOnly = true;
     } else if (isOwner) {
@@ -122,14 +126,14 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     return;
   }
 
-  // Show offline notification if user is offline
   if (userIsOffline) {
-    showNotification("Вы находитесь в офлайн режиме. Заметки доступны только для просмотра.", "info");
+    showNotification(
+      "Вы находитесь в офлайн режиме. Заметки доступны только для просмотра.",
+      "info"
+    );
   }
 
-
   mainEl.className = "note-editor__main";
-  const starIconUrl = isFavorite ? ICONS.filled_star : ICONS.star;
 
   mainEl.innerHTML = `
     <div id="note-page-header"></div>
@@ -194,9 +198,9 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
       <div class="block-editor">Загрузка блоков...</div>
     </div>
   `;
-  
+
   const pageHeaderContainer = mainEl.querySelector(
-  "#note-page-header"
+    "#note-page-header"
   ) as HTMLElement;
 
   renderNoteHeader(pageHeaderContainer, {
@@ -204,62 +208,89 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
     isFavorite: isFavorite,
   });
 
-
   const titleInput = mainEl.querySelector<HTMLInputElement>(
     ".note-editor__title"
   )!;
   const editorContainer = mainEl.querySelector(".block-editor") as HTMLElement;
   const toolbar = mainEl.querySelector(".formatting-toolbar") as HTMLElement;
   const addBlockMenu = mainEl.querySelector(".add-block-menu") as HTMLElement;
-  const openCollabBtn = mainEl.querySelector("#openCollabModal") as HTMLButtonElement;
+  const openCollabBtn = mainEl.querySelector(
+    "#openCollabModal"
+  ) as HTMLButtonElement;
   const saveStatusEl = mainEl.querySelector("#save-status") as HTMLElement;
-  const customizeHeaderBtn = mainEl.querySelector("#customize-header-btn") as HTMLButtonElement;
-  const headerElement = mainEl.querySelector(".note-editor__header") as HTMLElement;
+  const customizeHeaderBtn = mainEl.querySelector(
+    "#customize-header-btn"
+  ) as HTMLButtonElement;
+  const headerElement = mainEl.querySelector(
+    ".note-editor__header"
+  ) as HTMLElement;
+
+  const updateHeaderDisplay = (url?: string) => {
+    if (url && url.startsWith("http")) {
+      headerElement.style.backgroundImage = `url('${url}')`;
+      headerElement.style.backgroundSize = "cover";
+      headerElement.style.backgroundPosition = "center";
+      headerElement.style.backgroundColor = "transparent";
+    } else {
+      headerElement.style.backgroundImage = "none";
+    }
+  };
+
   if (noteHeader?.url) {
-    headerElement.style.backgroundImage = `url('${noteHeader.url}')`;
-    headerElement.style.backgroundSize = "cover";
-    headerElement.style.backgroundPosition = "center";
-    headerElement.style.backgroundColor = "transparent";
+    updateHeaderDisplay(noteHeader.url);
   }
 
-
-  const headerIconImg = mainEl.querySelector("#note-header-icon") as HTMLImageElement;
+  const headerIconImg = mainEl.querySelector(
+    "#note-header-icon"
+  ) as HTMLImageElement;
 
   pageHeaderContainer.addEventListener(
-  "noteFavoriteToggled",
-  async (e: Event) => {
-    const active = (e as CustomEvent).detail.active;
+    "noteFavoriteToggled",
+    async (e: Event) => {
+      const active = (e as CustomEvent).detail.active;
 
-    try {
-      await apiClient.toggleFavorite(Number(noteId), active);
-      document.dispatchEvent(
-        new CustomEvent("notesUpdated", {
-          detail: { noteId, isFavorite: active },
-        })
-      );
-      showNotification(
-        active ? "Добавлено в избранное" : "Удалено из избранного",
-        "info"
-      );
-    } catch (err) {
-      handleError(err, "Ошибка обновления избранного");
+      try {
+        await apiClient.toggleFavorite(Number(noteId), active);
+        document.dispatchEvent(
+          new CustomEvent("notesUpdated", {
+            detail: { noteId, isFavorite: active },
+          })
+        );
+        showNotification(
+          active ? "Добавлено в избранное" : "Удалено из избранного",
+          "info"
+        );
+      } catch (err) {
+        handleError(err, "Ошибка обновления избранного");
+      }
     }
-  });
+  );
 
-pageHeaderContainer.addEventListener(
-  "noteMenuAction",
-  async (e: Event) => {
+  pageHeaderContainer.addEventListener("noteMenuAction", async (e: Event) => {
     const action = (e as CustomEvent).detail.action;
 
     try {
       switch (action) {
         case "customize":
           if (!isReadOnly) {
-            const modal = await createNoteHeaderModal(Number(noteId), noteHeader ? { header_id: noteHeader.id, ...(noteHeader.url ? { header_image_url: noteHeader.url } : {}) } : undefined);
-        
+            const modal = await createNoteHeaderModal(
+              Number(noteId),
+              noteHeader
+                ? {
+                    header_id: noteHeader.id,
+                    ...(noteHeader.url
+                      ? { header_image_url: noteHeader.url }
+                      : {}),
+                  }
+                : undefined
+            );
+
             document.body.appendChild(modal);
           } else {
-            showNotification("Редактирование доступно только владельцу заметки", "info");
+            showNotification(
+              "Редактирование доступно только владельцу заметки",
+              "info"
+            );
           }
           break;
 
@@ -268,7 +299,10 @@ pageHeaderContainer.addEventListener(
             const modal = createCollaboratorsModal(Number(noteId));
             document.body.appendChild(modal);
           } else {
-            showNotification("Совместный доступ недоступен для подзаметок", "info");
+            showNotification(
+              "Совместный доступ недоступен для подзаметок",
+              "info"
+            );
           }
           break;
 
@@ -287,7 +321,7 @@ pageHeaderContainer.addEventListener(
           try {
             const id = typeof noteId === "string" ? parseInt(noteId) : noteId;
             const modal = createCollaboratorsModal(id);
-            document.body.appendChild(modal); 
+            document.body.appendChild(modal);
           } catch (err) {
             handleError(err, "хз почему тут ошибка");
           }
@@ -326,7 +360,9 @@ pageHeaderContainer.addEventListener(
             await apiClient.toggleFavorite(Number(noteId), newFavoriteStatus);
             isFavorite = newFavoriteStatus;
             showNotification(
-              newFavoriteStatus ? "Добавлено в избранное" : "Удалено из избранного",
+              newFavoriteStatus
+                ? "Добавлено в избранное"
+                : "Удалено из избранного",
               "info"
             );
             document.dispatchEvent(
@@ -348,11 +384,17 @@ pageHeaderContainer.addEventListener(
     }
   });
 
-
-
   if (customizeHeaderBtn) {
     customizeHeaderBtn.addEventListener("click", async () => {
-      const modal = await createNoteHeaderModal(Number(noteId), noteHeader ? { header_id: noteHeader.id, ...(noteHeader.url ? { header_image_url: noteHeader.url } : {}) } : undefined);
+      const modal = await createNoteHeaderModal(
+        Number(noteId),
+        noteHeader
+          ? {
+              header_id: noteHeader.id,
+              ...(noteHeader.url ? { header_image_url: noteHeader.url } : {}),
+            }
+          : undefined
+      );
       document.body.appendChild(modal);
     });
   }
@@ -426,14 +468,15 @@ pageHeaderContainer.addEventListener(
     activeWsClient.connect((msg: ServerMessage) => {
       if (msg.type === "note_update") {
         if (msg.title) {
-          titleInput.value = msg.title;
-          
-          const headerTitle = pageHeaderContainer.querySelector(".note-header__title") as HTMLElement;
-
+          if (document.activeElement !== titleInput) {
+            titleInput.value = msg.title;
+          }
+          const headerTitle = pageHeaderContainer.querySelector(
+            ".note-header__title"
+          ) as HTMLElement;
           if (headerTitle) {
             headerTitle.textContent = msg.title;
           }
-
           document.dispatchEvent(
             new CustomEvent("noteTitleUpdated", {
               detail: { noteId: noteId, newTitle: msg.title },
@@ -441,6 +484,33 @@ pageHeaderContainer.addEventListener(
           );
         }
 
+        if (msg.header !== undefined) {
+          if (msg.header) {
+            noteHeader = {
+              id: msg.header.id,
+              url: msg.header.url,
+            };
+            updateHeaderDisplay(msg.header.url);
+          } else {
+            noteHeader = null;
+            updateHeaderDisplay(undefined);
+          }
+        }
+
+        if (msg.icon !== undefined) {
+          if (msg.icon) {
+            icon = {
+              id: msg.icon.id,
+              name: msg.icon.name,
+              url: msg.icon.url,
+            };
+            if (headerIconImg) {
+              headerIconImg.src = msg.icon.url;
+            }
+          }
+        }
+
+        // 4. Обновляем блоки
         if (msg.blocks) {
           const cleanBlocks = msg.blocks.map((block: any): Block => {
             if (block.type === "attachment") {
@@ -473,35 +543,30 @@ pageHeaderContainer.addEventListener(
   activeSharingListener = () => {
     checkAndInitWebsocket();
   };
-  let header_image_url = noteHeader?.url ?? null;
+
   document.addEventListener("sharingSettingsUpdated", activeSharingListener);
-   
+
   const handleHeaderUpdated = (event: Event) => {
-  const customEvent = event as CustomEvent;
-  const { header_image_url } = customEvent.detail;
+    const customEvent = event as CustomEvent;
+    const { header_image_url } = customEvent.detail;
 
-  if (header_image_url) {
-    noteHeader = {
-      id: noteHeader?.id ?? 0,
-      url: header_image_url,
-    };
+    if (header_image_url) {
+      noteHeader = {
+        id: noteHeader?.id ?? 0,
+        url: header_image_url,
+      };
 
-    headerElement.style.backgroundImage = `url('${header_image_url}')`;
-    headerElement.style.backgroundSize = "cover";
-    headerElement.style.backgroundPosition = "center";
-    headerElement.style.backgroundColor = "transparent";
-  }
+      updateHeaderDisplay(header_image_url);
+    }
 
-  document.dispatchEvent(new CustomEvent("notesUpdated"));
-};
-
+    document.dispatchEvent(new CustomEvent("notesUpdated"));
+  };
 
   document.addEventListener("headerUpdated", handleHeaderUpdated);
 
   if (initialBlocks.length > 0 && initialBlocks[0]) {
     editorManager.focusBlock(initialBlocks[0].id);
   }
-
 
   const handleHeaderColorChange = (event: Event) => {
     const customEvent = event as CustomEvent;
@@ -531,16 +596,18 @@ pageHeaderContainer.addEventListener(
       if (customizeHeaderBtn) customizeHeaderBtn.disabled = true;
       if (openCollabBtn) openCollabBtn.disabled = true;
       if (headerIconImg) headerIconImg.style.cursor = "not-allowed";
-      
     } else {
-      if (!onlineNotificationShown){
-        showNotification("Вы снова онлайн. Редактирование доступно.", "success");
+      if (!onlineNotificationShown) {
+        showNotification(
+          "Вы снова онлайн. Редактирование доступно.",
+          "success"
+        );
         onlineNotificationShown = true;
       }
-      if (customizeHeaderBtn && !isReadOnly) customizeHeaderBtn.disabled = false;
+      if (customizeHeaderBtn && !isReadOnly)
+        customizeHeaderBtn.disabled = false;
       if (openCollabBtn && !isSubNote) openCollabBtn.disabled = false;
       if (headerIconImg) headerIconImg.style.cursor = "pointer";
-
     }
   };
 

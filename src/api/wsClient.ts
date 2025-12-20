@@ -4,6 +4,18 @@ import { showNotification } from "../components/notification";
 
 export type MessageType = "note_update" | "error";
 
+export interface Header {
+  id: number;
+  name: string;
+  url: string;
+}
+
+export interface Icon {
+  id: number;
+  name: string;
+  url: string;
+}
+
 export interface ServerMessage {
   type: MessageType;
   note_id?: number;
@@ -12,7 +24,8 @@ export interface ServerMessage {
   blocks?: Block[];
   message?: string;
   title?: string;
-  header_image_url?: string;
+  header?: Header | null;
+  icon?: Icon | null;
 }
 
 export class WsClient {
@@ -44,13 +57,11 @@ export class WsClient {
     try {
       this.socket = new WebSocket(this.url);
     } catch (e) {
-      showNotification("Ошибка в создании совместного доступа", "error");
-      console.error(e);
+      console.error("WS Create Error:", e);
       return;
     }
 
     this.socket.onopen = () => {
-      showNotification("Совместный доступ подключён", "success");
     };
 
     this.socket.onmessage = (event) => {
@@ -58,11 +69,7 @@ export class WsClient {
         const data: ServerMessage = JSON.parse(event.data);
         onMessage(data);
       } catch (e) {
-        showNotification(
-          "Ошибка в получении данных совместного доступа",
-          "error"
-        );
-        console.error(e);
+        console.error("WS Parse Error:", e);
       }
     };
 
@@ -75,8 +82,7 @@ export class WsClient {
     };
 
     this.socket.onerror = (err) => {
-      showNotification("Ошибка в соединении совместного доступа", "error");
-      console.error(err);
+      console.error("WS Error:", err);
       this.socket?.close();
     };
   }
