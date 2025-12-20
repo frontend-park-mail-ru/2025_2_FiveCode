@@ -164,7 +164,7 @@
 .code-copy-btn svg {
   width: 14px;
   height: 14px;
-  fill: rgba(255, 255, 255, 0.6);
+  fill: var(--text-noraml);
 }
 
 .code-copy-btn.success svg {

@@ -73,7 +73,7 @@ export function Sidebar({
             </nav>
             <div class="sidebar__subs"></div>
             <a class="sidebar__item" data-link style="display:none"> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-            <a class="sidebar__item" id="app-settings-btn" style="cursor:pointer"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
+            <a class="sidebar__item" id="app-settings-btn" style="cursor:pointer; margin-left: 6px"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
         </aside>
     `;
 
