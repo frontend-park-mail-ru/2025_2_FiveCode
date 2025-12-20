@@ -380,10 +380,7 @@ export const apiClient = {
   async updateNoteHeader(
     noteId: string | number,
     data: {
-      header_type: "color" | "image";
-      header_color?: string;
-      header_image_file_id?: number;
-      header_image_url?: string | null;
+      header_id?: number | null;
     }
   ): Promise<any> {
     if (!noteId) 
@@ -399,4 +396,9 @@ export const apiClient = {
       throw new Error("noteId required");
     return apiFetch(`/notes/${noteId}/headers`, { method: "GET" });
   },
+
+  async getNoteHeaders(): Promise<Array<{ id: number; name: string; url: string }>> {
+    return apiFetch(`/headers`, { method: "GET" })
+  }
+
 };

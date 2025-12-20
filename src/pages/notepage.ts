@@ -65,9 +65,11 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   let icon: Icon;
   let isSubNote = false;
   const userIsOffline = isOffline();
+  let noteHeader: { id: number; url?: string } | null = null;
 
   try {
     const note = await apiClient.getNote(noteId as number);
+    noteHeader = note.header ?? null;
     const blocksData = await apiClient.getBlocksForNote(noteId as number);
     initialTitle = note.title;
     isFavorite = note.is_favorite || false;
@@ -128,44 +130,16 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
 
   mainEl.className = "note-editor__main";
 
-  let headerSettings: any = null;
-  try {
-    const headerData = localStorage.getItem(`note-header-${noteId}`);
-    if (headerData) {
-      headerSettings = JSON.parse(headerData);
-    }
-  } catch (e) {
-    console.error("Could not parse header settings from localStorage");
-  }
-
-  // Try to get header settings from server
-  try {
-    const serverHeaderSettings = await apiClient.getNoteHeader(noteId as number);
-    if (serverHeaderSettings) {
-      headerSettings = serverHeaderSettings;
-      localStorage.setItem(`note-header-${noteId}`, JSON.stringify(serverHeaderSettings));
-    }
-  } catch (e) {
-    console.error("Could not fetch header settings from server");
-  }
-
-  const headerColor = headerSettings?.header_color || "#45B7D1";
-  const headerImageUrl = headerSettings?.header_image_url || null;
+  const headerImageUrl = noteHeader?.url || null;
+  console.log("Header settings:", noteHeader?.url);
   const starIconUrl = isFavorite ? ICONS.filled_star : ICONS.star;
 
   mainEl.innerHTML = `
     <div id="note-page-header"></div>
     <div class="note-editor__header-wrapper">
-    <div class="note-editor__header" style="${
-      headerImageUrl
-        ? `background-image: url('${headerImageUrl}');`
-        : `background-color: ${headerColor};`
-    } transition: background-color 0.3s ease, background-image 0.3s ease;">
+    <div class="note-editor__header" style="transition: background-color 0.3s ease, background-image 0.3s ease;">
       <div class="note-editor__header-content">
         ${!isReadOnly ? `<button class="note-editor__header-customize-btn" id="customize-header-btn">Изменить фон</button>` : ""}
-        <div class="note-editor__header-controls">
-          <span id="save-status"></span>
-        </div>
       </div>
     </div>
   </div>
@@ -245,6 +219,7 @@ export async function renderNoteEditor(noteId: number | string): Promise<void> {
   const customizeHeaderBtn = mainEl.querySelector("#customize-header-btn") as HTMLButtonElement;
   const headerElement = mainEl.querySelector(".note-editor__header") as HTMLElement;
 
+
   const headerIconImg = mainEl.querySelector("#note-header-icon") as HTMLImageElement;
 
   pageHeaderContainer.addEventListener(
@@ -277,7 +252,8 @@ pageHeaderContainer.addEventListener(
       switch (action) {
         case "customize":
           if (!isReadOnly) {
-            const modal = await createNoteHeaderModal(Number(noteId), headerSettings);
+            const modal = await createNoteHeaderModal(Number(noteId), noteHeader ? { header_id: noteHeader.id, ...(noteHeader.url ? { header_image_url: noteHeader.url } : {}) } : undefined);
+        
             document.body.appendChild(modal);
           } else {
             showNotification("Редактирование доступно только владельцу заметки", "info");
@@ -373,8 +349,9 @@ pageHeaderContainer.addEventListener(
 
   if (customizeHeaderBtn) {
     customizeHeaderBtn.addEventListener("click", async () => {
-      const modal = await createNoteHeaderModal(Number(noteId), headerSettings);
+      const modal = await createNoteHeaderModal(Number(noteId), noteHeader ? { header_id: noteHeader.id, ...(noteHeader.url ? { header_image_url: noteHeader.url } : {}) } : undefined);
       document.body.appendChild(modal);
+      console.log("что-то добавил:", modal);
     });
   }
 

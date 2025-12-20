@@ -19,8 +19,11 @@ type MenuAction = "share" | "export" | "delete";
 
 const template = `
 <header class="note-header">
+  <div class="note-editor__header-controls">
+    <span id="save-status"></span>
+  </div>
   <div class="note-header__left">
-    <h1 class="note-header__title"><%= title %></h1>
+    <h1 class="note-header__title" style="display: none;"><%= title %></h1>
   </div>
 
   <div class="note-header__right">

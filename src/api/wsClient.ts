@@ -12,6 +12,7 @@ export interface ServerMessage {
   blocks?: Block[];
   message?: string;
   title?: string;
+  header_image_url?: string;
 }
 
 export class WsClient {
