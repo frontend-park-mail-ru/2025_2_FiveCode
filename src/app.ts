@@ -44,11 +44,10 @@ const ICONS = {
 let isInitialLoad = true;
 
 async function initializeApp(): Promise<void> {
-
   if (!navigator.onLine && !isInitialLoad) {
     return;
   }
-  
+
   isInitialLoad = false;
 
   initializeTheme();
@@ -72,7 +71,7 @@ async function initializeApp(): Promise<void> {
   const isAuthPage = path === "/login" || path === "/register";
   const techsupportPath = path === "/techsupport";
   let user: User | null = null;
-  
+
   try {
     user = await apiClient.me();
     if (user) {
@@ -103,8 +102,7 @@ async function initializeApp(): Promise<void> {
 window.addEventListener("DOMContentLoaded", () => {
   if ("serviceWorker" in navigator) {
     // if (process.env.NODE_ENV === "production") {
-      navigator.serviceWorker
-        .register("/sw.js")
+    navigator.serviceWorker.register("/sw.js");
 
     // } else {
     //   navigator.serviceWorker.getRegistrations().then((registrations) => {
