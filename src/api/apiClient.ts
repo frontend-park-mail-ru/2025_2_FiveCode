@@ -398,7 +398,7 @@ export const apiClient = {
   },
 
   async getNoteHeaders(): Promise<Array<{ id: number; name: string; url: string }>> {
-    return apiFetch(`/headers`, { method: "GET" })
+    return apiFetch(`/headers`, { method: "GET" });
   }
 
 };
