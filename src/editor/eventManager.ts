@@ -4,7 +4,7 @@ import {
   UpdateCallback,
 } from "../components/block";
 import { sizeMap } from "./constants";
-import {createDeleteBlock} from "../components/deleteNoteModal";
+import { createDeleteBlock } from "../components/deleteNoteModal";
 
 interface EventManagerDependencies {
   container: HTMLElement;
@@ -96,8 +96,9 @@ export function setupEventManager({
   });
 
   container.addEventListener("keydown", (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+
     if (e.key === "Enter") {
-      const target = e.target as HTMLElement;
       if (target.closest(".block--code")) return;
       const targetBlockContainer =
         target.closest<HTMLElement>(".block-container");
@@ -118,7 +119,9 @@ export function setupEventManager({
           sel.removeAllRanges();
           sel.addRange(range);
           triggerUpdate();
-        } catch (err) {}
+        } catch (err) {
+          console.error(err);
+        }
         return;
       }
 
@@ -126,6 +129,39 @@ export function setupEventManager({
       triggerUpdate();
       if (targetBlockContainer?.dataset.blockId) {
         addNewBlock(targetBlockContainer.dataset.blockId, "text");
+      }
+    }
+
+    if (e.key === "Backspace") {
+      const blockContainer = target.closest<HTMLElement>(".block-container");
+
+      if (
+        blockContainer &&
+        target.classList.contains("block--text") &&
+        (target.innerText.trim() === "" || target.innerText === "\n")
+      ) {
+        const prevContainer =
+          blockContainer.previousElementSibling as HTMLElement;
+
+        if (prevContainer && deleteBlock && blockContainer.dataset.blockId) {
+          e.preventDefault();
+
+          const prevBlockId = prevContainer.dataset.blockId;
+          const prevEditable = prevContainer.querySelector(
+            ".block--text, .code-content"
+          ) as HTMLElement;
+
+          deleteBlock(blockContainer.dataset.blockId).then(() => {
+            if (prevEditable) {
+              const range = document.createRange();
+              const sel = window.getSelection();
+              range.selectNodeContents(prevEditable);
+              range.collapse(false);
+              sel?.removeAllRanges();
+              sel?.addRange(range);
+            }
+          });
+        }
       }
     }
   });
@@ -152,17 +188,20 @@ export function setupEventManager({
         if (action === "delete" && typeof deleteBlock === "function") {
           const deleteModal = createDeleteBlock();
           document.body.appendChild(deleteModal);
-          
-          deleteModal.querySelector(".delete-note-confirm")?.addEventListener("click", async () => {
+
+          const confirmBtn = deleteModal.querySelector(
+            ".delete-note-confirm"
+          ) as HTMLButtonElement;
+
+          confirmBtn?.addEventListener("click", async () => {
+            confirmBtn.disabled = true;
             try {
-              deleteBlock(id);
-              
+              if (deleteBlock) await deleteBlock(id);
             } catch (err) {
               console.error("Failed to delete note:", err);
             }
             deleteModal.remove();
           });
-
         }
         if (action === "move-up" && typeof moveBlock === "function") {
           moveBlock(id, "up");
@@ -228,7 +267,9 @@ export function setupEventManager({
             sel.removeAllRanges();
             sel.addRange(lastSelectionRange);
           }
-        } catch (err) {}
+        } catch (err) {
+          console.error(err);
+        }
 
         if (dropdown?.id === "font-dropdown") {
           document.execCommand("fontName", false, dropdownItem.dataset.value);

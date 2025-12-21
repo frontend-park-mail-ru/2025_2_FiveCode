@@ -2,10 +2,12 @@ import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import { config } from "./src/config/project.config.js";
+import CopyPlugin from "copy-webpack-plugin";
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -33,6 +35,7 @@ export default {
         use: [
           isProduction ? MiniCssExtractPlugin.loader : "style-loader",
           "css-loader",
+          "postcss-loader",
         ],
       },
       {
@@ -61,12 +64,51 @@ export default {
     minimizer: [
       "...",
       new CssMinimizerPlugin(),
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminMinify,
+          options: {
+            plugins: [
+              ["gifsicle", { interlaced: true }],
+              ["mozjpeg", { quality: 75 }],
+              ["pngquant", { quality: [0.6, 0.8] }],
+              [
+                "svgo",
+                {
+                  plugins: [
+                    {
+                      name: "preset-default",
+                      params: {
+                        overrides: {
+                          removeViewBox: false,
+                          addAttributesToSVGElement: {
+                            params: {
+                              attributes: [
+                                { xmlns: "http://www.w3.org/2000/svg" },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
     ],
   },
   devServer: {
     static: [
       {
-        directory: path.join(__dirname, "public"),
+        directory: path.join(__dirname, "dist"),
+        publicPath: "/",
+      },
+      {
+        directory: path.join(__dirname, "src/static/service-worker"),
+        publicPath: "/",
       },
     ],
     port: config.DEV_SERVER_PORT,
@@ -89,6 +131,22 @@ export default {
             removeComments: true,
           }
         : false,
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src/static/service-worker/sw.js"),
+          to: path.resolve(__dirname, "dist/sw.js"),
+        },
+        {
+          from: path.resolve(__dirname, "src/static/manifest.json"),
+          to: path.resolve(__dirname, "dist/manifest.json"),
+        },
+        {
+          from: path.resolve(__dirname, "src/static/svg"),
+          to: path.resolve(__dirname, "dist/static/svg"),
+        },
+      ],
     }),
     ...(isProduction
       ? [

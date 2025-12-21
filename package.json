@@ -17,6 +17,9 @@
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
     "@types/node": "^24.9.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
+    "autoprefixer": "^10.4.23",
     "babel-loader": "^10.0.0",
     "browserify-fs": "^1.0.0",
     "buffer": "^6.0.3",
@@ -26,9 +29,17 @@
     "eslint": "^8.55.0",
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.4",
+    "image-minimizer-webpack-plugin": "^4.1.4",
+    "imagemin": "^9.0.1",
+    "imagemin-gifsicle": "^7.0.0",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-svgo": "^11.0.1",
     "live-server": "^1.2.2",
     "mini-css-extract-plugin": "^2.9.4",
     "path-browserify": "^1.0.1",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.2.0",
     "prettier": "^3.0.0",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
@@ -46,6 +57,7 @@
   "keywords": [],
   "dependencies": {
     "@types/ejs": "^3.1.5",
+    "cssnano": "^7.1.2",
     "ejs": "^3.1.10"
   }
 }

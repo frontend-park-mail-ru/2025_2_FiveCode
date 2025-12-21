@@ -1,19 +1,14 @@
-import ejs from "ejs";
 import { Sidebar } from "./components/sidebar";
-import { techSupportWrapper } from "./components/techsupportdutton";
 import { loadUser } from "./utils/session";
 import { apiClient } from "./api/apiClient";
 
-const ICONS = {
-  Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
-};
 
 export async function renderAppLayout(app: HTMLElement): Promise<void> {
   app.innerHTML = "";
   const page = document.createElement("div");
   page.className = "page page--layout";
-  const isTechSupportPage = window.location.pathname === '/techsupport';
-  if (isTechSupportPage){
+  const isTechSupportPage = window.location.pathname === "/techsupport";
+  if (isTechSupportPage) {
     const mainContent = document.createElement("main");
     mainContent.id = "main-content";
     mainContent.className = "page__main";
@@ -36,9 +31,9 @@ export async function renderAppLayout(app: HTMLElement): Promise<void> {
       console.error("Failed to fetch avatar:", error);
     }
   }
-  if (!isTechSupportPage){
+  if (!isTechSupportPage) {
     const notes = await apiClient.getNotesForUser();
-    
+
     page.appendChild(Sidebar({ user, notes, avatarUrl }));
   }
   const mainContent = document.createElement("main");

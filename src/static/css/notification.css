@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 9999;
+  z-index: 20000;
   pointer-events: none;
 }
 
@@ -46,19 +46,19 @@
 .notification-toast.success {
   border-left-color: var(--success-500);
   background: var(--success-100);
-  color: #155724;
+  color: #212529;
 }
 
 .notification-toast.error {
   border-left-color: var(--danger-500);
   background: var(--danger-100);
-  color: #721c24;
+  color: #212529;
 }
 
 .notification-toast.info {
   border-left-color: var(--info);
   background: var(--primary-50);
-  color: var(--primary-600);
+  color: var(--text-primary);
 }
 
 .notification-close {

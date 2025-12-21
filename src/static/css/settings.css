@@ -3,9 +3,9 @@
   margin: 40px auto;
   padding: 24px;
   background-color: var(--bg-default);
-  border: 1px solid var(--primary-200);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  color: var(--text-noraml);
+  color: var(--text-primary);
 }
 
 .account-settings-header {
@@ -14,7 +14,7 @@
   align-items: center;
   padding-bottom: 16px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--primary-200);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .account-settings-header h2 {
@@ -28,6 +28,12 @@
   border: none;
   cursor: pointer;
   padding: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.close-button:hover {
+  opacity: 1;
 }
 
 .close-button img {
@@ -39,22 +45,22 @@
   margin-bottom: 8px;
   font-weight: 500;
   font-size: 14px;
-  color: var(--text-noraml);
+  color: var(--text-primary);
 }
 
 .account-settings-content input {
   width: 100%;
   padding: 10px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid var(--primary-300);
-  color: var(--text-noraml);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-size: 16px;
   margin-bottom: 16px;
 }
 
 .account-settings-content input[readonly] {
-  background-color: var(--gray-200);
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
@@ -69,16 +75,18 @@
   width: 96px;
   height: 96px;
   border-radius: 20%;
-  background-color: var(--gray-200);
+  background-color: var(--bg-secondary);
   border: 2px solid var(--primary-300);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .avatar-placeholder .avatar img {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .actions {
@@ -93,36 +101,45 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  transition: background 0.3s;
+  transition: all 0.2s;
+}
+
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
 }
 
 .save-button {
-  background: var(--primary-300);
-  color: var(--text-noraml);
+  background: var(--primary-color);
+  color: #fff;
 }
 
-.save-button:hover {
+.save-button:hover:not(:disabled) {
   background: var(--primary-400);
 }
 
 .cancel-button {
-  background: var(--primary-50);
-  color: var(--text-noraml);
+  background: var(--gray-600);
+  color: #fff;
 }
 
-.cancel-button:hover {
-  background: var(--primary-100);
+.cancel-button:hover:not(:disabled) {
+  background: var(--gray-800);
+}
+
+[data-theme="light"] .cancel-button {
+  background: var(--gray-200);
+  color: var(--text-primary);
+}
+[data-theme="light"] .cancel-button:hover:not(:disabled) {
+  background: var(--gray-300);
 }
 
 .delete-account-section {
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--danger-200);
-}
-
-.delete-account-section h3 {
-  color: var(--danger-500);
-  margin-bottom: 12px;
 }
 
 .delete-account-button {
@@ -132,7 +149,9 @@
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 .delete-account-button:hover {
@@ -144,20 +163,20 @@
   font-size: 14px;
   margin-top: -12px;
   margin-bottom: 12px;
-  color: var(--text-noraml);
+  color: var(--text-primary);
 }
 
-.status-message.complete--visible{
-  color: var(--bg-default);
+.status-message.complete--visible {
+  color: white;
   padding: 8px 12px;
-  background: var(--success-400);
+  background: var(--success-500);
   border-radius: 6px;
 }
 
-.status-message.error--visible{
-  color: var(--bg-default);
+.status-message.error--visible {
+  color: white;
   padding: 8px 12px;
-  background: var(--danger-400);
+  background: var(--danger-500);
   border-radius: 6px;
   margin-top: 12px;
   transition: opacity 0.8s ease;

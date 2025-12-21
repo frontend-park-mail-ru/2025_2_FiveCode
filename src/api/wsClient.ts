@@ -2,8 +2,19 @@ import { Block } from "../components/block";
 import { config } from "../config/project.config";
 import { showNotification } from "../components/notification";
 
-
 export type MessageType = "note_update" | "error";
+
+export interface Header {
+  id: number;
+  name: string;
+  url: string;
+}
+
+export interface Icon {
+  id: number;
+  name: string;
+  url: string;
+}
 
 export interface ServerMessage {
   type: MessageType;
@@ -13,6 +24,8 @@ export interface ServerMessage {
   blocks?: Block[];
   message?: string;
   title?: string;
+  header?: Header | null;
+  icon?: Icon | null;
 }
 
 export class WsClient {
@@ -23,21 +36,32 @@ export class WsClient {
 
   constructor(noteId: number | string) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = config.API_BASE_URL.replace(/^https?:\/\//, "");
-    this.url = `${protocol}//${host}/api/ws/notes/${noteId}`;
+
+    let host;
+    let basePath;
+    if (config.API_BASE_URL.startsWith("/")) {
+      host = window.location.host;
+      basePath = config.API_BASE_URL;
+    } else {
+      const urlParts = config.API_BASE_URL.replace(/^https?:\/\//, "").split(
+        "/"
+      );
+      host = urlParts[0];
+      basePath = urlParts.length > 1 ? `/${urlParts.slice(1).join("/")}` : "";
+    }
+
+    this.url = `${protocol}//${host}${basePath}/ws/notes/${noteId}`;
   }
 
   public connect(onMessage: (msg: ServerMessage) => void) {
-    showNotification("Подключение к совместному доступу...", "info");
     try {
       this.socket = new WebSocket(this.url);
     } catch (e) {
-      showNotification("Ошибка в создании совместного доступа", "error");
+      console.error("WS Create Error:", e);
       return;
     }
 
     this.socket.onopen = () => {
-      showNotification("Совместный доступ подключён", "success");
     };
 
     this.socket.onmessage = (event) => {
@@ -45,28 +69,25 @@ export class WsClient {
         const data: ServerMessage = JSON.parse(event.data);
         onMessage(data);
       } catch (e) {
-        showNotification("Ошибка в получении данных совместного доступа", "error");
+        console.error("WS Parse Error:", e);
       }
     };
 
     this.socket.onclose = (event) => {
-      showNotification("Соединение совместного доступа закрыто", "info");
       if (this.shouldReconnect) {
         setTimeout(() => {
-            showNotification("Повторное подключение к совместному доступу...", "info");
-            this.connect(onMessage);
+          this.connect(onMessage);
         }, this.reconnectInterval);
       }
     };
 
     this.socket.onerror = (err) => {
-      showNotification("Ошибка в соединении совместного доступа", "error");
+      console.error("WS Error:", err);
       this.socket?.close();
     };
   }
 
   public close() {
-    showNotification("Отключение совместного доступа...", "info");
     this.shouldReconnect = false;
     this.socket?.close();
     this.socket = null;

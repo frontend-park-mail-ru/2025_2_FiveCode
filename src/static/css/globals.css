@@ -5,6 +5,7 @@
   --text-secondary: #666666;
   --text-primary: #212529;
   --border-color: #e0e0e0;
+  --gray-0: #ffffff;
   --gray-50: #f9f9f9;
   --primary-50: #f0f4f8;
   --accent: #2f6ff6;
@@ -15,7 +16,6 @@
   --danger: #d32f2f;
 }
 
-/* Темная тема */
 [data-theme="dark"] {
   --bg-default: #1a1a1a;
   --bg-secondary: #2a2a2a;
@@ -23,12 +23,12 @@
   --text-secondary: #999999;
   --text-primary: #e0e0e0;
   --border-color: #404040;
+  --gray-0: #1a1a1a;
   --gray-50: #2a2a2a;
   --primary-50: #2a3a4a;
   --text-noraml: #e0e0e0;
 }
 
-/* Светлая тема */
 [data-theme="light"] {
   --bg-default: #ffffff;
   --bg-secondary: #f5f5f5;
@@ -36,6 +36,7 @@
   --text-secondary: #666666;
   --text-primary: #212529;
   --border-color: #e0e0e0;
+  --gray-0: #ffffff;
   --gray-50: #f9f9f9;
   --primary-50: #f0f4f8;
   --primary-color: #007bff;
@@ -49,7 +50,7 @@
 body {
   font-family: Inter, system-ui, Arial;
   background: var(--bg-default);
-  color: var(--primary-color);
+  color: var(--text-primary);
   justify-content: center;
   align-items: center;
 }
@@ -70,7 +71,7 @@ a {
   padding: 20px 10%;
   min-height: calc(100vh - 64px);
   font-size: 40px;
-  color: var(--primary-color);
+  color: var(--text-primary);
   overflow-y: auto;
 }
 
@@ -147,12 +148,12 @@ a {
   fill: var(--primary-100, #f5f5f5);
 }
 
-.user-menu__btn--logout:hover{
+.user-menu__btn--logout:hover {
   background: var(--danger-500);
   color: var(--bg-default);
 }
 
-.user-menu__btn--logout:hover .logout_icon{
+.user-menu__btn--logout:hover .logout_icon {
   fill: white;
 }
 
@@ -163,19 +164,18 @@ a {
 
 .page--layout {
   display: grid;
-  grid-template-columns: 292px 1fr;
+  grid-template-columns: 273px 1fr;
   height: 100vh;
   overflow: hidden;
 }
 
 @media (max-width: 768px) {
-    .page--layout {
+  .page--layout {
     display: grid;
     grid-template-columns: 100% 1fr;
     height: 100vh;
     overflow: hidden;
   }
-
 }
 
 .exit-modal-overlay {
@@ -188,12 +188,11 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10001;
   backdrop-filter: blur(2px);
 }
 
 .exit-modal-content {
-  
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -243,8 +242,16 @@ a {
   gap: 8px;
   font-size: 18px;
   background-color: var(--danger-500);
+  transition: all 0.2s ease;
 }
 
 .exit-modal-button:hover {
   background-color: var(--danger-500);
+}
+
+.exit-modal-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  pointer-events: none;
 }

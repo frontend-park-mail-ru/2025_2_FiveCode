@@ -2,16 +2,11 @@ import ejs from "ejs";
 import { Subdirectories } from "./subdirectories";
 import { apiClient } from "../api/apiClient";
 import router from "../router";
-import {
-  UserMenu,
-  createExitConfirmationModal,
-  
-} from "./userMenu";
+import { UserMenu, createExitConfirmationModal } from "./userMenu";
 import { loadUser } from "../utils/session";
 import { handleError } from "../utils/errorHandler";
 import { createSearchModal } from "./search";
 import { createSettingsModal } from "./settingsModal";
-
 
 const ICONS = {
   home: new URL("../static/svg/icon_home_active.svg", import.meta.url).href,
@@ -45,15 +40,11 @@ const handleTitleUpdate = (event: Event) => {
   if (!noteId || typeof newTitle === "undefined") return;
 
   const titleElements = document.querySelectorAll(
-    `.sidebar a[href="/note/${noteId}"] .subdir-title, .sidebar a[href="/note/${noteId}"] .subnote-title`
+    `.sidebar a[href="/note/${noteId}"] .tree-title`
   );
 
   titleElements.forEach((el) => {
-    let displayTitle = newTitle;
-    if (displayTitle.length > 18) {
-      displayTitle = displayTitle.substring(0, 17) + "...";
-    }
-    el.textContent = displayTitle;
+    el.textContent = newTitle;
   });
 };
 
@@ -77,16 +68,16 @@ export function Sidebar({
                 </button>
             </div>
             <nav class="sidebar__nav">
-                <a href="/notes" class="sidebar__item <%= isHomeActive ? 'sidebar-item--active' : '' %>" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
-                <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" data-link style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
+                <a href="/" class="sidebar__item <%= isHomeActive ? 'sidebar-item--active' : '' %>" data-link> <img src="<%= home %>" class="sidebar__icon" alt="user icon" /> Домой</a>
+                <a class="sidebar__item<%= isSearchActive ? '--active' : '' %>" id="search-btn" style="cursor:pointer"> <img src="<%= search %>" class="sidebar__icon" alt="user icon" /> Поиск</a>
             </nav>
             <div class="sidebar__subs"></div>
-            <a class="sidebar__item" data-link> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
-            <a class="sidebar__item" id="app-settings-btn" data-link style="cursor:pointer"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
+            <a class="sidebar__item" data-link style="display:none"> <img src="<%= trash %>" class="sidebar__icon" /> Корзина</a>
+            <a class="sidebar__item" id="app-settings-btn" style="cursor:pointer; margin-left: 6px"> <img src="<%= settings %>" class="sidebar__icon" /> Параметры</a>
         </aside>
     `;
 
-  const isHomeActive = window.location.pathname === `/notes`;
+  const isHomeActive = window.location.pathname === `/`;
 
   const html = ejs.render(template, {
     user: user,
@@ -115,7 +106,8 @@ export function Sidebar({
   document.addEventListener("DOMContentLoaded", highlightActiveMenuLink);
 
   const searchBtn = el.querySelector("#search-btn");
-  searchBtn?.addEventListener("click", () => {
+  searchBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
     const modal = createSearchModal();
     document.body.appendChild(modal);
   });
@@ -127,10 +119,10 @@ export function Sidebar({
     document.body.appendChild(modal);
   });
 
-  const handleDotsClick = (event: Event) => {
+  const handleUserClick = (event: Event) => {
     event.stopPropagation();
-    const dotsButton = event.currentTarget as HTMLElement;
-    const rect = dotsButton.getBoundingClientRect();
+    const userBlock = event.currentTarget as HTMLElement;
+    const rect = userBlock.getBoundingClientRect();
 
     if (!userMenuComponent) {
       userMenuComponent = UserMenu({
@@ -138,8 +130,8 @@ export function Sidebar({
         userIcon: avatarUrl || ICONS.account,
         isVisible: false,
         position: {
-          top: rect.bottom + 8,
-          left: rect.left < 220 ? 230 : rect.left,
+          top: rect.bottom + 4,
+          left: rect.left + 8,
         },
         settingsIcon: ICONS.settings,
         logoutIcon: ICONS.logout,
@@ -173,8 +165,8 @@ export function Sidebar({
         });
     }
 
-    userMenuComponent.style.top = `${rect.bottom + 8}px`;
-    userMenuComponent.style.left = `${rect.left < 220 ? 230 : rect.left}px`;
+    userMenuComponent.style.top = `${rect.bottom + 4}px`;
+    userMenuComponent.style.left = `${rect.left + 8}px`;
     userMenuComponent.classList.toggle("user-menu--visible");
   };
 
@@ -182,24 +174,15 @@ export function Sidebar({
     if (!userMenuComponent) return;
 
     const target = event.target as Node;
-    const isClickOnDots = (target as HTMLElement).closest(
-      ".sidebar__user-dots"
+    const isClickOnUserBlock = (target as HTMLElement).closest(
+      ".sidebar__user"
     );
     const isClickInsideMenu = userMenuComponent.contains(target);
 
-    if (!isClickInsideMenu && !isClickOnDots) {
+    if (!isClickInsideMenu && !isClickOnUserBlock) {
       userMenuComponent.classList.remove("user-menu--visible");
     }
   });
-
-  el.querySelector("#sidebar-avatar")?.addEventListener(
-    "click",
-    navigateToSettings
-  );
-  el.querySelector("#sidebar-username")?.addEventListener(
-    "click",
-    navigateToSettings
-  );
 
   const handleProfileUpdate = (event: CustomEvent) => {
     const updatedUser = loadUser();
@@ -225,9 +208,9 @@ export function Sidebar({
     handleProfileUpdate as EventListener
   );
 
-  el.querySelector(".sidebar__user-dots")?.addEventListener(
+  el.querySelector(".sidebar__user")?.addEventListener(
     "click",
-    handleDotsClick
+    handleUserClick
   );
 
   const subs = el.querySelector(".sidebar__subs") as HTMLElement;

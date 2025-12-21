@@ -1,9 +1,7 @@
-import ejs from 'ejs'
-
 export function deleteCollaboratorModal(): HTMLElement {
-    const trash = new URL("../static/svg/icon_delete.svg", import.meta.url).href;
+  const trash = new URL("../static/svg/icon_delete.svg", import.meta.url).href;
 
-    const modalTemplate = `
+  const modalTemplate = `
         <div id="deleteCollaborationModal" class="exit-modal-overlay">
             <div class="exit-modal-content">
                 <span id="closeModal" class="exit-modal-close">×</span>
@@ -20,23 +18,23 @@ export function deleteCollaboratorModal(): HTMLElement {
         </div>
     `;
 
-    const container = document.createElement('div');
-    container.innerHTML = modalTemplate;
-    const modal = container.firstElementChild as HTMLElement;
+  const container = document.createElement("div");
+  container.innerHTML = modalTemplate;
+  const modal = container.firstElementChild as HTMLElement;
 
-    modal.querySelector('#closeModal')?.addEventListener('click', () => {
-        modal.remove();
-    });
+  modal.querySelector("#closeModal")?.addEventListener("click", () => {
+    modal.remove();
+  });
 
-    modal.querySelector('.cancel-button')?.addEventListener('click', () => {
-        modal.remove();
-    });
+  modal.querySelector(".cancel-button")?.addEventListener("click", () => {
+    modal.remove();
+  });
 
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 
-    return modal;
+  return modal;
 }

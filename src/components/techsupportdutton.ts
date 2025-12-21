@@ -1,5 +1,3 @@
-import ejs from "ejs";
-
 export function techSupportWrapper(): HTMLElement {
   const template = `
         <div class="tech-support-wrapper">

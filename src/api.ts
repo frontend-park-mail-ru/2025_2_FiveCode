@@ -20,7 +20,7 @@ async function getCsrfToken(): Promise<string> {
   }
 
   if (!tokenFetchPromise) {
-    tokenFetchPromise = fetch(`${API_BASE}/api/csrf-token`, {
+    tokenFetchPromise = fetch(`${API_BASE}/csrf-token`, {
       credentials: "include",
     })
       .then(async (res) => {
@@ -50,7 +50,7 @@ export async function apiFetch(
   options: ApiFetchOptions = {},
   isRetry = false
 ): Promise<any> {
-  const url = path.startsWith("http") ? path : API_BASE + path;
+  const url = path.startsWith("/api") ? path : API_BASE + path;
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
@@ -94,7 +94,9 @@ export async function apiFetch(
   let json = null;
   try {
     json = text ? JSON.parse(text) : null;
-  } catch (e) {}
+  } catch (e) {
+    console.error(e);
+  }
 
   if (!res.ok) {
     if (res.status === 403) {
@@ -106,7 +108,7 @@ export async function apiFetch(
       ) {
         clearCsrfToken();
         if (!isRetry) {
-            return apiFetch(path, options, true);
+          return apiFetch(path, options, true);
         }
       }
     }

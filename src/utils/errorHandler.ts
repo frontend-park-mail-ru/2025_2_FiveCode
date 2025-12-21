@@ -1,11 +1,14 @@
 import { showNotification } from "../components/notification";
 
 const errorTranslations: Record<string, string> = {
-  "user with this email already exists": "Пользователь с таким Email уже существует",
+  "user with this email already exists":
+    "Пользователь с таким Email уже существует",
   "user already exists": "Пользователь уже существует",
   "invalid email or password": "Неверный Email или пароль",
-  "invalid username": "Некорректное имя пользователя (допустимы латинские буквы и цифры)",
-  "username must be between": "Имя пользователя должно быть от 3 до 50 символов",
+  "invalid username":
+    "Некорректное имя пользователя (допустимы латинские буквы и цифры)",
+  "username must be between":
+    "Имя пользователя должно быть от 3 до 50 символов",
   "passwords do not match": "Пароли не совпадают",
   "password is too short": "Пароль слишком короткий (минимум 8 символов)",
   "email is required": "Email обязателен",
@@ -24,9 +27,11 @@ const errorTranslations: Record<string, string> = {
   "user cannot create sub-note": "Недостаточно прав для создания подзаметки",
   "only owner can delete note": "Только владелец может удалить эту заметку",
   "is not the note owner": "Вы не являетесь владельцем этой заметки",
-  "cannot add note owner as collaborator": "Владелец заметки уже имеет полный доступ",
+  "cannot add note owner as collaborator":
+    "Владелец заметки уже имеет полный доступ",
   "user already has access": "Этот пользователь уже добавлен",
-  "permission does not belong to this note": "Ошибка прав доступа (неверный контекст)",
+  "permission does not belong to this note":
+    "Ошибка прав доступа (неверный контекст)",
   "permission not found": "Пользователь не найден в списке участников",
 
   "cannot create sub-note of a sub-note": "Максимальный уровень вложенности: 1",
@@ -46,8 +51,9 @@ const errorTranslations: Record<string, string> = {
 
   "csrf token expired": "Токен безопасности истек. Обновите страницу",
   "csrf token invalid": "Ошибка проверки безопасности. Обновите страницу",
-  "csrf_token_missing": "Ошибка безопасности. Попробуйте снова",
-  "csrf token session mismatch": "Ошибка сессии безопасности. Перезайдите в систему",
+  csrf_token_missing: "Ошибка безопасности. Попробуйте снова",
+  "csrf token session mismatch":
+    "Ошибка сессии безопасности. Перезайдите в систему",
 
   "internal server error": "Внутренняя ошибка сервера",
   "bad request": "Некорректный запрос",

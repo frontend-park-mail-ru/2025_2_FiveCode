@@ -4,6 +4,7 @@ import ejs from "ejs";
 import router from "./router";
 import { renderAppLayout } from "./layout";
 import { initializeTheme } from "./components/settingsModal";
+import { initOfflineDetection, updateLastOnlineTime } from "./utils/offline";
 import "../styles.css";
 import "./static/css/auth.css";
 import "./static/css/globals.css";
@@ -17,6 +18,7 @@ import "./static/css/note-menu.css";
 import "./static/css/user-menu.css";
 import "./static/css/search.css";
 import "./static/css/settings-modal.css";
+import "./static/css/note-header-modal.css";
 import "./static/css/techsupport.css";
 import "./static/css/techsupport/menu.css";
 import "./static/css/techsupport/ticket-list.css";
@@ -26,6 +28,7 @@ import "./static/css/chat.css";
 import "./static/css/collaboration.css";
 import "./static/css/notification.css";
 import "./static/css/icon-menu.css";
+import "./static/css/note-header.css";
 
 interface User {
   id?: number;
@@ -38,9 +41,18 @@ const ICONS = {
   Icon: new URL("./static/svg/icon_goose.svg", import.meta.url).href,
 };
 
+let isInitialLoad = true;
+
 async function initializeApp(): Promise<void> {
-  // Инициализация темы приложения
+  if (!navigator.onLine && !isInitialLoad) {
+    return;
+  }
+
+  isInitialLoad = false;
+
   initializeTheme();
+  initOfflineDetection();
+  updateLastOnlineTime();
 
   const app = document.getElementById("app");
   if (!app) {
@@ -59,13 +71,14 @@ async function initializeApp(): Promise<void> {
   const isAuthPage = path === "/login" || path === "/register";
   const techsupportPath = path === "/techsupport";
   let user: User | null = null;
+
   try {
     user = await apiClient.me();
     if (user) {
       saveUser(user);
     }
   } catch (error) {
-    console.error("Session check failed, assuming logged out.");
+    console.error("Session check failed, assuming logged out:", error);
   }
 
   if (user) {
@@ -87,6 +100,19 @@ async function initializeApp(): Promise<void> {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  if ("serviceWorker" in navigator) {
+    // if (process.env.NODE_ENV === "production") {
+    navigator.serviceWorker.register("/sw.js");
+
+    // } else {
+    //   navigator.serviceWorker.getRegistrations().then((registrations) => {
+    //     for (const registration of registrations) {
+    //       registration.unregister();
+    //     }
+    //   });
+    // }
+  }
+
   initializeApp();
 
   document.body.addEventListener("click", (e: MouseEvent) => {
